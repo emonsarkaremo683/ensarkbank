@@ -3,6 +3,7 @@ package com.elitetech_inc.ensarkbank.customer_management.customer.entity;
 import com.elitetech_inc.ensarkbank.auth.user.entity.User;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.customer_management.account_holder.entity.AccountHolder;
+import com.elitetech_inc.ensarkbank.customer_management.beneficiary.entity.Beneficiary;
 import com.elitetech_inc.ensarkbank.loan_management.loan.entity.LoanApplication;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -41,5 +42,9 @@ public class Customer extends BaseEntity {
 
     @OneToMany(mappedBy = "customer")
     private List<LoanApplication> loanApplications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "customer")
+    private List<Beneficiary> beneficiaries = new ArrayList<>();
+
 
 }

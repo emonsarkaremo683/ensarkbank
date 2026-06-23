@@ -36,6 +36,7 @@ public class Card extends BaseEntity {
 
     private Double limit;
 
+    private boolean isOverdraftEnable;
     @OneToOne
     @JoinColumn(name = "account_id")
     private Account account;

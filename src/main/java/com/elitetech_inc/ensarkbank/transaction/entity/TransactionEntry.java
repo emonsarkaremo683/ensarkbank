@@ -6,25 +6,26 @@ import com.elitetech_inc.ensarkbank.enums.EntryType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
-@Data
 @Table(name = "transaction_entries")
+@Data
 public class TransactionEntry extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     @JoinColumn(name = "account_id")
+    @JsonIgnore
     private Account account;
 
     @Enumerated(EnumType.STRING)
-    private EntryType  entryType;
+    private EntryType entryType;
 
     private Double amount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     @JoinColumn(name = "transaction_id")
+    @JsonIgnore
     private Transaction transaction;
-
 }

@@ -12,51 +12,27 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-
-
+@EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "atmtransactions")
+@Table(name = "atm_transactions")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class ATMTransaction extends BaseEntity {
 
-    @Column(unique = true, nullable = false)
-    private String referenceNo;
-
-    private Double amount;
-
-    @Enumerated(EnumType.STRING)
-    private TransactionType type;
-
-    @Enumerated(EnumType.STRING)
-    private TransactionChannel channel =  TransactionChannel.ATM;
-
-    @Enumerated(EnumType.STRING)
-    private TransactionStatus status;
-
-
-    private Double chargeAmount;
-
-    private Double vatAmount;
-
-    private String remarks;
-
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "transaction_id", nullable = false)
+    @JsonIgnore
+    private Transaction transaction;
 
     @ManyToOne
-    @JoinColumn(name = "atmID")
-    @JsonBackReference
+    @JoinColumn(name = "atm_id")
     private ATM atm;
 
-
     @ManyToOne
-    @JoinColumn(name = "cardId")
+    @JoinColumn(name = "card_id")
     @JsonIgnore
     private Card card;
-
-
-
-
 }
