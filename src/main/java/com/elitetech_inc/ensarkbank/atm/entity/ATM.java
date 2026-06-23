@@ -25,6 +25,7 @@ public class ATM extends BaseEntity {
     private Double currentBalance;
     private Double atmlimit;
     private String address;
+    private String atmRouting;
 
     @ManyToOne
     @JoinColumn(name = "branchID")

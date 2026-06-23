@@ -1,13 +1,9 @@
 package com.elitetech_inc.ensarkbank.util;
 
 import com.elitetech_inc.ensarkbank.customer_management.card.dto.request.CardRequest;
-import com.ensark.elitebank.card.dto.request.CardRequest;
 import org.springframework.stereotype.Component;
 import java.util.Random;
 import java.util.stream.IntStream;
-
-import static com.elitetech_inc.ensarkbank.enums.CardNetwork.MASTERCARD;
-import static com.elitetech_inc.ensarkbank.enums.CardNetwork.VISA;
 
 @Component
 public class CardGenerator {

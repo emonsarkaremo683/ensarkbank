@@ -1,4 +1,4 @@
-package com.elitetech_inc.ensarkbank.employee.entity;
+package com.elitetech_inc.ensarkbank.employee_management.employee.entity;
 
 import com.elitetech_inc.ensarkbank.auth.user.entity.User;
 import com.elitetech_inc.ensarkbank.branch.entity.Branch;

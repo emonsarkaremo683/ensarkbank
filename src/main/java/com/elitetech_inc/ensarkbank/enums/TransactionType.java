@@ -8,7 +8,12 @@ public enum TransactionType {
     PAYMENT,
     REFUND,
 
-    // ATM SACTION
+    //Card Section
+    CARD_DEPOSIT,
+    CARD_WITHDRAW,
+    CARD_PAYMENT,
+
+    // ATM Section
     ATM_WITHDRAW,
     REFILL,
     ATM_DEPOSIT

@@ -9,6 +9,11 @@ import com.elitetech_inc.ensarkbank.branch.dto.response.BranchResponse;
 import com.elitetech_inc.ensarkbank.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.branch.service.BranchService;
+import com.elitetech_inc.ensarkbank.customer_management.accounts.entity.Account;
+import com.elitetech_inc.ensarkbank.customer_management.accounts.repository.AccountRepository;
+import com.elitetech_inc.ensarkbank.enums.AccountStatus;
+import com.elitetech_inc.ensarkbank.enums.AccountType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -18,16 +23,16 @@ import java.util.stream.Collectors;
 
 
 @Service
+@RequiredArgsConstructor
 public class BranchServiceImpl implements BranchService {
 
-    @Autowired
-    private PoliceStationRepository policeStationRepository;
+    private final PoliceStationRepository policeStationRepository;
 
-    @Autowired
-    private BranchRepository branchRepository;
+    private final BranchRepository branchRepository;
 
-    @Autowired
-    private BranchMapper branchMapper;
+    private final BranchMapper branchMapper;
+
+    private final AccountRepository accountRepository;
 
     @Override
     public BranchResponse save(BranchRequest br) {
@@ -43,7 +48,17 @@ public class BranchServiceImpl implements BranchService {
         branch = branchMapper.toBranch(br);
         branch.setRoutingNumber(generateRouteNumber());
 
-       return branchMapper.toBranchResponse(branchRepository.save(branch));
+        Branch savedBranch = branchRepository.save(branch);
+
+        Account account = new Account();
+        account.setAccNumber("br-" +  savedBranch.getRoutingNumber());
+        account.setType(AccountType.BRANCH_VAULT);
+        account.setAccountStatus(AccountStatus.ACTIVE);
+        account.setBalance(br.getCash_vault());
+        account.setBranch(savedBranch);
+        accountRepository.save(account);
+
+       return branchMapper.toBranchResponse(savedBranch);
     }
 
     @Override

@@ -6,5 +6,9 @@ public enum AccountType {
     FIXED_DEPOSIT,
     JOINT_ACCOUNT,
     STUDENT,
-    BUSINESS
+    BUSINESS,
+
+    // not for everyone
+    BRANCH_VAULT,
+    ATM_VAULT
 }

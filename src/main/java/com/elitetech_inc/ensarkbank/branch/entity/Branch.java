@@ -5,7 +5,8 @@ package com.elitetech_inc.ensarkbank.branch.entity;
 import com.elitetech_inc.ensarkbank.address.policestation.entity.PoliceStation;
 import com.elitetech_inc.ensarkbank.atm.entity.ATM;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
-import com.elitetech_inc.ensarkbank.employee.entity.Employee;
+import com.elitetech_inc.ensarkbank.customer_management.accounts.entity.Account;
+import com.elitetech_inc.ensarkbank.employee_management.employee.entity.Employee;
 import com.elitetech_inc.ensarkbank.enums.BranchStatus;
 import com.elitetech_inc.ensarkbank.enums.BranchType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -43,8 +44,6 @@ public class Branch extends BaseEntity {
     @Column(name = "status")
     private BranchStatus status;
 
-    private Double cash_vault;
-
 
     @ManyToOne
     @JoinColumn(name = "policeStationID")
@@ -58,10 +57,10 @@ public class Branch extends BaseEntity {
     @OneToMany(mappedBy = "branch",  fetch = FetchType.LAZY)
     @JsonIgnore
     private List<ATM> atms = new ArrayList<>();
-//
-//    @OneToMany(mappedBy = "branch",  fetch = FetchType.LAZY)
-//    @JsonIgnore
-//    private List<Account>accounts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "branch",  fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Account>accounts = new ArrayList<>();
 
 
 }

@@ -1,4 +1,4 @@
-package com.elitetech_inc.ensarkbank.employee.entity;
+package com.elitetech_inc.ensarkbank.employee_management.employee.entity;
 
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -8,7 +8,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-@Table(name = "employeedocuments")
+@Table(name = "employee_documents")
 @Entity
 @Data
 public class EmployeeDocument extends BaseEntity {
