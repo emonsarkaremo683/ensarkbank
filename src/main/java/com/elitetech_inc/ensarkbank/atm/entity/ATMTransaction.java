@@ -29,6 +29,7 @@ public class ATMTransaction extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "atm_id")
+    @JsonIgnore
     private ATM atm;
 
     @ManyToOne

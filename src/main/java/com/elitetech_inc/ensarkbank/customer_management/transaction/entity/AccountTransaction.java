@@ -1,9 +1,7 @@
-package com.elitetech_inc.ensarkbank.customer_management.transaction;
+package com.elitetech_inc.ensarkbank.customer_management.transaction.entity;
 
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.customer_management.accounts.entity.Account;
-import com.elitetech_inc.ensarkbank.enums.TransactionChannel;
-import com.elitetech_inc.ensarkbank.enums.TransactionType;
 import com.elitetech_inc.ensarkbank.transaction.entity.Transaction;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -23,8 +21,12 @@ public class AccountTransaction extends BaseEntity {
     @JsonIgnore
     private Account sender;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id")
-    @JsonIgnore
-    private Account receiver;
+    private String accountNumber;
+    private String name;
+    private String bankName;
+
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "receiver_id")
+//    @JsonIgnore
+//    private Account receiver;
 }

@@ -1,9 +1,8 @@
-package com.elitetech_inc.ensarkbank.customer_management.transaction;
+package com.elitetech_inc.ensarkbank.customer_management.transaction.entity;
 
+import com.elitetech_inc.ensarkbank.atm.entity.ATMTransaction;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.customer_management.card.entity.Card;
-import com.elitetech_inc.ensarkbank.enums.TransactionChannel;
-import com.elitetech_inc.ensarkbank.enums.TransactionType;
 import com.elitetech_inc.ensarkbank.transaction.entity.Transaction;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -22,4 +21,5 @@ public class CardTransaction extends BaseEntity {
     @JoinColumn(name = "card_id")
     @JsonIgnore
     private Card card;
+
 }
