@@ -54,7 +54,7 @@ public class BranchServiceImpl implements BranchService {
         account.setAccNumber("br-" +  savedBranch.getRoutingNumber());
         account.setType(AccountType.BRANCH_VAULT);
         account.setAccountStatus(AccountStatus.ACTIVE);
-        account.setBalance(br.getCash_vault());
+        account.setAvailableBalance(br.getCash_vault());
         account.setBranch(savedBranch);
         accountRepository.save(account);
 

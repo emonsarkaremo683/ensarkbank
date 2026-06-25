@@ -43,7 +43,7 @@ public class BranchMapper {
     }
 
     private Double getBalance(String account) {
-        Account acc = accountRepository.findByAccountNumber(account).orElseThrow();
-        return acc.getBalance();
+        Account acc = accountRepository.findByAccNumber(account).orElseThrow();
+        return acc.getAvailableBalance();
     }
 }

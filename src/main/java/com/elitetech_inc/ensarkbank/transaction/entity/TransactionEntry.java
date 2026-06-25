@@ -14,12 +14,11 @@ import lombok.EqualsAndHashCode;
 @Data
 public class TransactionEntry extends BaseEntity {
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "account_id")
-//    @JsonIgnore
-//    private Account account;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    @JsonIgnore
+    private Account account;
 
-    private String accountName;
 
     @Enumerated(EnumType.STRING)
     private EntryType entryType;

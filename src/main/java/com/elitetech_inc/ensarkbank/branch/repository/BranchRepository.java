@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface BranchRepository extends JpaRepository<Branch, Long> {
-
+        Boolean existsByRoutingNumber(String routingNumber);
 }

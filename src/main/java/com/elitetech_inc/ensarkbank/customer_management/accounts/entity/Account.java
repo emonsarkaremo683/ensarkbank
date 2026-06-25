@@ -27,7 +27,9 @@ public class Account extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private AccountStatus accountStatus;
 
-    private Double balance;
+    private Double availableBalance;
+    private Double currentBalance;
+    private Double holdBalance;
 
     @ManyToOne
     @JoinColumn(name = "branch_id")

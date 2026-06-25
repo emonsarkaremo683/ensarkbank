@@ -1,6 +1,8 @@
 package com.elitetech_inc.ensarkbank.enums;
 
 public enum Designation {
+
+    CHIEF_EXECUTIVE_OFFICER,
     // Executive Management
     MANAGING_DIRECTOR,
     DEPUTY_MANAGING_DIRECTOR,

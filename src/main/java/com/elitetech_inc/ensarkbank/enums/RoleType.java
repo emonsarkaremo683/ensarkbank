@@ -1,7 +1,6 @@
 package com.elitetech_inc.ensarkbank.enums;
 
 public enum RoleType {
-    SUPER_ADMIN,
     ADMIN,
     BRANCH_MANAGER,
     ACCOUNTANT,

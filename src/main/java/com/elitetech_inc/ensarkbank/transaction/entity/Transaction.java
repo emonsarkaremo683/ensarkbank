@@ -34,6 +34,11 @@ public class Transaction extends BaseEntity {
 
     private String remarks;
 
-    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL)
-    private List<TransactionEntry> transactionEntries = new ArrayList<>();
+    @OneToMany(
+            mappedBy = "transaction",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<TransactionEntry> transactionEntries =
+            new ArrayList<>();
 }
