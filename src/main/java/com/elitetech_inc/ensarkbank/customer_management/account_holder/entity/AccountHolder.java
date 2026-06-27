@@ -16,7 +16,6 @@ public class AccountHolder extends BaseEntity {
     private HolderType holderType;
     private Boolean canWithdraw;
     private Boolean canDeposit;
-    private Boolean canApproveTransaction;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")

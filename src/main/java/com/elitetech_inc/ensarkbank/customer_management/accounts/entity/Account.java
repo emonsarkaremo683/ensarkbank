@@ -7,10 +7,12 @@ import com.elitetech_inc.ensarkbank.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.enums.AccountType;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "accounts")
 @Data
@@ -41,13 +43,4 @@ public class Account extends BaseEntity {
             orphanRemoval = true)
     private List<AccountHolder> holders = new ArrayList<>();
 
-
-
-
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY,
-//            cascade = CascadeType.ALL,
-//            orphanRemoval = true)
-//    @JsonIgnore
-//    private List<TransactionEntry> entries = new ArrayList<>();
 }

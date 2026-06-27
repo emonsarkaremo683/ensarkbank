@@ -46,4 +46,5 @@ public class BranchMapper {
         Account acc = accountRepository.findByAccNumber(account).orElseThrow();
         return acc.getAvailableBalance();
     }
+
 }

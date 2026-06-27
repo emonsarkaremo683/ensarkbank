@@ -24,7 +24,7 @@ public class TransactionPostingService {
      * Account Balance Increase
      *
      */
-    public void credit(
+    private void credit(
             Transaction transaction,
             Account account,
             double amount
@@ -60,7 +60,7 @@ public class TransactionPostingService {
      * Account Balance Decrease
      *
      */
-    public void debit(
+    private void debit(
             Transaction transaction,
             Account account,
             double amount
@@ -122,17 +122,9 @@ public class TransactionPostingService {
             double amount
     ) {
 
-        debit(
-                transaction,
-                customerAccount,
-                amount
-        );
+        debit(transaction, customerAccount, amount);
 
-        credit(
-                transaction,
-                settlementAccount,
-                amount
-        );
+        credit(transaction, settlementAccount, amount);
     }
 
     /*
@@ -153,17 +145,9 @@ public class TransactionPostingService {
             double amount
     ) {
 
-        debit(
-                transaction,
-                settlementAccount,
-                amount
-        );
+        debit(transaction, settlementAccount, amount);
 
-        credit(
-                transaction,
-                customerAccount,
-                amount
-        );
+        credit(transaction, customerAccount, amount);
     }
 
     /*
@@ -182,17 +166,9 @@ public class TransactionPostingService {
             double amount
     ) {
 
-        debit(
-                transaction,
-                atmCashAccount,
-                amount
-        );
+        debit(transaction, atmCashAccount, amount);
 
-        credit(
-                transaction,
-                customerAccount,
-                amount
-        );
+        credit(transaction, customerAccount, amount);
     }
 
     /*
@@ -211,17 +187,9 @@ public class TransactionPostingService {
             double amount
     ) {
 
-        debit(
-                transaction,
-                customerAccount,
-                amount
-        );
+        debit(transaction, customerAccount, amount);
 
-        credit(
-                transaction,
-                atmCashAccount,
-                amount
-        );
+        credit(transaction, atmCashAccount, amount);
     }
 
     /*
@@ -240,17 +208,9 @@ public class TransactionPostingService {
             double amount
     ) {
 
-        debit(
-                transaction,
-                cashVault,
-                amount
-        );
+        debit(transaction, cashVault, amount);
 
-        credit(
-                transaction,
-                customerAccount,
-                amount
-        );
+        credit(transaction, customerAccount, amount);
     }
 
     /*
