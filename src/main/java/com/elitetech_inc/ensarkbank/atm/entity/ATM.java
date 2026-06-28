@@ -2,30 +2,33 @@ package com.elitetech_inc.ensarkbank.atm.entity;
 
 import com.elitetech_inc.ensarkbank.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
+import com.elitetech_inc.ensarkbank.customer_management.accounts.entity.Account;
 import com.elitetech_inc.ensarkbank.enums.ATMStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import java.util.List;
 
-
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "atms")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class ATM extends BaseEntity {
 
 
     @Enumerated(EnumType.STRING)
     private ATMStatus status;
 
-    private Double currentBalance;
-    private Double atmlimit;
+    private Double limit;
     private String address;
     private String atmRouting;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Account account;
 
     @ManyToOne
     @JoinColumn(name = "branchID")
@@ -34,8 +37,5 @@ public class ATM extends BaseEntity {
     @OneToMany(mappedBy = "atm")
     @JsonIgnore
     private List<ATMTransaction> atmTransections;
-
-
-
 
 }

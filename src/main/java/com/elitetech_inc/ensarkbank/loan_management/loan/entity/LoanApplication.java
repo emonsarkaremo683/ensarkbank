@@ -5,9 +5,13 @@ import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer
 import com.elitetech_inc.ensarkbank.enums.LoanStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "loan_application")
+@Data
 public class LoanApplication extends BaseEntity {
 
     @Column(nullable = false, unique = true)

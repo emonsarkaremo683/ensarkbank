@@ -6,9 +6,14 @@ import com.elitetech_inc.ensarkbank.transaction.entity.Transaction;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "account_transactions")
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class AccountTransaction extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)

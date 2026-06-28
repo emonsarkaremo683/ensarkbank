@@ -7,7 +7,9 @@ import com.elitetech_inc.ensarkbank.enums.HolderType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "account_holders")
 @Data

@@ -5,12 +5,16 @@ import com.elitetech_inc.ensarkbank.customer_management.account_holder.entity.Ac
 import com.elitetech_inc.ensarkbank.enums.InterestType;
 import com.elitetech_inc.ensarkbank.enums.LoanType;
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "loans_products")
+@Data
 public class LoanProduct extends BaseEntity {
 
     @Enumerated(EnumType.STRING)

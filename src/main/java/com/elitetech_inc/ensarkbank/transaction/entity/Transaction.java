@@ -6,12 +6,16 @@ import com.elitetech_inc.ensarkbank.enums.TransactionStatus;
 import com.elitetech_inc.ensarkbank.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
 @Entity
 @Table(name = "transactions")
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class Transaction extends BaseEntity {
 
     @Column(unique = true, nullable = false)

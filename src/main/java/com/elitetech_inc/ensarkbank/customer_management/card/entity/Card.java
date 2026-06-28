@@ -8,11 +8,14 @@ import com.elitetech_inc.ensarkbank.enums.CardStatus;
 import com.elitetech_inc.ensarkbank.enums.CardType;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "cards")
 @Data

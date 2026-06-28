@@ -7,9 +7,11 @@ import com.elitetech_inc.ensarkbank.enums.LoanStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "loan_accounts")
 @Data

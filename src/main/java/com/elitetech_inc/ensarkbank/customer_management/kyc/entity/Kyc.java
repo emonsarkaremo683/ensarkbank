@@ -6,10 +6,12 @@ import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer
 import com.elitetech_inc.ensarkbank.enums.KYCStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "kyc")

@@ -6,7 +6,9 @@ import com.elitetech_inc.ensarkbank.enums.NomineeType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "kyc_documents")
 @Data
