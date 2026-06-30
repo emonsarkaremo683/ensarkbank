@@ -26,6 +26,9 @@ public class Card extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private CardType cardType;
 
+    private String pinHash;
+    private String cvv;
+
     @Enumerated(EnumType.STRING)
     private CardStatus status;
 
