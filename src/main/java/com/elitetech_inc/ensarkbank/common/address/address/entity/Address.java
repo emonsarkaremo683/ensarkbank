@@ -10,12 +10,14 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Collection;
+
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "addresses")
-public class Address extends BaseEntity {
+public class Address extends BaseEntity{
 
     private String holdingNo;
     private String area;

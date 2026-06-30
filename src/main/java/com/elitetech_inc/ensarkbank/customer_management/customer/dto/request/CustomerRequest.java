@@ -5,9 +5,12 @@ import com.elitetech_inc.ensarkbank.common.address.address.entity.Address;
 import com.elitetech_inc.ensarkbank.common.address.policestation.entity.PoliceStation;
 import com.elitetech_inc.ensarkbank.common.enums.AddressType;
 import com.elitetech_inc.ensarkbank.common.enums.CustomerOccupation;
+import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
+import com.elitetech_inc.ensarkbank.common.enums.Gender;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.dto.request.KycRequest;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,6 +23,7 @@ public class CustomerRequest {
     private String password;
 
     private String name;
+    private Gender gender;
     private String phone;
     private CustomerOccupation occupation;
     private Date dob;
@@ -27,7 +31,6 @@ public class CustomerRequest {
 
 
     private List<AddressRequest> addresses = new ArrayList<>();
-
-    private List<KycRequest> kycRequests = new ArrayList<>();
+    private List<KycRequest> kycRequests;
 
 }

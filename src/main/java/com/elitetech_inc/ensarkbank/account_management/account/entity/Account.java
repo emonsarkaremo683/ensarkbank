@@ -1,0 +1,41 @@
+package com.elitetech_inc.ensarkbank.account_management.account.entity;
+
+import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
+import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
+import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
+import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
+import com.elitetech_inc.ensarkbank.common.enums.AccountType;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@EqualsAndHashCode(callSuper = true)
+@Entity
+@Table(name = "accounts")
+@Data
+public class Account extends BaseEntity {
+    @Column(unique = true, nullable = false)
+    private String accountNumber;
+
+    @Enumerated(EnumType.STRING)
+    private AccountType accountType;
+
+    @Enumerated(EnumType.STRING)
+    private AccountStatus accountStatus;
+
+    private Double balance;
+
+    @ManyToOne
+    @JoinColumn(name = "branch_id")
+    private Branch branch;
+
+    @OneToMany(mappedBy = "account",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<AccountHolder> holders = new ArrayList<>();
+
+}

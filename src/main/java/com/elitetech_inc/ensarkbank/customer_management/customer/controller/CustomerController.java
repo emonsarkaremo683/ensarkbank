@@ -1,73 +1,70 @@
 package com.elitetech_inc.ensarkbank.customer_management.customer.controller;
 
+import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.request.CustomerRequest;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.response.CustomerResponse;
 import com.elitetech_inc.ensarkbank.customer_management.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.databind.ObjectMapper;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping({"/api/customer", "/api/v1/customers"})
+@RequestMapping("/api/customer/")
 @RequiredArgsConstructor
 public class CustomerController {
 
     private final CustomerService customerService;
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CustomerResponse> register(
-            @RequestPart("customer") CustomerRequest request,
-            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
-            @RequestPart(value = "kycFiles", required = false) List<MultipartFile> kycFiles) {
-        
-        try {
-            return ResponseEntity.ok(customerService.register(request, profileImage, kycFiles));
-        } catch (Exception e) {
-            throw new RuntimeException("Error processing registration: " + e.getMessage(), e);
-        }
+    private final ObjectMapper objectMapper;
+
+    /**
+     * POST /api/customer/
+     * form-data fields:
+     *   - data          (String / JSON)
+     *   - profile       (file, optional)
+     *   - NID           (file, optional)
+     *   - PASSPORT      (file, optional)
+     *   - DRIVING_LICENSE (file, optional)
+     *   - BIRTH_CERTIFICATE (file, optional)
+     */
+    @PostMapping
+    public CustomerResponse save(
+            @RequestPart("data") String data,
+            @RequestPart(value = "profile", required = false) MultipartFile profilePicture,
+
+            // KYC document files
+            @RequestPart(value = "NID",               required = false) MultipartFile nid,
+            @RequestPart(value = "PASSPORT",          required = false) MultipartFile passport,
+            @RequestPart(value = "DRIVING_LICENSE",   required = false) MultipartFile drivingLicense,
+            @RequestPart(value = "BIRTH_CERTIFICATE", required = false) MultipartFile birthCertificate
+
+    ) throws Exception {
+
+        CustomerRequest dto = objectMapper.readValue(data, CustomerRequest.class);
+
+        Map<DocumentType, MultipartFile> documents = new EnumMap<>(DocumentType.class);
+
+        if (nid != null && !nid.isEmpty()) documents.put(DocumentType.NID, nid);
+        if (passport != null && !passport.isEmpty()) documents.put(DocumentType.PASSPORT, passport);
+        if (drivingLicense != null && !drivingLicense.isEmpty()) documents.put(DocumentType.DRIVING_LICENSE, drivingLicense);
+        if (birthCertificate != null && !birthCertificate.isEmpty()) documents.put(DocumentType.BIRTH_CERTIFICATE, birthCertificate);
+
+        return customerService.saveData(dto, profilePicture, documents);
     }
+
 
     @GetMapping
-    public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
-        return ResponseEntity.ok(customerService.getAllCustomers());
+    public List<CustomerResponse> getAll() {
+        return customerService.getAll();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
-        return ResponseEntity.ok(customerService.getCustomerById(id));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<CustomerResponse> updateCustomer(
-            @PathVariable Long id, 
-            @RequestBody CustomerRequest request) {
-        return ResponseEntity.ok(customerService.updateCustomer(id, request));
-    }
-
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> updateCustomerStatus(
-            @PathVariable Long id, 
-            @RequestParam boolean active) {
-        customerService.updateCustomerStatus(id, active);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
-        customerService.deleteCustomer(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<CustomerResponse>> searchCustomers(@RequestParam String query) {
-        return ResponseEntity.ok(customerService.searchCustomers(query));
-    }
-
-    @GetMapping("/profile")
-    public ResponseEntity<CustomerResponse> getCustomerProfile(@RequestHeader("X-User-Email") String email) {
-        return ResponseEntity.ok(customerService.getCustomerProfile(email));
+    @GetMapping("{id}")
+    public Optional<CustomerResponse> findById(@PathVariable Long id) {
+        return customerService.findById(id);
     }
 }

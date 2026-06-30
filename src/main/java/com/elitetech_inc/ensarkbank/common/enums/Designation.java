@@ -1,0 +1,46 @@
+package com.elitetech_inc.ensarkbank.common.enums;
+
+public enum Designation {
+    // Executive Management
+    MANAGING_DIRECTOR,
+    DEPUTY_MANAGING_DIRECTOR,
+    GENERAL_MANAGER,
+    DEPUTY_GENERAL_MANAGER,
+    ASSISTANT_GENERAL_MANAGER,
+
+    // Branch Management
+    BRANCH_MANAGER,
+    ASSISTANT_BRANCH_MANAGER,
+    OPERATIONS_MANAGER,
+
+    // Banking Operations
+    TELLER,
+    CASH_OFFICER,
+    CUSTOMER_SERVICE_OFFICER,
+    RELATIONSHIP_MANAGER,
+    LOAN_OFFICER,
+    ACCOUNTS_OFFICER,
+    COMPLIANCE_OFFICER,
+    AUDIT_OFFICER,
+
+    // IT Department
+    SYSTEM_ADMINISTRATOR,
+    SOFTWARE_ENGINEER,
+    NETWORK_ENGINEER,
+    DATABASE_ADMINISTRATOR,
+
+    // HR & Administration
+    HR_OFFICER,
+    ADMIN_OFFICER,
+
+    // Finance
+    FINANCE_OFFICER,
+    TREASURY_OFFICER,
+
+    // Support
+    SECURITY_OFFICER,
+    OFFICE_ASSISTANT,
+
+    // Intern
+    INTERN
+}

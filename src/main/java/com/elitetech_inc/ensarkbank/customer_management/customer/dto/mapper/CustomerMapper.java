@@ -11,10 +11,12 @@ import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer
 import com.elitetech_inc.ensarkbank.customer_management.kyc.dto.request.KycRequest;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.KycDocuments;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Component
+@Transactional
 public class CustomerMapper {
 
     //=========================================================
@@ -34,6 +36,7 @@ public class CustomerMapper {
         // Customer Info
         response.setName(customer.getName());
         response.setPhone(customer.getPhone());
+        response.setGender(customer.getGender());
         response.setOccupation(customer.getOccupation());
         response.setDob(customer.getDob());
         response.setProfile(customer.getProfile());
@@ -47,14 +50,17 @@ public class CustomerMapper {
 
         response.setAddresses(addresses);
 
-        // KYC Documents
-        List<KycRequest> documents = customer.getKyc()
-                .getDocuments()
-                .stream()
-                .map(this::toKycRequest)
-                .toList();
-
-        response.setDocuments(documents);
+        // KYC Documents — null-safe
+        if (customer.getKyc() != null && customer.getKyc().getDocuments() != null) {
+            List<KycRequest> documents = customer.getKyc()
+                    .getDocuments()
+                    .stream()
+                    .map(this::toKycRequest)
+                    .toList();
+            response.setDocuments(documents);
+        } else {
+            response.setDocuments(List.of());
+        }
 
         return response;
     }
@@ -71,7 +77,7 @@ public class CustomerMapper {
         customer.setPhone(request.getPhone());
         customer.setOccupation(request.getOccupation());
         customer.setDob(request.getDob());
-        customer.setProfile(request.getProfile());
+        customer.setGender(request.getGender());
 
         return customer;
     }
@@ -83,12 +89,8 @@ public class CustomerMapper {
     public User toUser(CustomerRequest request) {
 
         User user = new User();
-
         user.setEmail(request.getEmail());
-
-        // Password Encoding Service Layer এ হবে
         user.setPassword(request.getPassword());
-
         user.setRole(Role.CUSTOMER);
         user.setEmailVerified(false);
         user.setActive(false);
