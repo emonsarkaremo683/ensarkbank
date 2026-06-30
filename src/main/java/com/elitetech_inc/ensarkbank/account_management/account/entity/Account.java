@@ -26,16 +26,28 @@ public class Account extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private AccountStatus accountStatus;
 
-    private Double balance;
+    private Double availableBalance;
+    private Double currentBalance;
+    private Double holdBalance;
 
     @ManyToOne
     @JoinColumn(name = "branch_id")
     private Branch branch;
+
 
     @OneToMany(mappedBy = "account",
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<AccountHolder> holders = new ArrayList<>();
+
+    public void addHolder(AccountHolder holder) {
+        holder.setAccount(this);
+        this.holders.add(holder);
+    }
+
+    public void addHolders(List<AccountHolder> holders) {
+        holders.forEach(this::addHolder);
+    }
 
 }

@@ -1,0 +1,63 @@
+package com.elitetech_inc.ensarkbank.account_management.account.dto.mapper;
+
+import com.elitetech_inc.ensarkbank.account_management.account.dto.request.AccountRequest;
+import com.elitetech_inc.ensarkbank.account_management.account.dto.response.AccountResponse;
+import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
+import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.mapper.AccountHolderMapper;
+import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.response.AccountHolderResponse;
+import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
+import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
+import com.elitetech_inc.ensarkbank.common.address.address.dto.response.AddressResponse;
+import com.elitetech_inc.ensarkbank.common.enums.HolderType;
+import com.elitetech_inc.ensarkbank.util.AccountNumberGenerator;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+public class AccountMapper {
+
+    private final AccountHolderMapper accountHolderMapper;
+    private final AccountNumberGenerator  accountNumberGenerator;
+    private final BranchRepository branchRepository;
+
+    public AccountResponse toAccountResponse(Account acc) {
+        AccountResponse ar = new AccountResponse();
+        ar.setAccountNumber(acc.getAccountNumber());
+        ar.setAccountType(acc.getAccountType());
+        ar.setAccountStatus(acc.getAccountStatus());
+        ar.setAvailableBalance(acc.getAvailableBalance());
+        ar.setCurrentBalance(acc.getCurrentBalance());
+        ar.setHoldBalance(acc.getHoldBalance());
+        ar.setBranchName(acc.getBranch() != null ? acc.getBranch().getName() : "");
+
+        // Account Holder Response
+        List<AccountHolderResponse> holders = acc.getHolders()
+                .stream()
+                .map(accountHolderMapper::toAccountHolderResponse)
+                .toList();
+
+        ar.setHolderResponses(holders);
+
+        return ar;
+    }
+
+    @Transactional
+    public Account toAccount(AccountRequest ar) {
+        Account acc = new Account();
+        acc.setAccountNumber(accountNumberGenerator.generateAccountNumber(ar.getBranchId(), ar.getAccountType()));
+        acc.setAccountType(ar.getAccountType());
+        acc.setAvailableBalance(ar.getAvailableBalance());
+        acc.setCurrentBalance(ar.getAvailableBalance());
+        acc.setHoldBalance(00.0);
+        acc.setBranch(branchRepository.findById(ar.getBranchId()).orElse(null));
+
+        return acc;
+    }
+
+
+
+}

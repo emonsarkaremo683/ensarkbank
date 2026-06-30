@@ -1,6 +1,9 @@
 package com.elitetech_inc.ensarkbank.util;
 
 // import com.elitetech_inc.ensarkbank.customer_management.card.dto.request.CardRequest;
+import com.elitetech_inc.ensarkbank.common.enums.CardNetwork;
+import com.elitetech_inc.ensarkbank.common.enums.CardType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import java.util.Random;
 import java.util.stream.IntStream;
@@ -10,23 +13,24 @@ public class CardGenerator {
 
 
     // Card number generator
-    public String cardGenerator(Object req){
+    public String cardGenerator(CardNetwork cd, CardType ct, String acc){
         final String fixedCode = "683";
 
-        String netCode = "6"; // Hardcoded temporarily because CardRequest is missing
+        String netCode = switch (cd){
+            case VISA -> "4";
+            case MASTERCARD -> "5";
+            case null, default -> "6";
+         };
 
-        // switch (req.getCardNetwork()){
-        //    case VISA -> netCode = "4";
-        //    case MASTERCARD -> netCode = "5";
-        //    case null, default -> netCode = "6";
-        // }
+        String typeCode = switch (ct){
+            case DEBIT -> "01";
+            case CREDIT -> "02";
+            default -> "00";
+         };
 
-        String code = "02";
+        String randomPart = acc.substring(3);
 
-        String randomPart = String.format("%09d",
-                new Random().nextLong(1000000000));
-
-        String digits = netCode + fixedCode + code + randomPart;
+        String digits = netCode + fixedCode + typeCode + randomPart;
         return digits + lastDigit(digits);
     }
 
