@@ -1,5 +1,6 @@
 package com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response;
 
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.response.TransactionResponse;
 import lombok.Builder;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -16,7 +17,7 @@ public class AccountTransactionResponse {
     private String receiverName;
     private String bankName;
 
-    private BigDecimal amount;
+    private TransactionResponse response;
 
 
 }

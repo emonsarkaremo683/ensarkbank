@@ -1,16 +1,17 @@
 package com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper;
 
-import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.request.AccountTransactionRequest;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.request.TransactionRequest;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.response.TransactionResponse;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
+import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
+import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TransactionMapper {
 
-    public TransactionResponse toResponse(Transaction t){
-        TransactionResponse tr =new TransactionResponse();
+    public TransactionResponse toResponse(Transaction t) {
+        TransactionResponse tr = new TransactionResponse();
         tr.setTransactionId(t.getTransactionId());
         tr.setTransactionType(t.getTransactionType());
         tr.setAmount(t.getAmount());
@@ -24,11 +25,12 @@ public class TransactionMapper {
         return tr;
     }
 
-    public Transaction toTransaction(TransactionRequest tr){
-        Transaction t=new Transaction();
-        tr.setAmount(tr.getAmount());
-        tr.setRemarks(tr.getRemarks());
-
+    public Transaction toTransaction(TransactionRequest tr) {
+        Transaction t = new Transaction();
+        t.setAmount(tr.getAmount());
+        t.setRemarks(tr.getRemarks());
+        t.setTransactionType(tr.getTransactionType() != null ? tr.getTransactionType() : TransactionType.TRANSFER);
+        t.setChannel(tr.getChannel() != null ? tr.getChannel() : TransactionChannel.INTERNET_BANKING);
         return t;
     }
 }

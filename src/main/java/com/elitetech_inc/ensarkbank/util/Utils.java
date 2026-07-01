@@ -1,11 +1,12 @@
 package com.elitetech_inc.ensarkbank.util;
 
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Random;
 import java.util.UUID;
 
-@Component
+@Service
 public class Utils {
 
     public String generateReference() {

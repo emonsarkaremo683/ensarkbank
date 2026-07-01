@@ -22,7 +22,7 @@ public class AccountController {
         return new ResponseEntity<>(accountService.createAccount(accountRequest), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("all/")
     public ResponseEntity<List<AccountResponse>> getAllAccounts() {
         return new ResponseEntity<>(accountService.getAccounts(), HttpStatus.OK);
     }

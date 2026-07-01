@@ -1,5 +1,6 @@
 package com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.request;
 
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.request.TransactionRequest;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -15,6 +16,8 @@ public class AccountTransactionRequest {
 
     // if beneficiary exists
     private Long beneficiaryId;
+
+    private TransactionRequest request;
 
 
 }

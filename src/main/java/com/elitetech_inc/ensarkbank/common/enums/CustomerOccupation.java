@@ -45,7 +45,6 @@ public enum CustomerOccupation {
     MUSICIAN,
 
     RELIGIOUS_LEADER,
-
     OTHERS
 
 

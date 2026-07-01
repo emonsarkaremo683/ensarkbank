@@ -3,11 +3,16 @@ package com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.request.AccountTransactionRequest;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response.AccountTransactionResponse;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.entity.AccountTransaction;
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 
 @Component
+@RequiredArgsConstructor
 public class AccountTransactionMapper {
+
+    private final TransactionMapper transactionMapper;
 
     public AccountTransactionResponse toResponse(AccountTransaction at) {
 
@@ -18,7 +23,7 @@ public class AccountTransactionMapper {
                 .receiverAccountNumber(at.getReceiverAccountNumber())
                 .receiverName(at.getReceiverName())
                 .bankName(at.getBankName())
-                .amount(at.getTransaction().getAmount())
+                .response(transactionMapper.toResponse(at.getTransaction()))
                 .build();
     }
 

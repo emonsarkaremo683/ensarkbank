@@ -1,13 +1,14 @@
 package com.elitetech_inc.ensarkbank.accounting_system.transaction.service;
 
+import java.math.BigDecimal;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.accounting_system.journal.entity.Journal;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
 import com.elitetech_inc.ensarkbank.common.enums.EntryType;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
 
 @Service
 @Transactional
@@ -22,11 +23,15 @@ public class TransactionPostingService {
      * Effect: availableBalance ↑  currentBalance ↑
      */
     public void credit(Transaction transaction, Account account, BigDecimal amount) {
+        if (transaction == null || account == null) {
+            throw new IllegalArgumentException("Transaction and account are required");
+        }
 
-        account.setAvailableBalance(account.getAvailableBalance().add(amount));
-        account.setCurrentBalance(account.getCurrentBalance().add(amount));
+        BigDecimal normalizedAmount = normalizeAmount(amount);
+        account.setAvailableBalance(zeroIfNull(account.getAvailableBalance()).add(normalizedAmount));
+        account.setCurrentBalance(zeroIfNull(account.getCurrentBalance()).add(normalizedAmount));
 
-        addEntry(transaction, account, EntryType.CREDIT, amount);
+        addEntry(transaction, account, EntryType.CREDIT, normalizedAmount);
     }
 
     /*
@@ -37,11 +42,20 @@ public class TransactionPostingService {
      * Effect: availableBalance ↓  currentBalance ↓
      */
     public void debit(Transaction transaction, Account account, BigDecimal amount) {
+        if (transaction == null || account == null) {
+            throw new IllegalArgumentException("Transaction and account are required");
+        }
 
-        account.setAvailableBalance(account.getAvailableBalance().subtract(amount));
-        account.setCurrentBalance(account.getCurrentBalance().subtract(amount));
+        BigDecimal normalizedAmount = normalizeAmount(amount);
+        BigDecimal availableBalance = zeroIfNull(account.getAvailableBalance());
+        if (availableBalance.compareTo(normalizedAmount) < 0) {
+            throw new IllegalArgumentException("Insufficient balance for transaction");
+        }
 
-        addEntry(transaction, account, EntryType.DEBIT, amount);
+        account.setAvailableBalance(availableBalance.subtract(normalizedAmount));
+        account.setCurrentBalance(zeroIfNull(account.getCurrentBalance()).subtract(normalizedAmount));
+
+        addEntry(transaction, account, EntryType.DEBIT, normalizedAmount);
     }
 
     /*
@@ -329,5 +343,16 @@ public class TransactionPostingService {
         entry.setAmount(amount);
 
         transaction.getEntries().add(entry);
+    }
+
+    private BigDecimal normalizeAmount(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Transaction amount must be positive");
+        }
+        return amount;
+    }
+
+    private BigDecimal zeroIfNull(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 }
