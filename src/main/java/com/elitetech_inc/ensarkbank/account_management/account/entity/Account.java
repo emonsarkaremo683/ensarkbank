@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,9 +27,14 @@ public class Account extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private AccountStatus accountStatus;
 
-    private Double availableBalance;
-    private Double currentBalance;
-    private Double holdBalance;
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal availableBalance;
+
+    @Column(precision = 19, scale = 4)
+    private BigDecimal currentBalance;
+
+    @Column(precision = 19, scale = 4)
+    private BigDecimal holdBalance;
 
     @ManyToOne
     @JoinColumn(name = "branch_id")

@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -52,7 +53,7 @@ public class AccountMapper {
         acc.setAccountType(ar.getAccountType());
         acc.setAvailableBalance(ar.getAvailableBalance());
         acc.setCurrentBalance(ar.getAvailableBalance());
-        acc.setHoldBalance(00.0);
+        acc.setHoldBalance(BigDecimal.valueOf(00.0));
         acc.setBranch(branchRepository.findById(ar.getBranchId()).orElse(null));
 
         return acc;

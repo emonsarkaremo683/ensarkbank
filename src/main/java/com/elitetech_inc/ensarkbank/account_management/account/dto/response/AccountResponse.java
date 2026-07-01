@@ -5,6 +5,7 @@ import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.common.enums.AccountType;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +14,9 @@ public class AccountResponse {
     private String accountNumber;
     private AccountType accountType;
     private AccountStatus accountStatus;
-    private Double availableBalance;
-    private Double currentBalance;
-    private Double holdBalance;
+    private BigDecimal availableBalance;
+    private BigDecimal currentBalance;
+    private BigDecimal holdBalance;
 
     private String branchName;
 

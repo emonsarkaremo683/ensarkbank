@@ -1,12 +1,11 @@
-package com.elitetech_inc.ensarkbank.accounting_system.journal.entity;
+package com.elitetech_inc.ensarkbank.account_management.account_transaction.entity;
 
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
-import com.elitetech_inc.ensarkbank.common.enums.EntryType;
+import com.elitetech_inc.ensarkbank.customer_management.beneficiary.entity.Beneficiary;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jdk.jfr.MetadataDefinition;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -14,24 +13,19 @@ import java.math.BigDecimal;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "journal_entries")
+@Table(name = "account_transactions")
 @Data
-public class Journal extends BaseEntity {
+public class AccountTransaction extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
     @JsonIgnore
     private Account account;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EntryType entryType;
+    private String receiverAccountNumber;
+    private String receiverName;
+    private String bankName;
 
-    @Column(nullable = false, precision = 19, scale = 4)
-    private BigDecimal amount;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transaction_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
     @JsonIgnore
     private Transaction transaction;
 }

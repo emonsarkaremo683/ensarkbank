@@ -6,12 +6,13 @@ import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.common.enums.AccountType;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
 public class AccountRequest {
     private AccountType accountType;
-    private Double availableBalance;
+    private BigDecimal availableBalance;
     private Long branchId;
     private AccountStatus accountStatus;
 
