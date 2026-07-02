@@ -1,0 +1,41 @@
+<div class="dashboard">
+  <h1 class="page-title">Dashboard</h1>
+
+  <div class="stats-grid">
+    @for (stat of stats(); track stat.label) {
+      <div class="stat-card" [style.border-left-color]="stat.color">
+        <div class="stat-icon" [style.background]="stat.color + '20'" [style.color]="stat.color">
+          {{ stat.icon }}
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">
+            @if (loading()) {
+              <span class="skeleton">—</span>
+            } @else {
+              {{ stat.value }}
+            }
+          </div>
+          <div class="stat-label">{{ stat.label }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="welcome-section">
+    <div class="welcome-card">
+      <h2>Welcome to EnsarBank Management System</h2>
+      <p>Manage your branches, customers, employees, accounts, cards, and transactions from this central dashboard.</p>
+      <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-grid">
+          <a routerLink="/branches" class="action-btn">🏦 Manage Branches</a>
+          <a routerLink="/employees" class="action-btn">👥 Manage Employees</a>
+          <a routerLink="/customers" class="action-btn">👤 Manage Customers</a>
+          <a routerLink="/accounts" class="action-btn">💳 Manage Accounts</a>
+          <a routerLink="/cards" class="action-btn">🃏 Manage Cards</a>
+          <a routerLink="/transactions" class="action-btn">💸 View Transactions</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

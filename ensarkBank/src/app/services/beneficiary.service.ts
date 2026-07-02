@@ -1,0 +1,34 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
+import { BeneficiaryRequest, BeneficiaryResponse } from '../models';
+
+@Injectable({ providedIn: 'root' })
+export class BeneficiaryService {
+  private http = inject(HttpClient);
+  private url = 'http://localhost:8085/api/beneficiary/';
+
+  getAll(): Observable<BeneficiaryResponse[]> {
+    return this.http.get<BeneficiaryResponse[]>(this.url).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getById(id: number): Observable<BeneficiaryResponse> {
+    return this.http.get<BeneficiaryResponse>(`${this.url}${id}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  create(beneficiary: BeneficiaryRequest): Observable<BeneficiaryResponse> {
+    return this.http.post<BeneficiaryResponse>(this.url, beneficiary).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  private handleError(error: any) {
+    const message = error.error?.message || error.statusText || 'Server error';
+    console.error('BeneficiaryService Error:', message);
+    return throwError(() => new Error(message));
+  }
+}

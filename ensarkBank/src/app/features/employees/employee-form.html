@@ -1,0 +1,114 @@
+<div class="page-header">
+  <h1 class="page-title">New Employee</h1>
+  <a routerLink="/employees" class="btn btn-outline">← Back</a>
+</div>
+
+@if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+}
+
+<div class="form-card">
+  <form (ngSubmit)="onSubmit()" #empForm="ngForm">
+    <h3 class="section-title">Personal Information</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" [(ngModel)]="employee.name" name="name" required class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" [(ngModel)]="employee.email" name="email" required class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Password *</label>
+        <input type="password" [(ngModel)]="employee.password" name="password" required class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Phone *</label>
+        <input type="text" [(ngModel)]="employee.phone" name="phone" required class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Gender *</label>
+        <select [(ngModel)]="employee.gender" name="gender" required class="form-control">
+          @for (g of genders; track g) { <option [value]="g">{{ g }}</option> }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date of Birth *</label>
+        <input type="date" [(ngModel)]="employee.dob" name="dob" required class="form-control">
+      </div>
+    </div>
+
+    <h3 class="section-title">Employment Details</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Branch *</label>
+        <select [(ngModel)]="employee.branchId" name="branchId" required class="form-control">
+          <option [value]="0">Select Branch</option>
+          @for (b of branches(); track b.id) { <option [value]="b.id">{{ b.name }}</option> }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Designation *</label>
+        <select [(ngModel)]="employee.designation" name="designation" required class="form-control">
+          @for (d of designations; track d) { <option [value]="d">{{ d }}</option> }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Role *</label>
+        <select [(ngModel)]="employee.role" name="role" required class="form-control">
+          @for (r of roles; track r) { <option [value]="r">{{ r }}</option> }
+        </select>
+      </div>
+    </div>
+
+    <h3 class="section-title">Addresses</h3>
+    @for (addr of employee.addresses; track $index; let i = $index) {
+      <div class="repeatable-block">
+        <div class="block-header">
+          <span>Address {{ i + 1 }}</span>
+          @if (employee.addresses.length > 1) {
+            <button type="button" class="btn btn-sm btn-danger" (click)="removeAddress(i)">Remove</button>
+          }
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Holding No</label>
+            <input type="text" [(ngModel)]="addr.holdingNo" [name]="'hNo' + i" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Area</label>
+            <input type="text" [(ngModel)]="addr.area" [name]="'area' + i" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Postal Code</label>
+            <input type="text" [(ngModel)]="addr.postalCode" [name]="'pCode' + i" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Address Type</label>
+            <select [(ngModel)]="addr.addressType" [name]="'aType' + i" class="form-control">
+              @for (at of addressTypes; track at) { <option [value]="at">{{ at }}</option> }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Police Station</label>
+            <select [(ngModel)]="addr.policeStation" [name]="'ps' + i" class="form-control">
+              <option [ngValue]="{ id: 0 }">Select</option>
+              @for (ps of policeStations(); track ps.id) {
+                <option [ngValue]="{ id: ps.id }">{{ ps.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+    }
+    <button type="button" class="btn btn-outline btn-sm" (click)="addAddress()">+ Add Address</button>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="loading() || !empForm.valid">
+        {{ loading() ? 'Creating...' : 'Create Employee' }}
+      </button>
+      <a routerLink="/employees" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>

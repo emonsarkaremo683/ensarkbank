@@ -1,0 +1,52 @@
+<div class="page-header">
+  <h1 class="page-title">Transactions</h1>
+  <a routerLink="/transactions/new" class="btn btn-primary">+ New Transfer</a>
+</div>
+
+@if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="loading">Loading transactions...</div>
+} @else {
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Transaction ID</th>
+          <th>Sender Account</th>
+          <th>Receiver Account</th>
+          <th>Receiver Name</th>
+          <th>Bank</th>
+          <th>Amount</th>
+          <th>Channel</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (tx of transactions(); track tx.id) {
+          <tr>
+            <td><code>{{ tx.transactionId }}</code></td>
+            <td>{{ tx.senderAccountNumber }}</td>
+            <td>{{ tx.receiverAccountNumber }}</td>
+            <td>{{ tx.receiverName }}</td>
+            <td>{{ tx.bankName }}</td>
+            <td class="amount">{{ tx.response.amount | number:'1.2-2' }}</td>
+            <td><span class="badge badge-blue">{{ tx.response.channel }}</span></td>
+            <td>
+              <span class="badge"
+                [class.badge-green]="tx.response.status === 'SUCCESS'"
+                [class.badge-red]="tx.response.status === 'FAILED'"
+                [class.badge-yellow]="tx.response.status === 'PENDING'">
+                {{ tx.response.status }}
+              </span>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="8" class="empty-state">No transactions found</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

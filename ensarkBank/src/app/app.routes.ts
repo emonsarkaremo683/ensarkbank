@@ -1,3 +1,112 @@
 import { Routes } from '@angular/router';
+import { Dashboard } from './features/dashboard/dashboard';
+import { AccountList } from './features/accounts/account-list';
+import { AccountForm } from './features/accounts/account-form';
+import { BeneficiaryList } from './features/beneficiaries/beneficiary-list';
+import { BeneficiaryForm } from './features/beneficiaries/beneficiary-form';
+import { BranchList } from './features/branches/branch-list';
+import { BranchForm } from './features/branches/branch-form';
+import { CardList } from './features/cards/card-list';
+import { CardForm } from './features/cards/card-form';
+import { CustomerList } from './features/customers/customer-list';
+import { CustomerForm } from './features/customers/customer-form';
+import { EmployeeList } from './features/employees/employee-list';
+import { EmployeeForm } from './features/employees/employee-form';
+import { TransactionList } from './features/transactions/transaction-list';
+import { TransactionForm } from './features/transactions/transaction-form';
+import { DistrictList } from './features/districts/district-list';
+import { DivisionList } from './features/divisions/division-list';
+import { PoliceStationList } from './features/police-stations/police-station-list';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  {
+    path: '',
+    component: Dashboard,
+    data: { title: 'Dashboard' }
+  },
+  {
+    path: 'accounts',
+    component: AccountList,
+    data: { title: 'Accounts' }
+  },
+  {
+    path: 'accounts/new',
+    component: AccountForm,
+    data: { title: 'New Account' }
+  },
+  {
+    path: 'beneficiaries',
+    component: BeneficiaryList,
+    data: { title: 'Beneficiaries' }
+  },
+  {
+    path: 'beneficiaries/new',
+    component: BeneficiaryForm,
+    data: { title: 'New Beneficiary' }
+  },
+  {
+    path: 'branches',
+    component: BranchList,
+    data: { title: 'Branches' }
+  },
+  {
+    path: 'branches/new',
+    component: BranchForm,
+    data: { title: 'New Branch' }
+  },
+  {
+    path: 'cards',
+    component: CardList,
+    data: { title: 'Cards' }
+  },
+  {
+    path: 'cards/new',
+    component: CardForm,
+    data: { title: 'New Card' }
+  },
+  {
+    path: 'customers',
+    component: CustomerList,
+    data: { title: 'Customers' }
+  },
+  {
+    path: 'customers/new',
+    component: CustomerForm,
+    data: { title: 'New Customer' }
+  },
+  {
+    path: 'employees',
+    component: EmployeeList,
+    data: { title: 'Employees' }
+  },
+  {
+    path: 'employees/new',
+    component: EmployeeForm,
+    data: { title: 'New Employee' }
+  },
+  {
+    path: 'transactions',
+    component: TransactionList,
+    data: { title: 'Transactions' }
+  },
+  {
+    path: 'transactions/new',
+    component: TransactionForm,
+    data: { title: 'New Transaction' }
+  },
+  {
+    path: 'districts',
+    component: DistrictList,
+    data: { title: 'Districts' }
+  },
+  {
+    path: 'divisions',
+    component: DivisionList,
+    data: { title: 'Divisions' }
+  },
+  {
+    path: 'police-stations',
+    component: PoliceStationList,
+    data: { title: 'Police Stations' }
+  }
+];

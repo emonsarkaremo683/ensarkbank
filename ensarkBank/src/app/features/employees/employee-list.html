@@ -1,0 +1,41 @@
+<div class="page-header">
+  <h1 class="page-title">Employees</h1>
+  <a routerLink="/employees/new" class="btn btn-primary">+ New Employee</a>
+</div>
+
+@if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="loading">Loading employees...</div>
+} @else {
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Designation</th>
+          <th>Branch</th>
+          <th>Gender</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (emp of employees(); track emp.id) {
+          <tr>
+            <td><strong>{{ emp.name }}</strong></td>
+            <td>{{ emp.email }}</td>
+            <td>{{ emp.phone }}</td>
+            <td><span class="badge badge-blue">{{ emp.designation }}</span></td>
+            <td>{{ emp.branchName }}</td>
+            <td>{{ emp.gender }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="empty-state">No employees found</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

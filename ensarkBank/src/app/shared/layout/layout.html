@@ -1,0 +1,37 @@
+<div class="layout" [class.sidebar-collapsed]="sidebarCollapsed()" [class.mobile-open]="mobileMenuOpen()">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">🏦</span>
+        @if (!sidebarCollapsed()) {
+          <span class="logo-text">EnsarBank</span>
+        }
+      </div>
+      <button class="collapse-btn" (click)="toggleSidebar()">☰</button>
+    </div>
+    <nav class="sidebar-nav">
+      @for (item of navItems; track item.path) {
+        <a class="nav-item" [routerLink]="item.path" routerLinkActive="active"
+           (click)="mobileMenuOpen.set(false)">
+          <span class="nav-icon">{{ item.icon }}</span>
+          @if (!sidebarCollapsed()) {
+            <span class="nav-label">{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+  </aside>
+  <div class="main-area">
+    <header class="topbar">
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">☰</button>
+      <div class="topbar-title">Bank Management System</div>
+      <div class="topbar-user">
+        <span class="user-avatar">A</span>
+        <span class="user-name">Admin</span>
+      </div>
+    </header>
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

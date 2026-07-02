@@ -1,0 +1,54 @@
+<div class="page-header">
+  <h1 class="page-title">New Card</h1>
+  <a routerLink="/cards" class="btn btn-outline">← Back</a>
+</div>
+
+@if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+}
+
+<div class="form-card">
+  <form (ngSubmit)="onSubmit()" #cardForm="ngForm">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Account *</label>
+        <select [(ngModel)]="card.accountId" name="accountId" required class="form-control">
+          <option [value]="0">Select Account</option>
+          @for (a of accounts(); track a.accountNumber) {
+            <option [value]="a.accountNumber">{{ a.accountNumber }} - {{ a.branchName }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Card Network *</label>
+        <select [(ngModel)]="card.cardNetwork" name="network" required class="form-control">
+          @for (n of networks; track n) { <option [value]="n">{{ n }}</option> }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Card Type *</label>
+        <select [(ngModel)]="card.cardType" name="type" required class="form-control">
+          @for (t of cardTypes; track t) { <option [value]="t">{{ t }}</option> }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>PIN *</label>
+        <input type="password" [(ngModel)]="card.pin" name="pin" required class="form-control" maxlength="4" pattern="[0-9]{4}">
+      </div>
+      <div class="form-group">
+        <label>Daily Limit *</label>
+        <input type="number" [(ngModel)]="card.dailyLimit" name="dailyLimit" required class="form-control" min="0">
+      </div>
+      <div class="form-group">
+        <label>Monthly Limit *</label>
+        <input type="number" [(ngModel)]="card.monthlyLimit" name="monthlyLimit" required class="form-control" min="0">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="loading() || !cardForm.valid">
+        {{ loading() ? 'Creating...' : 'Create Card' }}
+      </button>
+      <a routerLink="/cards" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>

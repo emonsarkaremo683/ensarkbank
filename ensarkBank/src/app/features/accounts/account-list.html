@@ -1,0 +1,54 @@
+<div class="page-header">
+  <h1 class="page-title">Accounts</h1>
+  <a routerLink="/accounts/new" class="btn btn-primary">+ New Account</a>
+</div>
+
+@if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="loading">Loading accounts...</div>
+} @else {
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Account Number</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Available Balance</th>
+          <th>Current Balance</th>
+          <th>Branch</th>
+          <th>Holders</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (account of accounts(); track account.accountNumber) {
+          <tr>
+            <td><code class="account-num">{{ account.accountNumber }}</code></td>
+            <td><span class="badge badge-blue">{{ account.accountType }}</span></td>
+            <td>
+              <span class="badge"
+                [class.badge-green]="account.accountStatus === 'ACTIVE'"
+                [class.badge-yellow]="account.accountStatus === 'PENDING'"
+                [class.badge-red]="account.accountStatus === 'BLOCKED' || account.accountStatus === 'CLOSED'">
+                {{ account.accountStatus }}
+              </span>
+            </td>
+            <td class="amount">{{ account.availableBalance | number:'1.2-4' }}</td>
+            <td class="amount">{{ account.currentBalance | number:'1.2-4' }}</td>
+            <td>{{ account.branchName }}</td>
+            <td>
+              @for (holder of account.holderResponses; track holder.accountHolderName) {
+                <span class="badge badge-light">{{ holder.accountHolderName }} ({{ holder.holderType }})</span>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="empty-state">No accounts found</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

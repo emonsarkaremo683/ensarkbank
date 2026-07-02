@@ -1,0 +1,42 @@
+<div class="page-header">
+  <h1 class="page-title">Cards</h1>
+  <a routerLink="/cards/new" class="btn btn-primary">+ New Card</a>
+</div>
+
+@if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="loading">Loading cards...</div>
+} @else {
+  <div class="cards-grid">
+    @for (card of cards(); track card.cardId) {
+      <div class="card-item" [class.visa]="card.cardNetwork === 'VISA'" [class.mastercard]="card.cardNetwork === 'MASTERCARD'">
+        <div class="card-header">
+          <span class="card-network">{{ card.cardNetwork }}</span>
+          <span class="card-type-badge">{{ card.cardType }}</span>
+        </div>
+        <div class="card-number">{{ maskCardNumber(card.cardNumber) }}</div>
+        <div class="card-footer">
+          <div class="card-detail">
+            <span class="detail-label">Cardholder</span>
+            <span class="detail-value">{{ card.cardHolderName }}</span>
+          </div>
+          <div class="card-detail">
+            <span class="detail-label">Expires</span>
+            <span class="detail-value">{{ card.expiryDate | date:'MM/yy' }}</span>
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="badge" [class.badge-green]="card.status === 'ACTIVE'" [class.badge-yellow]="card.status === 'PENDING'" [class.badge-red]="card.status === 'BLOCKED'">
+            {{ card.status }}
+          </span>
+          <span class="account-ref">Account: {{ card.accountNumber }}</span>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state">No cards found</div>
+    }
+  </div>
+}

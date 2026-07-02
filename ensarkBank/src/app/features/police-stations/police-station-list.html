@@ -1,0 +1,51 @@
+<div class="page-header">
+  <h1 class="page-title">Police Stations</h1>
+</div>
+
+@if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+}
+
+<div class="form-card">
+  <div class="add-row">
+    <input type="text" [(ngModel)]="newPS.name" class="form-control" placeholder="Police station name">
+    <select [(ngModel)]="newPS.district" class="form-control">
+      <option [ngValue]="{ id: 0 }">Select District</option>
+      @for (d of districts(); track d.id) {
+        <option [ngValue]="{ id: d.id }">{{ d.name }}</option>
+      }
+    </select>
+    <button class="btn btn-primary" (click)="addPS()" [disabled]="!newPS.name || !newPS.district?.id">+ Add</button>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="loading">Loading...</div>
+} @else {
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>District</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (ps of policeStations(); track ps.id) {
+          <tr>
+            <td>{{ ps.id }}</td>
+            <td><strong>{{ ps.name }}</strong></td>
+            <td>{{ ps.district?.name || '—' }}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" (click)="deletePS(ps.id!)">Delete</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="4" class="empty-state">No police stations found</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
