@@ -26,7 +26,7 @@ public class CardServiceImpl implements CardService{
     }
 
     @Override
-    public Optional<CardResponse> findCardsByAccountId(Long accountId) {
+    public Optional<CardResponse> findCardByAccountId(Long accountId) {
         return cardRepository.findByAccountId(accountId)
                 .map(cardMapper::toCardResponse);
     }
@@ -40,7 +40,7 @@ public class CardServiceImpl implements CardService{
     }
 
     @Override
-    public Optional<CardResponse> findCardByCustomerId(Long customerId) {
+    public Optional<CardResponse> findCardsByCustomerId(Long customerId) {
         return cardRepository.findCardByCustomerId(customerId).map(cardMapper::toCardResponse);
     }
 }

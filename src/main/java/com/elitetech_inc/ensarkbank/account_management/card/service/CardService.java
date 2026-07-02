@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface CardService {
 
     CardResponse createCard(CardRequest cr);
-    Optional<CardResponse> findCardsByAccountId(Long accountId);
+    Optional<CardResponse> findCardByAccountId(Long accountId);
     List<CardResponse> getAll();
-    Optional<CardResponse> findCardByCustomerId(Long customerId);
+    Optional<CardResponse> findCardsByCustomerId(Long customerId);
 }

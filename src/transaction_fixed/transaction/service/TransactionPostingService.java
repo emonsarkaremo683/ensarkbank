@@ -244,7 +244,7 @@ public class TransactionPostingService {
      * Step 2 — settleCardPurchase : post actual debit when merchant settles
      *
      * Customer Account       DEBIT  (settled amount)
-     * Merchant/Card Account  CREDIT
+     * Merchant/CardController Account  CREDIT
      */
     public void settleCardPurchase(
             Transaction transaction,
@@ -264,7 +264,7 @@ public class TransactionPostingService {
      * =====================================================
      * HOLD BALANCE
      * =====================================================
-     * Card Purchase / POS / Pending Transaction
+     * CardController Purchase / POS / Pending Transaction
      * availableBalance ↓  holdBalance ↑  (currentBalance unchanged)
      */
     public void holdAmount(Account account, BigDecimal amount) {

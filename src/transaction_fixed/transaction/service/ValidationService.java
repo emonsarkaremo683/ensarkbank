@@ -214,7 +214,7 @@ public class ValidationService {
 
         Card card = cardRepository.findByCardNumber(cardNumber)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Card not found: " + cardNumber));
+                        new IllegalArgumentException("CardController not found: " + cardNumber));
 
         CardStatus status = card.getStatus();
 
@@ -226,7 +226,7 @@ public class ValidationService {
                 case PENDING  -> "pending activation";
                 default       -> "not active";
             };
-            throw new IllegalStateException("Card is " + reason + ".");
+            throw new IllegalStateException("CardController is " + reason + ".");
         }
 
         validateCardNumber(card.getCardNumber());
@@ -255,7 +255,7 @@ public class ValidationService {
 
         if (!card.getAccount().getId().equals(account.getId())) {
             throw new IllegalStateException(
-                    "Card does not belong to this account.");
+                    "CardController does not belong to this account.");
         }
     }
 

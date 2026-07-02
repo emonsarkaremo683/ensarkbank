@@ -3,6 +3,7 @@ package com.elitetech_inc.ensarkbank.branch_management.branch.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.common.address.policestation.entity.PoliceStation;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.common.enums.BranchStatus;
@@ -10,15 +11,7 @@ import com.elitetech_inc.ensarkbank.common.enums.BranchType;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.entity.Employee;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -35,10 +28,13 @@ public class Branch extends BaseEntity {
 
     private String routingNumber;
 
-    private String branchNumber;
+    private String branchCode;
 
     @Column(unique = true, nullable = false)
     private String email;
+
+    @Column(unique = true, nullable = false)
+    private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
@@ -61,9 +57,9 @@ public class Branch extends BaseEntity {
 //    @JsonIgnore
 //    private List<ATM> atms = new ArrayList<>();
 //
-//    @OneToMany(mappedBy = "branch",  fetch = FetchType.LAZY)
-//    @JsonIgnore
-//    private List<Account>accounts = new ArrayList<>();
+    @OneToMany(mappedBy = "branch",  fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Account>accounts = new ArrayList<>();
 
 
 }

@@ -19,6 +19,8 @@ public class EmployeeRequest {
     private String password;
     private Role role;
 
+    private Long branchId;
+
     private String name;
     private Gender gender;
     private String phone;

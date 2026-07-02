@@ -1,9 +1,12 @@
 package com.elitetech_inc.ensarkbank.customer_management.beneficiary.service;
 
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.dto.mapper.BeneficiaryMapper;
+import com.elitetech_inc.ensarkbank.customer_management.beneficiary.dto.request.BeneficiaryRequest;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.dto.response.BeneficiaryResponse;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.entity.Beneficiary;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.repository.BeneficiaryRepository;
+import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
+import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +21,22 @@ public class BeneficiaryServiceImpl implements BeneficiaryService{
 
     private final BeneficiaryMapper beneficiaryMapper;
     private final BeneficiaryRepository beneficiaryRepository;
+    private final CustomerRepository customerRepository;
 
     @Override
-    public BeneficiaryResponse save(Beneficiary b) {
+    public BeneficiaryResponse save(BeneficiaryRequest br) {
+
+        Beneficiary b = new Beneficiary();
+        b.setName(br.getName());
+        b.setProvider(br.getProvider());
+        b.setBeneficiaryType(br.getBeneficiaryType());
+        b.setAccNumber(br.getAccNumber());
+
+        Customer c = customerRepository.findById(br.getCustomerId()).orElseThrow(
+                ()-> new RuntimeException("Customer not found")
+        );
+
+        b.setCustomer(c);
 
         return beneficiaryMapper.toResponse(beneficiaryRepository.save(b));
     }

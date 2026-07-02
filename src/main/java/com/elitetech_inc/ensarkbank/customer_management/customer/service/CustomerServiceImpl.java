@@ -15,6 +15,7 @@ import com.elitetech_inc.ensarkbank.customer_management.customer.repository.Cust
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.Kyc;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.KycDocuments;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.repository.KycRepository;
+import com.elitetech_inc.ensarkbank.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,13 +35,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
 
-    @Value("${image.upload.dir}")
-    private String uploadDir;
 
     private final CustomerMapper customerMapper;
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
     private final KycRepository kycRepository;
+    private final Utils utils;
 
 
     @Override
@@ -54,10 +54,10 @@ public class CustomerServiceImpl implements CustomerService {
 
         // Profile image upload (optional)
         if (profile != null && !profile.isEmpty()) {
-            c.setProfile(uploadFile(profile, "customer", cr.getName()));
+            c.setProfile(utils.uploadFile(profile, "customer", cr.getName()));
         }
 
-        // ──
+        // Address
         Address present = null;
         Address permanent = null;
 
@@ -93,7 +93,7 @@ public class CustomerServiceImpl implements CustomerService {
 
                 if (docFile == null || docFile.isEmpty()) continue;
 
-                String filePath = uploadFile(docFile, "kyc", docType.name());
+                String filePath = utils.uploadFile(docFile, "kyc", docType.name());
 
                 KycDocuments kycDoc = new KycDocuments();
                 kycDoc.setDoc_type(docType);
@@ -126,32 +126,4 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
 
-    //
-    /**
-     * @param file      — uploaded MultipartFile
-     * @param subFolder — "customer" বা "kyc"
-     * @param prefix    — filename-এর আগে লাগানো হবে (name বা docType)
-     * @return stored filename
-     */
-    private String uploadFile(MultipartFile file, String subFolder, String prefix) {
-        try {
-            Path dir = Paths.get(uploadDir, subFolder);
-            if (!Files.exists(dir)) Files.createDirectories(dir);
-
-            String ext = "";
-            String original = file.getOriginalFilename();
-            if (original != null && original.contains(".")) {
-                ext = original.substring(original.lastIndexOf("."));
-            }
-
-            String fileName = prefix.trim().replaceAll("\\s+", "_")
-                    + "_" + UUID.randomUUID() + ext;
-
-            Files.copy(file.getInputStream(), dir.resolve(fileName));
-            return fileName;
-
-        } catch (Exception e) {
-            throw new RuntimeException("File upload failed [" + prefix + "]: " + e.getMessage());
-        }
-    }
 }

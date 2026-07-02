@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 public class CardGenerator {
 
 
-    // Card number generator
+    // CardController number generator
     public String cardGenerator(CardNetwork cd, CardType ct, String acc){
         final String fixedCode = "683";
 
@@ -40,7 +40,7 @@ public class CardGenerator {
                 new Random().nextInt(1000));
     }
 
-    // Check Card is valid or not
+    // Check CardController is valid or not
     public Boolean isCardValid(String number){
         if (number == null || number.length() != 16) {
             return false;
