@@ -1,0 +1,63 @@
+<div class="page-header">
+  <h1 class="page-title">Apply for Loan</h1>
+  <a routerLink="/loans" class="btn btn-outline">← Back</a>
+</div>
+
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+
+<div class="form-card">
+  <form (ngSubmit)="onSubmit()" #loanForm="ngForm">
+    <h3 class="section-title">Loan Details</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Account *</label>
+        <select [(ngModel)]="loan.accountId" name="accountId" required class="form-control">
+          <option [value]="0">Select Account</option>
+          @for (a of accounts(); track a.accountNumber) {
+            <option [value]="a.accountNumber">{{ a.accountNumber }} - {{ a.branchName }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Principal Amount *</label>
+        <input type="number" [(ngModel)]="loan.principalAmount" name="principalAmount" required
+               class="form-control" min="1" step="100" (ngModelChange)="calculateEMI()"
+               placeholder="e.g. 500000">
+      </div>
+      <div class="form-group">
+        <label>Annual Interest Rate (%) *</label>
+        <input type="number" [(ngModel)]="loan.annualInterestRate" name="annualInterestRate" required
+               class="form-control" min="0" step="0.1" (ngModelChange)="calculateEMI()"
+               placeholder="e.g. 8.5">
+      </div>
+      <div class="form-group">
+        <label>Tenure (Months) *</label>
+        <input type="number" [(ngModel)]="loan.tenureMonths" name="tenureMonths" required
+               class="form-control" min="1" (ngModelChange)="calculateEMI()"
+               placeholder="e.g. 60">
+      </div>
+    </div>
+
+    @if (calculatedEmi() > 0) {
+      <div class="emi-preview">
+        <div class="emi-card">
+          <span class="emi-label">Estimated Monthly EMI</span>
+          <span class="emi-value">{{ calculatedEmi() | number:'1.2-2' }}</span>
+        </div>
+        <div class="emi-card">
+          <span class="emi-label">Total Payable Amount</span>
+          <span class="emi-value">{{ calculatedTotal() | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    }
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="loading() || !loanForm.valid">
+        {{ loading() ? 'Submitting...' : 'Apply for Loan' }}
+      </button>
+      <a routerLink="/loans" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>

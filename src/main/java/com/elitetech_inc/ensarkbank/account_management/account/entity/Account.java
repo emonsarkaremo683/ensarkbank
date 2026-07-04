@@ -18,7 +18,7 @@ import java.util.List;
 @Table(name = "accounts")
 @Data
 public class Account extends BaseEntity {
-    @Column(unique = true, nullable = false)
+    @Column(name = "acc_number", unique = true, nullable = false)
     private String accountNumber;
 
     @Enumerated(EnumType.STRING)

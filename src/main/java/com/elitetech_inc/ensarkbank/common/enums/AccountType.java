@@ -10,5 +10,10 @@ public enum AccountType {
 
     // not for everyone
     BRANCH_VAULT,
-    ATM_VAULT
+    ATM_VAULT,
+    INTER_BANK_VAULT,
+
+    // LOAN
+    LOAN_VAULT
+
 }

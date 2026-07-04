@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AccountService } from '../../services';
 import { BranchService } from '../../services';
 import { CustomerService } from '../../services';
-import { AccountRequest, Branch, CustomerResponse, AccountHolderRequest } from '../../models';
+import { AccountRequest, Branch, CustomerResponse } from '../../models';
 
 @Component({
   selector: 'app-account-form',
@@ -24,6 +24,12 @@ export class AccountForm implements OnInit {
     availableBalance: 0,
     branchId: 0,
     accountStatus: 'PENDING',
+    n_name: '',
+    n_email: '',
+    n_phone: '',
+    n_photo: '',
+    n_nid_front: '',
+    n_nid_back: '',
     accountHolders: []
   };
 
@@ -31,6 +37,10 @@ export class AccountForm implements OnInit {
   customers = signal<CustomerResponse[]>([]);
   loading = signal(false);
   error = signal('');
+
+  photoFile: File | null = null;
+  nidFrontFile: File | null = null;
+  nidBackFile: File | null = null;
 
   accountTypes = ['SAVINGS', 'CURRENT', 'FIXED_DEPOSIT', 'JOINT_ACCOUNT', 'STUDENT', 'BUSINESS'];
   accountStatuses = ['ACTIVE', 'INACTIVE', 'PENDING'];
@@ -56,10 +66,26 @@ export class AccountForm implements OnInit {
     this.account.accountHolders.splice(index, 1);
   }
 
+  onFileChange(event: Event, field: 'photo' | 'nidFront' | 'nidBack') {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      switch (field) {
+        case 'photo': this.photoFile = file; break;
+        case 'nidFront': this.nidFrontFile = file; break;
+        case 'nidBack': this.nidBackFile = file; break;
+      }
+    }
+  }
+
   onSubmit() {
+    if (!this.photoFile || !this.nidFrontFile || !this.nidBackFile) {
+      this.error.set('Please upload nominee photo, NID front, and NID back.');
+      return;
+    }
     this.loading.set(true);
     this.error.set('');
-    this.accountService.create(this.account).subscribe({
+    this.accountService.create(this.account, this.photoFile, this.nidFrontFile, this.nidBackFile).subscribe({
       next: () => { this.loading.set(false); this.router.navigate(['/accounts']); },
       error: (err) => { this.error.set(err.message); this.loading.set(false); }
     });

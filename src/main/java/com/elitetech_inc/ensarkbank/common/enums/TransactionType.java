@@ -7,5 +7,7 @@ public enum TransactionType {
     PAYMENT,
     REFUND,
     ATM_WITHDRAW,
-    ATM_DEPOSIT
+    ATM_DEPOSIT,
+    LOAN_DISBURSEMENT,
+    LOAN_REPAYMENT,
 }

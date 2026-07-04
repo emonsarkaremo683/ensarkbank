@@ -1,0 +1,27 @@
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  background: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e9ecef;
+
+  label {
+    margin: 0;
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+  }
+
+  .form-control {
+    max-width: 200px;
+    display: inline-block;
+  }
+}
+
+.amount {
+  font-weight: 600;
+  color: #198754;
+}

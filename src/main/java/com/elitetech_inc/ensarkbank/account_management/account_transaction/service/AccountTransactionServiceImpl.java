@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.response.TransactionResponse;
+import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
+import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     private final TransactionService transactionService;
     private final AccountRepository accountRepository;
     private final TransactionMapper transactionMapper;
+    private final BranchRepository branchRepository;;
 
     @Override
     @Transactional
@@ -101,7 +104,11 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
                     .orElseThrow(() -> new IllegalArgumentException("Receiver account not found"));
         }
 
-        return accountRepository.findAccountByAccountNumber("INTER_BANK_SETTLEMENT")
+        Account a = accountRepository.findById(atr.getSenderId()).orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+
+        Branch b = branchRepository.findById(a.getBranch().getId()).orElseThrow(() -> new IllegalArgumentException("Branch not found"));
+
+        return accountRepository.findAccountByAccountNumber("br-" + b.getRoutingNumber())
                 .orElseThrow(() -> new IllegalArgumentException("Settlement account not found"));
     }
 }

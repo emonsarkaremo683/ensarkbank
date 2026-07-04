@@ -33,7 +33,8 @@ export class Sidebar {
     { label: 'Transactions', path: '/transactions', icon: '💸' },
     { label: 'Districts', path: '/districts', icon: '📍' },
     { label: 'Divisions', path: '/divisions', icon: '🗂️' },
-    { label: 'Police Stations', path: '/police-stations', icon: '🚔' }
+    { label: 'Police Stations', path: '/police-stations', icon: '🚔' },
+    { label: 'Loans', path: '/loans', icon: '📋' }
   ];
 
   toggleSidebar() {

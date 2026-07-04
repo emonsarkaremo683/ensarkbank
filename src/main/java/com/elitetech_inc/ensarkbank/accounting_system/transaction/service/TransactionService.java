@@ -27,4 +27,8 @@ public interface TransactionService {
     TransactionResponse atmDeposit(TransactionRequest request, Account atmCashAccount, Account customerAccount);
 
     TransactionResponse atmWithdraw(TransactionRequest request, Account customerAccount, Account atmCashAccount);
+
+
+    TransactionResponse loanDisbursement(TransactionRequest request, Account loanControlAccount, Account customerAccount);
+    TransactionResponse loanRepayment(TransactionRequest request, Account customerAccount, Account loanControlAccount);
 }

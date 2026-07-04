@@ -6,3 +6,4 @@ export * from './card.service';
 export * from './transaction.service';
 export * from './beneficiary.service';
 export * from './address.service';
+export * from './loan.service';

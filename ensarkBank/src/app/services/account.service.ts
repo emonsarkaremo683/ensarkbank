@@ -15,14 +15,22 @@ export class AccountService {
     );
   }
 
-  create(account: AccountRequest): Observable<AccountResponse> {
-    return this.http.post<AccountResponse>(this.url, account).pipe(
+  create(account: AccountRequest, photo: File, nidFront: File, nidBack: File): Observable<AccountResponse> {
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(account));
+    formData.append('photo', photo);
+    formData.append('nid_front', nidFront);
+    formData.append('nid_back', nidBack);
+
+    return this.http.post<AccountResponse>(this.url, formData).pipe(
       catchError(this.handleError)
     );
   }
 
   private handleError(error: any) {
-    const message = error.error?.message || error.statusText || 'Server error';
+    const message = error.status === 0
+      ? 'Cannot connect to server. Please ensure the backend is running on port 8085.'
+      : error.error?.message || error.error?.error || error.statusText || 'Server error';
     console.error('AccountService Error:', message);
     return throwError(() => new Error(message));
   }

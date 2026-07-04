@@ -32,7 +32,8 @@ public class AccountHolderMapper {
         accountHolder.setCanWithdraw(ahr.getCanWithdraw());
         accountHolder.setCanApproveTransaction(ahr.getCanApproveTransaction());
 
-        Customer customer = customerRepository.findById(ahr.getCustomerId()).orElse(null);
+        Customer customer = customerRepository.findById(ahr.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + ahr.getCustomerId()));
 
         accountHolder.setCustomer(customer);
         return accountHolder;

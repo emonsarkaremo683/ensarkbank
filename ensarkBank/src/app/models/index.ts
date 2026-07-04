@@ -7,3 +7,4 @@ export * from './card.model';
 export * from './transaction.model';
 export * from './beneficiary.model';
 export * from './address.model';
+export * from './loan.model';

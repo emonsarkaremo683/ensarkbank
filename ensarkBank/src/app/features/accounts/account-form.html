@@ -4,7 +4,7 @@
 </div>
 
 @if (error()) {
-  <div class="alert alert-error">{{ error() }}</div>
+  <div class="alert alert-danger">{{ error() }}</div>
 }
 
 <div class="form-card">
@@ -49,9 +49,9 @@
           <div class="form-group">
             <label>Customer *</label>
             <select [(ngModel)]="holder.customerId" [name]="'cust' + i" required class="form-control">
-              <option [value]="0">Select Customer</option>
-              @for (c of customers(); track c.email) {
-                <option [value]="i">{{ c.name }} ({{ c.email }})</option>
+              <option [ngValue]="0">Select Customer</option>
+              @for (c of customers(); track c.id) {
+                <option [ngValue]="c.id">{{ c.name }} ({{ c.email }})</option>
               }
             </select>
           </div>
@@ -82,7 +82,35 @@
         </div>
       </div>
     }
-    <button type="button" class="btn btn-outline btn-sm" (click)="addHolder()">+ Add Holder</button>
+    <button type="button" class="btn btn-outline btn-sm mb-3" (click)="addHolder()">+ Add Holder</button>
+
+    <h3 class="section-title">Nominee Information</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nominee Name *</label>
+        <input type="text" [(ngModel)]="account.n_name" name="n_name" required class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Nominee Email</label>
+        <input type="email" [(ngModel)]="account.n_email" name="n_email" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Nominee Phone</label>
+        <input type="text" [(ngModel)]="account.n_phone" name="n_phone" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Nominee Photo *</label>
+        <input type="file" accept="image/*" class="form-control" (change)="onFileChange($event, 'photo')">
+      </div>
+      <div class="form-group">
+        <label>NID Front *</label>
+        <input type="file" accept="image/*" class="form-control" (change)="onFileChange($event, 'nidFront')">
+      </div>
+      <div class="form-group">
+        <label>NID Back *</label>
+        <input type="file" accept="image/*" class="form-control" (change)="onFileChange($event, 'nidBack')">
+      </div>
+    </div>
 
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" [disabled]="loading() || !accountForm.valid">

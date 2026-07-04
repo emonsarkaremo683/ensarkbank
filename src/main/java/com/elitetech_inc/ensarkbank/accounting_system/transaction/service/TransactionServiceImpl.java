@@ -2,6 +2,12 @@ package com.elitetech_inc.ensarkbank.accounting_system.transaction.service;
 
 import java.math.BigDecimal;
 
+import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
+import com.elitetech_inc.ensarkbank.account_management.account.service.AccountService;
+import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.request.AccountTransactionRequest;
+import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
+import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
+import com.elitetech_inc.ensarkbank.branch_management.branch.service.BranchService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +32,9 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionMapper transactionMapper;
     private final Utils utils;
     private final TransactionPostingService transactionPostingService;
+    private final BranchService branchService;
+    private final AccountRepository accountRepository;
+    private final BranchRepository branchRepository;
 
     @Override
     @Transactional
@@ -35,6 +44,8 @@ public class TransactionServiceImpl implements TransactionService {
         if (tr == null) {
             throw new IllegalArgumentException("Transaction request is required");
         }
+
+
         return processTransaction(tr, t, senderAccount, receiverAccount);
     }
 
@@ -108,6 +119,26 @@ public class TransactionServiceImpl implements TransactionService {
         return processTransaction(request, null, customerAccount, atmCashAccount);
     }
 
+    @Override
+    @Transactional
+    public TransactionResponse loanDisbursement(TransactionRequest request, Account loanControlAccount, Account customerAccount) {
+        if (request == null) {
+            throw new IllegalArgumentException("Transaction request is required");
+        }
+        request.setTransactionType(TransactionType.LOAN_DISBURSEMENT);
+        return processTransaction(request, null, loanControlAccount, customerAccount);
+    }
+
+    @Override
+    @Transactional
+    public TransactionResponse loanRepayment(TransactionRequest request, Account customerAccount, Account loanControlAccount) {
+        if (request == null) {
+            throw new IllegalArgumentException("Transaction request is required");
+        }
+        request.setTransactionType(TransactionType.LOAN_REPAYMENT);
+        return processTransaction(request, null, customerAccount, loanControlAccount);
+    }
+
     private TransactionResponse processTransaction(TransactionRequest tr, Transaction t,
                                                    Account senderAccount,
                                                    Account receiverAccount) {
@@ -166,6 +197,19 @@ public class TransactionServiceImpl implements TransactionService {
                     }
                     transactionPostingService.atmWithdrawal(transaction, senderAccount, receiverAccount, transaction.getAmount());
                     break;
+
+                case LOAN_DISBURSEMENT:
+                    if (senderAccount == null || receiverAccount == null) {
+                        throw new IllegalArgumentException("Loan control account and customer account are required");
+                    }
+                    transactionPostingService.loanDisbursement(transaction, senderAccount, receiverAccount, transaction.getAmount());
+                    break;
+                case LOAN_REPAYMENT:
+                    if (senderAccount == null || receiverAccount == null) {
+                        throw new IllegalArgumentException("Customer account and loan control account are required");
+                    }
+                    transactionPostingService.loanRepayment(transaction, senderAccount, receiverAccount, transaction.getAmount());
+                    break;
                 default:
                     throw new IllegalArgumentException("Unsupported transaction type: " + transaction.getTransactionType());
             }
@@ -180,5 +224,24 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         return transactionMapper.toResponse(transactionRepository.save(transaction));
+    }
+
+
+    private Account resolveReceiver(String accountNumber, Long id) {
+        if (accountNumber == null || accountNumber.isBlank()) {
+            return null;
+        }
+
+        if (accountRepository.existsByAccountNumber(accountNumber)) {
+            return accountRepository.findAccountByAccountNumber(accountNumber)
+                    .orElseThrow(() -> new IllegalArgumentException("Receiver account not found"));
+        }
+
+        Account a = accountRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+
+        Branch b = branchRepository.findById(a.getBranch().getId()).orElseThrow(() -> new IllegalArgumentException("Branch not found"));
+
+        return accountRepository.findAccountByAccountNumber("br-" + b.getRoutingNumber())
+                .orElseThrow(() -> new IllegalArgumentException("Settlement account not found"));
     }
 }

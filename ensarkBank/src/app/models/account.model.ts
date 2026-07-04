@@ -5,6 +5,12 @@ export interface AccountRequest {
   availableBalance: number;
   branchId: number;
   accountStatus: AccountStatus;
+  n_name: string;
+  n_email: string;
+  n_phone: string;
+  n_photo: string;
+  n_nid_front: string;
+  n_nid_back: string;
   accountHolders: AccountHolderRequest[];
 }
 

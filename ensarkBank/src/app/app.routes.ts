@@ -17,6 +17,9 @@ import { TransactionForm } from './features/transactions/transaction-form';
 import { DistrictList } from './features/districts/district-list';
 import { DivisionList } from './features/divisions/division-list';
 import { PoliceStationList } from './features/police-stations/police-station-list';
+import { LoanList } from './features/loans/loan-list';
+import { LoanForm } from './features/loans/loan-form';
+import { LoanDetail } from './features/loans/loan-detail';
 
 export const routes: Routes = [
   {
@@ -108,5 +111,20 @@ export const routes: Routes = [
     path: 'police-stations',
     component: PoliceStationList,
     data: { title: 'Police Stations' }
+  },
+  {
+    path: 'loans',
+    component: LoanList,
+    data: { title: 'Loans' }
+  },
+  {
+    path: 'loans/new',
+    component: LoanForm,
+    data: { title: 'Apply for Loan' }
+  },
+  {
+    path: 'loans/:id',
+    component: LoanDetail,
+    data: { title: 'Loan Details' }
   }
 ];
