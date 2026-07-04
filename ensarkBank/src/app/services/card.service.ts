@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { CardRequest, CardResponse } from '../models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CardService {
   private http = inject(HttpClient);
-  private url = 'http://localhost:8085/api/card/';
+  private url = environment.apiUrl + '/card/';
 
   getAll(): Observable<CardResponse[]> {
     return this.http.get<CardResponse[]>(this.url).pipe(

@@ -1,4 +1,4 @@
-import { Gender, CustomerOccupation } from './enums';
+import { Gender, CustomerOccupation, DocumentType } from './enums';
 import { AddressRequest, AddressResponse } from './employee.model';
 
 export interface CustomerRequest {
@@ -32,10 +32,10 @@ export interface CustomerResponse {
 
 export interface KycRequest {
   path: string;
-  doc_type: string;
+  doc_type: DocumentType;
 }
 
 export interface KycDocResponse {
   path: string;
-  doc_type: string;
+  doc_type: DocumentType;
 }

@@ -34,6 +34,7 @@ public class CustomerMapper {
         response.setActive(customer.getUser().isActive());
 
         // Customer Info
+        response.setId(customer.getId());
         response.setName(customer.getName());
         response.setPhone(customer.getPhone());
         response.setGender(customer.getGender());

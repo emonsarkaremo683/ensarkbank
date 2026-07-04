@@ -30,6 +30,10 @@ public class AccountNumberGenerator {
 
      }
 
+     public String generateBranchAccountNumber(String routing, String prefix){
+         return prefix + routing;
+     }
+
     // private String getAccountTypeIdentity(Object type){
     //     return "";
     // }

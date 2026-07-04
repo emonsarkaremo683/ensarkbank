@@ -2,67 +2,69 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { Division, District, PoliceStation } from '../models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AddressService {
   private http = inject(HttpClient);
+  private url = environment.apiUrl + '/division/';
 
   getAllDivisions(): Observable<Division[]> {
-    return this.http.get<Division[]>('http://localhost:8085/api/division/').pipe(
+    return this.http.get<Division[]>(this.url).pipe(
       catchError(this.handleError)
     );
   }
 
   createDivision(division: Division): Observable<Division> {
-    return this.http.post<Division>('http://localhost:8085/api/division/', division).pipe(
+    return this.http.post<Division>(this.url, division).pipe(
       catchError(this.handleError)
     );
   }
 
   deleteDivision(id: number): Observable<string> {
-    return this.http.delete<string>(`http://localhost:8085/api/division/${id}`).pipe(
+    return this.http.delete<string>(`${this.url}${id}`).pipe(
       catchError(this.handleError)
     );
   }
 
   getAllDistricts(): Observable<District[]> {
-    return this.http.get<District[]>('http://localhost:8085/api/district/').pipe(
+    return this.http.get<District[]>(environment.apiUrl + '/district/').pipe(
       catchError(this.handleError)
     );
   }
 
   createDistrict(district: District): Observable<District> {
-    return this.http.post<District>('http://localhost:8085/api/district/', district).pipe(
+    return this.http.post<District>(environment.apiUrl + '/district/', district).pipe(
       catchError(this.handleError)
     );
   }
 
   updateDistrict(id: number, district: District): Observable<District> {
-    return this.http.put<District>(`http://localhost:8085/api/district/${id}`, district).pipe(
+    return this.http.put<District>(environment.apiUrl + `/district/${id}`, district).pipe(
       catchError(this.handleError)
     );
   }
 
   deleteDistrict(id: number): Observable<string> {
-    return this.http.delete<string>(`http://localhost:8085/api/district/${id}`).pipe(
+    return this.http.delete<string>(environment.apiUrl + `/district/${id}`).pipe(
       catchError(this.handleError)
     );
   }
 
   getAllPoliceStations(): Observable<PoliceStation[]> {
-    return this.http.get<PoliceStation[]>('http://localhost:8085/api/policestation/').pipe(
+    return this.http.get<PoliceStation[]>(environment.apiUrl + '/policestation/').pipe(
       catchError(this.handleError)
     );
   }
 
   createPoliceStation(ps: PoliceStation): Observable<PoliceStation> {
-    return this.http.post<PoliceStation>('http://localhost:8085/api/policestation/', ps).pipe(
+    return this.http.post<PoliceStation>(environment.apiUrl + '/policestation/', ps).pipe(
       catchError(this.handleError)
     );
   }
 
   deletePoliceStation(id: number): Observable<string> {
-    return this.http.delete<string>(`http://localhost:8085/api/policestation/${id}`).pipe(
+    return this.http.delete<string>(environment.apiUrl + `/policestation/${id}`).pipe(
       catchError(this.handleError)
     );
   }

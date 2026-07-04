@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { EmployeeResponse } from '../models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class EmployeeService {
   private http = inject(HttpClient);
-  private url = 'http://localhost:8085/api/employee/';
+  private url = environment.apiUrl + '/employee/';
 
   getAll(): Observable<EmployeeResponse[]> {
     return this.http.get<EmployeeResponse[]>(this.url).pipe(

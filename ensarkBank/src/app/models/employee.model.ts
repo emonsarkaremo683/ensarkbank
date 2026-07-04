@@ -37,7 +37,10 @@ export interface AddressRequest {
   area: string;
   postalCode: string;
   addressType: string;
-  policeStation: { id: number };
+  divisionId?: number;
+  districtId?: number;
+  policeStationId?: number;
+  policeStation?: { id: number };
 }
 
 export interface AddressResponse {

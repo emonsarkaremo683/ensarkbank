@@ -20,35 +20,67 @@
         <select [(ngModel)]="transfer.senderId" name="senderId" required class="form-control">
           <option [value]="0">Select Sender</option>
           @for (a of accounts(); track a.accountNumber) {
-            <option [value]="a.accountNumber">{{ a.accountNumber }} - {{ a.branchName }} ({{ a.availableBalance | number:'1.2-2' }})</option>
+            <option [value]="a.id">
+              {{ a.accountNumber }} - {{ a.holderResponses[0]?.accountHolderName }} ({{
+                a.availableBalance | number: '1.2-2'
+              }})
+            </option>
           }
         </select>
       </div>
       <div class="form-group">
         <label>Receiver Account Number *</label>
-        <input type="text" [(ngModel)]="transfer.receiverAccountNumber" name="receiverAcct" required class="form-control">
+        <input
+          type="text"
+          [(ngModel)]="transfer.receiverAccountNumber"
+          name="receiverAcct"
+          required
+          class="form-control"
+        />
       </div>
       <div class="form-group">
         <label>Receiver Name *</label>
-        <input type="text" [(ngModel)]="transfer.receiverName" name="receiverName" required class="form-control">
+        <input
+          type="text"
+          [(ngModel)]="transfer.receiverName"
+          name="receiverName"
+          required
+          class="form-control"
+        />
       </div>
       <div class="form-group">
         <label>Bank Name</label>
-        <input type="text" [(ngModel)]="transfer.bankName" name="bankName" class="form-control">
+        <input type="text" [(ngModel)]="transfer.bankName" name="bankName" class="form-control" />
       </div>
       <div class="form-group">
         <label>Amount *</label>
-        <input type="number" [(ngModel)]="transfer.request.amount" name="amount" required class="form-control" min="0.01" step="0.01">
+        <input
+          type="number"
+          [(ngModel)]="transfer.request.amount"
+          name="amount"
+          required
+          class="form-control"
+          min="0.01"
+          step="0.01"
+        />
       </div>
       <div class="form-group">
         <label>Channel *</label>
         <select [(ngModel)]="transfer.request.channel" name="channel" required class="form-control">
-          @for (c of channels; track c) { <option [value]="c">{{ c }}</option> }
+          @for (c of channels; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
         </select>
       </div>
       <div class="form-group full-width">
         <label>Remarks</label>
-        <input type="text" [(ngModel)]="transfer.request.remarks" name="remarks" class="form-control" placeholder="Transfer description">
+        <input
+          type="text"
+          [(ngModel)]="transfer.request.remarks"
+          name="remarks"
+          class="form-control"
+          placeholder="Transfer description"
+        />
       </div>
     </div>
     <div class="form-actions">

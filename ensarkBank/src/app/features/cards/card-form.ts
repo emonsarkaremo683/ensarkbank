@@ -40,6 +40,15 @@ export class CardForm implements OnInit {
   onSubmit() {
     this.loading.set(true);
     this.error.set('');
+    // ensure accountId is numeric and valid
+    this.card.accountId = Number(this.card.accountId as any);
+    if (!this.card.accountId || Number.isNaN(this.card.accountId)) {
+      this.error.set('Please select a valid account');
+      this.loading.set(false);
+      return;
+    }
+
+    console.log('Card payload:', JSON.stringify(this.card));
     this.cardService.create(this.card).subscribe({
       next: () => { this.loading.set(false); this.router.navigate(['/cards']); },
       error: (err) => { this.error.set(err.message); this.loading.set(false); }

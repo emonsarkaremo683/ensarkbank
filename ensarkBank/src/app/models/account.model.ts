@@ -17,6 +17,7 @@ export interface AccountHolderRequest {
 }
 
 export interface AccountResponse {
+  id: number;
   accountNumber: string;
   accountType: AccountType;
   accountStatus: AccountStatus;

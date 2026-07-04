@@ -4,5 +4,6 @@ public enum DocumentType {
     NID,
     PASSPORT,
     DRIVING_LICENSE,
-    BIRTH_CERTIFICATE
+    BIRTH_CERTIFICATE,
+
 }

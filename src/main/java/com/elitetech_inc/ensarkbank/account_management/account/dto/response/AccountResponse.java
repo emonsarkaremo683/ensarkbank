@@ -11,6 +11,7 @@ import java.util.List;
 
 @Data
 public class AccountResponse {
+    private Long id;
     private String accountNumber;
     private AccountType accountType;
     private AccountStatus accountStatus;
@@ -19,6 +20,14 @@ public class AccountResponse {
     private BigDecimal holdBalance;
 
     private String branchName;
+
+    // nominee info
+    private String n_name;
+    private String n_email;
+    private String n_phone;
+    private String n_photo;
+    private String n_nid_front;
+    private String n_nid_back;
 
     private List<AccountHolderResponse>holderResponses = new ArrayList<>();
 }

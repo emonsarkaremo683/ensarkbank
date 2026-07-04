@@ -16,7 +16,7 @@ public class AccountHolderMapper {
 
     public AccountHolderResponse toAccountHolderResponse(AccountHolder accountHolder) {
         AccountHolderResponse response = new AccountHolderResponse();
-
+        response.setId(accountHolder.getId());
         response.setAccountHolderName(accountHolder.getCustomer() != null ? accountHolder.getCustomer().getName() : "");
         response.setHolderType(accountHolder.getHolderType());
         response.setCanDeposit(accountHolder.getCanDeposit());

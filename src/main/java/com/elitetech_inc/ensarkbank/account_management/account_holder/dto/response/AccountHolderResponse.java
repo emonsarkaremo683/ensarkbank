@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class AccountHolderResponse {
 
+    private Long id;
     private String accountHolderName;
     private HolderType holderType;
     private Boolean canWithdraw;

@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { AccountRequest, AccountResponse } from '../models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
   private http = inject(HttpClient);
-  private url = 'http://localhost:8085/api/account/';
+  private url = environment.apiUrl + '/account/';
 
   getAll(): Observable<AccountResponse[]> {
     return this.http.get<AccountResponse[]>(`${this.url}all/`).pipe(

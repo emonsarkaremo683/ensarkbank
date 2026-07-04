@@ -16,5 +16,14 @@ public class AccountRequest {
     private Long branchId;
     private AccountStatus accountStatus;
 
+    // nominee info
+    private String n_name;
+    private String n_email;
+    private String n_phone;
+    private String n_photo;
+    private String n_nid_front;
+    private String n_nid_back;
+
+
     private List<AccountHolderRequest> accountHolders;
 }

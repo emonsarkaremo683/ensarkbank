@@ -19,6 +19,7 @@ import java.util.List;
 @Data
 public class CustomerResponse{
 
+    private Long id;
     private String email;
     private Role role;
     private boolean isEmailVerified;

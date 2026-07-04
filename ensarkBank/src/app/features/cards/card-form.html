@@ -13,35 +13,63 @@
       <div class="form-group">
         <label>Account *</label>
         <select [(ngModel)]="card.accountId" name="accountId" required class="form-control">
-          <option [value]="0">Select Account</option>
+          <option [ngValue]="0">Select Account</option>
           @for (a of accounts(); track a.accountNumber) {
-            <option [value]="a.accountNumber">{{ a.accountNumber }} - {{ a.branchName }}</option>
+            <option [ngValue]="a.id">
+              {{ a.accountNumber }} - {{ a.holderResponses[0]?.accountHolderName }} - ({{ a.availableBalance }})
+            </option>
           }
         </select>
       </div>
       <div class="form-group">
         <label>Card Network *</label>
         <select [(ngModel)]="card.cardNetwork" name="network" required class="form-control">
-          @for (n of networks; track n) { <option [value]="n">{{ n }}</option> }
+          @for (n of networks; track n) {
+            <option [value]="n">{{ n }}</option>
+          }
         </select>
       </div>
       <div class="form-group">
         <label>Card Type *</label>
         <select [(ngModel)]="card.cardType" name="type" required class="form-control">
-          @for (t of cardTypes; track t) { <option [value]="t">{{ t }}</option> }
+          @for (t of cardTypes; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
         </select>
       </div>
       <div class="form-group">
         <label>PIN *</label>
-        <input type="password" [(ngModel)]="card.pin" name="pin" required class="form-control" maxlength="4" pattern="[0-9]{4}">
+        <input
+          type="password"
+          [(ngModel)]="card.pin"
+          name="pin"
+          required
+          class="form-control"
+          maxlength="4"
+          pattern="[0-9]{4}"
+        />
       </div>
       <div class="form-group">
         <label>Daily Limit *</label>
-        <input type="number" [(ngModel)]="card.dailyLimit" name="dailyLimit" required class="form-control" min="0">
+        <input
+          type="number"
+          [(ngModel)]="card.dailyLimit"
+          name="dailyLimit"
+          required
+          class="form-control"
+          min="0"
+        />
       </div>
       <div class="form-group">
         <label>Monthly Limit *</label>
-        <input type="number" [(ngModel)]="card.monthlyLimit" name="monthlyLimit" required class="form-control" min="0">
+        <input
+          type="number"
+          [(ngModel)]="card.monthlyLimit"
+          name="monthlyLimit"
+          required
+          class="form-control"
+          min="0"
+        />
       </div>
     </div>
     <div class="form-actions">

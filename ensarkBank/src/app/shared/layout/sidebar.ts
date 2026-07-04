@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, HostBinding } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 interface NavItem {
@@ -16,6 +16,11 @@ interface NavItem {
 })
 export class Sidebar {
   isOpen = signal(true);
+
+  @HostBinding('class.collapsed')
+  get hostCollapsed() {
+    return !this.isOpen();
+  }
 
   navItems: NavItem[] = [
     { label: 'Dashboard', path: '/', icon: '📊' },

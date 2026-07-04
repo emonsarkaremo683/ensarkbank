@@ -6,6 +6,7 @@ import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.mapper.AccountHolderMapper;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.response.AccountHolderResponse;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
+import com.elitetech_inc.ensarkbank.account_management.nominee.entity.Nominee;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.common.address.address.dto.response.AddressResponse;
 import com.elitetech_inc.ensarkbank.common.enums.HolderType;
@@ -27,6 +28,7 @@ public class AccountMapper {
 
     public AccountResponse toAccountResponse(Account acc) {
         AccountResponse ar = new AccountResponse();
+        ar.setId(acc.getId());
         ar.setAccountNumber(acc.getAccountNumber());
         ar.setAccountType(acc.getAccountType());
         ar.setAccountStatus(acc.getAccountStatus());
@@ -49,14 +51,23 @@ public class AccountMapper {
     @Transactional
     public Account toAccount(AccountRequest ar) {
         Account acc = new Account();
-        acc.setAccountNumber(accountNumberGenerator.generateAccountNumber(ar.getBranchId(), ar.getAccountType()));
+        acc.setAccountNumber("acc_"+accountNumberGenerator.generateAccountNumber(ar.getBranchId(), ar.getAccountType()));
         acc.setAccountType(ar.getAccountType());
         acc.setAvailableBalance(ar.getAvailableBalance());
         acc.setCurrentBalance(ar.getAvailableBalance());
-        acc.setHoldBalance(BigDecimal.valueOf(00.0));
+        acc.setHoldBalance(ar.getAvailableBalance());
         acc.setBranch(branchRepository.findById(ar.getBranchId()).orElse(null));
 
         return acc;
+    }
+
+
+    public Nominee toNominee(AccountRequest ar){
+        return Nominee.builder()
+                .name(ar.getN_name())
+                .email(ar.getN_email())
+                .phone(ar.getN_phone())
+                .build();
     }
 
 
