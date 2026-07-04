@@ -14,9 +14,9 @@
       <div class="form-group">
         <label>Account *</label>
         <select [(ngModel)]="loan.accountId" name="accountId" required class="form-control">
-          <option [value]="0">Select Account</option>
-          @for (a of accounts(); track a.accountNumber) {
-            <option [value]="a.accountNumber">{{ a.accountNumber }} - {{ a.branchName }}</option>
+          <option [ngValue]="0">Select Account</option>
+          @for (a of accounts(); track a.id) {
+            <option [ngValue]="a.id">{{ a.accountNumber }} - {{ a.branchName }}</option>
           }
         </select>
       </div>
