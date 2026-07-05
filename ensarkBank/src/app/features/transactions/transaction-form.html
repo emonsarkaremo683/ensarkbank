@@ -18,9 +18,9 @@
       <div class="form-group">
         <label>Sender Account *</label>
         <select [(ngModel)]="transfer.senderId" name="senderId" required class="form-control">
-          <option [value]="0">Select Sender</option>
+          <option [ngValue]="0" disabled>Select Sender</option>
           @for (a of accounts(); track a.accountNumber) {
-            <option [value]="a.id">
+            <option [ngValue]="a.id">
               {{ a.accountNumber }} - {{ a.holderResponses[0]?.accountHolderName }} ({{
                 a.availableBalance | number: '1.2-2'
               }})
@@ -29,28 +29,12 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Receiver Account Number *</label>
-        <input
-          type="text"
-          [(ngModel)]="transfer.receiverAccountNumber"
-          name="receiverAcct"
-          required
-          class="form-control"
-        />
-      </div>
-      <div class="form-group">
-        <label>Receiver Name *</label>
-        <input
-          type="text"
-          [(ngModel)]="transfer.receiverName"
-          name="receiverName"
-          required
-          class="form-control"
-        />
-      </div>
-      <div class="form-group">
-        <label>Bank Name</label>
-        <input type="text" [(ngModel)]="transfer.bankName" name="bankName" class="form-control" />
+        <label>Transaction Type *</label>
+        <select [(ngModel)]="transfer.request.transactionType" name="transactionType" required class="form-control">
+          @for (t of transactionTypes; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
       </div>
       <div class="form-group">
         <label>Amount *</label>
@@ -71,6 +55,51 @@
             <option [value]="c">{{ c }}</option>
           }
         </select>
+      </div>
+    </div>
+
+    <h3 class="section-title">Receiver Details</h3>
+    <div class="form-grid">
+      <div class="form-group autocomplete-wrapper">
+        <label>Receiver Account Number *</label>
+        <input
+          type="text"
+          [ngModel]="receiverFilter()"
+          (ngModelChange)="onReceiverInput($event)"
+          (focus)="showReceiverDropdown.set(true)"
+          (blur)="hideReceiverDropdown()"
+          name="receiverAcct"
+          required
+          class="form-control"
+          placeholder="Type account number or name..."
+          autocomplete="off"
+        />
+        @if (showReceiverDropdown() && filteredAccounts().length > 0) {
+          <div class="autocomplete-dropdown">
+            @for (a of filteredAccounts(); track a.accountNumber) {
+              <div class="autocomplete-item" (mousedown)="selectReceiver(a)">
+                <span class="autocomplete-acct">{{ a.accountNumber }}</span>
+                <span class="autocomplete-name">{{ a.holderResponses[0]?.accountHolderName }}</span>
+                <span class="autocomplete-balance">({{ a.availableBalance | number:'1.2-2' }})</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+      <div class="form-group">
+        <label>Receiver Name *</label>
+        <input
+          type="text"
+          [(ngModel)]="transfer.receiverName"
+          name="receiverName"
+          required
+          class="form-control"
+         
+        />
+      </div>
+      <div class="form-group">
+        <label>Bank Name</label>
+        <input type="text" [(ngModel)]="transfer.bankName" name="bankName" class="form-control" />
       </div>
       <div class="form-group full-width">
         <label>Remarks</label>

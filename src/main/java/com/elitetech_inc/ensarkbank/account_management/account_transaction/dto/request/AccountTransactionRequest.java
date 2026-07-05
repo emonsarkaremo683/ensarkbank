@@ -10,6 +10,7 @@ public class AccountTransactionRequest {
 
     private Long senderId;
 
+    private Long receiverId;
     private String receiverAccountNumber;
     private String receiverName;
     private String bankName;

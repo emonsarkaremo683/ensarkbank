@@ -12,15 +12,15 @@ public interface TransactionService {
 
     TransactionResponse createTransaction(TransactionRequest tr, Transaction t,
                                           Account senderAccount,
-                                          Account receiverAccount);
+                                          String receiverAccount);
 
     TransactionResponse deposit(TransactionRequest request, Account account);
 
     TransactionResponse withdraw(TransactionRequest request, Account account);
 
-    TransactionResponse transfer(TransactionRequest request, Account senderAccount, Account receiverAccount);
+    TransactionResponse transfer(TransactionRequest request, Account senderAccount, String receiverAccount);
 
-    TransactionResponse payment(TransactionRequest request, Account senderAccount, Account receiverAccount);
+    TransactionResponse payment(TransactionRequest request, Account senderAccount, String receiverAccount);
 
     TransactionResponse refund(TransactionRequest request, Account senderAccount, Account receiverAccount);
 

@@ -10,7 +10,9 @@ import java.util.Optional;
 @Service
 public interface AccountTransactionService {
     AccountTransactionResponse save(AccountTransactionRequest accountTransactionRequest);
+    Optional<AccountTransactionResponse> findById(Long id);
     Optional<AccountTransactionResponse> findByAccountNumber(String accountNumber);
-
+    List<AccountTransactionResponse> findAllByAccountNumber(String accountNumber);
+    List<AccountTransactionResponse> findByAccountId(Long accountId);
     List<AccountTransactionResponse> findAll();
 }

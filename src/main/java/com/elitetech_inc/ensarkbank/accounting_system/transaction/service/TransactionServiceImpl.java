@@ -40,7 +40,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     public TransactionResponse createTransaction(TransactionRequest tr, Transaction t,
                                                  Account senderAccount,
-                                                 Account receiverAccount) {
+                                                 String receiverAccount) {
         if (tr == null) {
             throw new IllegalArgumentException("Transaction request is required");
         }
@@ -71,7 +71,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional
-    public TransactionResponse transfer(TransactionRequest request, Account senderAccount, Account receiverAccount) {
+    public TransactionResponse transfer(TransactionRequest request, Account senderAccount, String receiverAccount) {
         if (request == null) {
             throw new IllegalArgumentException("Transaction request is required");
         }
@@ -81,7 +81,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional
-    public TransactionResponse payment(TransactionRequest request, Account senderAccount, Account receiverAccount) {
+    public TransactionResponse payment(TransactionRequest request, Account senderAccount, String receiverAccount) {
         if (request == null) {
             throw new IllegalArgumentException("Transaction request is required");
         }
@@ -96,7 +96,7 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalArgumentException("Transaction request is required");
         }
         request.setTransactionType(TransactionType.REFUND);
-        return processTransaction(request, null, senderAccount, receiverAccount);
+        return processTransaction(request, null, senderAccount, receiverAccount.getAccountNumber());
     }
 
     @Override
@@ -106,7 +106,7 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalArgumentException("Transaction request is required");
         }
         request.setTransactionType(TransactionType.ATM_DEPOSIT);
-        return processTransaction(request, null, customerAccount, atmCashAccount);
+        return processTransaction(request, null, customerAccount, atmCashAccount.getAccountNumber());
     }
 
     @Override
@@ -116,7 +116,7 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalArgumentException("Transaction request is required");
         }
         request.setTransactionType(TransactionType.ATM_WITHDRAW);
-        return processTransaction(request, null, customerAccount, atmCashAccount);
+        return processTransaction(request, null, customerAccount, atmCashAccount.getAccountNumber());
     }
 
     @Override
@@ -126,7 +126,7 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalArgumentException("Transaction request is required");
         }
         request.setTransactionType(TransactionType.LOAN_DISBURSEMENT);
-        return processTransaction(request, null, loanControlAccount, customerAccount);
+        return processTransaction(request, null, loanControlAccount, customerAccount.getAccountNumber());
     }
 
     @Override
@@ -136,18 +136,30 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalArgumentException("Transaction request is required");
         }
         request.setTransactionType(TransactionType.LOAN_REPAYMENT);
-        return processTransaction(request, null, customerAccount, loanControlAccount);
+        return processTransaction(request, null, customerAccount, loanControlAccount.getAccountNumber());
     }
+
+
+
+
+
+
+
+
+
 
     private TransactionResponse processTransaction(TransactionRequest tr, Transaction t,
                                                    Account senderAccount,
-                                                   Account receiverAccount) {
+                                                   String receiver) {
         if (tr == null || tr.getAmount() == null) {
             throw new IllegalArgumentException("Transaction amount is required");
         }
         if (tr.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Transaction amount must be positive");
         }
+
+        Account receiverAccount = resolveReceiver(receiver);
+
 
         Transaction transaction = t != null ? t : new Transaction();
         transaction.setAmount(tr.getAmount());
@@ -161,54 +173,15 @@ public class TransactionServiceImpl implements TransactionService {
 
         try {
             switch (transaction.getTransactionType()) {
-                case DEPOSIT:
-                    transactionPostingService.credit(transaction, senderAccount, transaction.getAmount());
-                    break;
-                case WITHDRAW:
-                    transactionPostingService.debit(transaction, senderAccount, transaction.getAmount());
-                    break;
                 case TRANSFER:
-                    if (senderAccount == null || receiverAccount == null) {
-                        throw new IllegalArgumentException("Sender and receiver accounts are required for transfer");
+                    if (senderAccount == null) {
+                        throw new IllegalArgumentException("Sender accounts are required for transfer");
                     }
-                    transactionPostingService.transfer(transaction, senderAccount, receiverAccount, transaction.getAmount());
-                    break;
-                case PAYMENT:
-                    if (senderAccount == null || receiverAccount == null) {
-                        throw new IllegalArgumentException("Sender and receiver accounts are required for payment");
-                    }
-                    transactionPostingService.outwardTransfer(transaction, senderAccount, receiverAccount, transaction.getAmount());
-                    break;
-                case REFUND:
-                    if (senderAccount == null || receiverAccount == null) {
-                        throw new IllegalArgumentException("Sender and receiver accounts are required for refund");
-                    }
-                    transactionPostingService.inwardTransfer(transaction, receiverAccount, senderAccount, transaction.getAmount());
-                    break;
-                case ATM_DEPOSIT:
-                    if (senderAccount == null || receiverAccount == null) {
-                        throw new IllegalArgumentException("ATM cash account and customer account are required");
-                    }
-                    transactionPostingService.atmCashDeposit(transaction, receiverAccount, senderAccount, transaction.getAmount());
-                    break;
-                case ATM_WITHDRAW:
-                    if (senderAccount == null || receiverAccount == null) {
-                        throw new IllegalArgumentException("Customer account and ATM cash account are required");
-                    }
-                    transactionPostingService.atmWithdrawal(transaction, senderAccount, receiverAccount, transaction.getAmount());
-                    break;
 
-                case LOAN_DISBURSEMENT:
-                    if (senderAccount == null || receiverAccount == null) {
-                        throw new IllegalArgumentException("Loan control account and customer account are required");
-                    }
-                    transactionPostingService.loanDisbursement(transaction, senderAccount, receiverAccount, transaction.getAmount());
-                    break;
-                case LOAN_REPAYMENT:
-                    if (senderAccount == null || receiverAccount == null) {
-                        throw new IllegalArgumentException("Customer account and loan control account are required");
-                    }
-                    transactionPostingService.loanRepayment(transaction, senderAccount, receiverAccount, transaction.getAmount());
+                    transactionPostingService.transfer(transaction,
+                            senderAccount.getAccountNumber(),
+                            receiverAccount != null ? receiverAccount.getAccountNumber() : receiver,
+                            transaction.getAmount());
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported transaction type: " + transaction.getTransactionType());
@@ -227,7 +200,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
 
-    private Account resolveReceiver(String accountNumber, Long id) {
+    private Account resolveReceiver(String accountNumber) {
         if (accountNumber == null || accountNumber.isBlank()) {
             return null;
         }
@@ -237,11 +210,6 @@ public class TransactionServiceImpl implements TransactionService {
                     .orElseThrow(() -> new IllegalArgumentException("Receiver account not found"));
         }
 
-        Account a = accountRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
-
-        Branch b = branchRepository.findById(a.getBranch().getId()).orElseThrow(() -> new IllegalArgumentException("Branch not found"));
-
-        return accountRepository.findAccountByAccountNumber("br-" + b.getRoutingNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Settlement account not found"));
+        return null;
     }
 }

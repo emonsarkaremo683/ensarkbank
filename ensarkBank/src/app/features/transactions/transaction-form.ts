@@ -1,11 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { TransactionService } from '../../services';
 import { AccountService } from '../../services';
-import { BeneficiaryService } from '../../services';
-import { AccountTransactionRequest, AccountResponse, BeneficiaryResponse } from '../../models';
+import { AccountTransactionRequest, AccountResponse } from '../../models';
 
 @Component({
   selector: 'app-transaction-form',
@@ -17,7 +16,6 @@ import { AccountTransactionRequest, AccountResponse, BeneficiaryResponse } from 
 export class TransactionForm implements OnInit {
   private transactionService = inject(TransactionService);
   private accountService = inject(AccountService);
-  private beneficiaryService = inject(BeneficiaryService);
   private router = inject(Router);
 
   transfer: AccountTransactionRequest = {
@@ -34,24 +32,46 @@ export class TransactionForm implements OnInit {
   };
 
   accounts = signal<AccountResponse[]>([]);
-  beneficiaries = signal<BeneficiaryResponse[]>([]);
   loading = signal(false);
   error = signal('');
   success = signal('');
+  receiverFilter = signal('');
+  showReceiverDropdown = signal(false);
 
+  filteredAccounts = computed(() => {
+    const filter = this.receiverFilter().toLowerCase();
+    if (!filter) return this.accounts();
+    return this.accounts().filter(a =>
+      a.accountNumber.toLowerCase().includes(filter) ||
+      a.holderResponses?.some(h => h.accountHolderName.toLowerCase().includes(filter))
+    );
+  });
+
+  transactionTypes = ['TRANSFER', 'DEPOSIT', 'WITHDRAW', 'PAYMENT', 'REFUND'];
   channels = ['BRANCH', 'ATM', 'INTERNET_BANKING', 'MOBILE_BANKING', 'POS', 'E_COMMERCE', 'BEFTN', 'NPSB', 'RTGS'];
 
   ngOnInit() {
     this.accountService.getAll().subscribe({ next: (data) => this.accounts.set(data) });
-    this.beneficiaryService.getAll().subscribe({ next: (data) => this.beneficiaries.set(data) });
   }
 
-  onBeneficiarySelect(beneficiaryId: number) {
-    const ben = this.beneficiaries().find(b => b.accNumber === String(beneficiaryId));
-    if (ben) {
-      this.transfer.receiverAccountNumber = ben.accNumber;
-      this.transfer.receiverName = ben.name;
-    }
+  onReceiverInput(value: string) {
+    this.receiverFilter.set(value);
+    this.transfer.receiverAccountNumber = value;
+    this.transfer.receiverName = '';
+    this.transfer.bankName = 'EnsarBank';
+    this.showReceiverDropdown.set(true);
+  }
+
+  selectReceiver(account: AccountResponse) {
+    this.transfer.receiverAccountNumber = account.accountNumber;
+    this.transfer.receiverName = account.holderResponses?.[0]?.accountHolderName || '';
+    this.transfer.bankName = 'EnsarBank';
+    this.receiverFilter.set(account.accountNumber);
+    this.showReceiverDropdown.set(false);
+  }
+
+  hideReceiverDropdown() {
+    setTimeout(() => this.showReceiverDropdown.set(false), 200);
   }
 
   onSubmit() {

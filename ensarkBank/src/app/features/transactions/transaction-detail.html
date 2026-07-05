@@ -1,0 +1,112 @@
+<div class="page-header">
+  <h1 class="page-title">Transaction #{{ transaction()?.transactionId }}</h1>
+  <a routerLink="/transactions" class="btn btn-outline">← Back to Transactions</a>
+</div>
+
+@if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="loading">Loading transaction details...</div>
+} @else if (transaction(); as tx) {
+  <div class="detail-grid">
+    <div class="detail-card">
+      <h3>Transaction Information</h3>
+      <div class="detail-row">
+        <span class="detail-label">Status</span>
+        <span class="badge" [class]="getStatusClass(tx.response.status)">{{ tx.response.status }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Transaction Type</span>
+        <span class="detail-value"><span class="badge badge-blue">{{ tx.response.transactionType }}</span></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Channel</span>
+        <span class="detail-value"><span class="badge badge-blue">{{ tx.response.channel }}</span></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Transaction ID</span>
+        <span class="detail-value"><code>{{ tx.transactionId }}</code></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Reference No</span>
+        <span class="detail-value"><code>{{ tx.response.referenceNo }}</code></span>
+      </div>
+    </div>
+
+    <div class="detail-card">
+      <h3>Amount Details</h3>
+      <div class="detail-row">
+        <span class="detail-label">Amount</span>
+        <span class="detail-value amount">{{ tx.response.amount | number:'1.2-2' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Charge</span>
+        <span class="detail-value">{{ tx.response.chargeAmount | number:'1.2-2' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">VAT</span>
+        <span class="detail-value">{{ tx.response.vatAmount | number:'1.2-2' }}</span>
+      </div>
+      @if (tx.response.remarks) {
+        <div class="detail-row">
+          <span class="detail-label">Remarks</span>
+          <span class="detail-value">{{ tx.response.remarks }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="detail-card">
+      <h3>Account Details</h3>
+      <div class="detail-row">
+        <span class="detail-label">Sender Account</span>
+        <span class="detail-value"><code>{{ tx.senderAccountNumber }}</code></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Receiver Account</span>
+        <span class="detail-value"><code>{{ tx.receiverAccountNumber }}</code></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Receiver Name</span>
+        <span class="detail-value">{{ tx.receiverName }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Bank</span>
+        <span class="detail-value">{{ tx.bankName }}</span>
+      </div>
+    </div>
+  </div>
+
+  @if (tx.response.journals && tx.response.journals.length > 0) {
+    <div class="table-card">
+      <h3 class="section-title">Journal Entries</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Account Number</th>
+            <th>Account Name</th>
+            <th>Entry Type</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (journal of tx.response.journals; track journal.accountNumber) {
+            <tr>
+              <td><code>{{ journal.accountNumber }}</code></td>
+              <td>{{ journal.accountName }}</td>
+              <td>
+                <span class="badge"
+                  [class.badge-red]="journal.entryType === 'DEBIT'"
+                  [class.badge-green]="journal.entryType === 'CREDIT'">
+                  {{ journal.entryType }}
+                </span>
+              </td>
+              <td class="amount">{{ journal.amount | number:'1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}

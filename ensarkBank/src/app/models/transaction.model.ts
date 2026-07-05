@@ -2,6 +2,7 @@ import { TransactionType, TransactionChannel, TransactionStatus, EntryType } fro
 
 export interface AccountTransactionRequest {
   senderId: number;
+  receiverId?: number;
   receiverAccountNumber: string;
   receiverName: string;
   bankName: string;
@@ -20,9 +21,11 @@ export interface AccountTransactionResponse {
   id: number;
   transactionId: string;
   senderAccountNumber: string;
+  senderName: string;
   receiverAccountNumber: string;
   receiverName: string;
   bankName: string;
+  direction: string;
   response: TransactionResponse;
 }
 

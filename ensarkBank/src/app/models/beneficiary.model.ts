@@ -13,5 +13,5 @@ export interface BeneficiaryResponse {
   name: string;
   provider: string;
   beneficiaryType: BeneficiaryType;
-  CustomerName: string;
+  customerName: string;
 }

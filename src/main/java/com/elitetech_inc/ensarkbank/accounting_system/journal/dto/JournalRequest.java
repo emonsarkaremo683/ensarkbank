@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 @Data
 public class JournalRequest {
     private Long account_id;
+    private String accountNumber;
     private EntryType entryType;
     private BigDecimal amount;
 }

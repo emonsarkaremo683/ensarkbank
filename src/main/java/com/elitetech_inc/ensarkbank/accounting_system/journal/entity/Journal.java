@@ -22,6 +22,7 @@ public class Journal extends BaseEntity {
     @JoinColumn(name = "account_id", nullable = false)
     @JsonIgnore
     private Account account;
+    private String accountNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

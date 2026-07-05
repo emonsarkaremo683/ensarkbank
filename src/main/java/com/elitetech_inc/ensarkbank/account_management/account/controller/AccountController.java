@@ -48,4 +48,11 @@ public class AccountController {
         return new ResponseEntity<>(accountService.getAccounts(), HttpStatus.OK);
     }
 
+    @GetMapping("{id}")
+    public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long id) {
+        return accountService.getAccount(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 }

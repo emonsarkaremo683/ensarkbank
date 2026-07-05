@@ -17,6 +17,19 @@ public interface AccountTransactionRepository extends JpaRepository<AccountTrans
         join at.account ac
         where ac.accountNumber = :accountNumber
 """)
-
     List<AccountTransaction> findByAccountTransactionByAccountNumber(@Param("accountNumber") String accountNumber);
+
+    @Query("""
+        select at from AccountTransaction at
+        where at.receiverAccountNumber = :accountNumber
+""")
+    List<AccountTransaction> findByReceiverAccountNumber(@Param("accountNumber") String accountNumber);
+
+    @Query("""
+        select at from AccountTransaction at
+        join at.account ac
+        where ac.id = :accountId
+        order by at.createdAt desc
+""")
+    List<AccountTransaction> findByAccountId(@Param("accountId") Long accountId);
 }

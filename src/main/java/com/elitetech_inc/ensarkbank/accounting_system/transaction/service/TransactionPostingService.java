@@ -2,6 +2,8 @@ package com.elitetech_inc.ensarkbank.accounting_system.transaction.service;
 
 import java.math.BigDecimal;
 
+import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,7 +14,10 @@ import com.elitetech_inc.ensarkbank.common.enums.EntryType;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TransactionPostingService {
+
+    private final AccountRepository accountRepository;
 
 
     /*
@@ -22,16 +27,20 @@ public class TransactionPostingService {
      * Use cases: Deposit, Interest Posting, Refund, Inward Transfer
      * Effect: availableBalance ↑  currentBalance ↑
      */
-    public void credit(Transaction transaction, Account account, BigDecimal amount) {
-        if (transaction == null || account == null) {
+    public void credit(Transaction transaction, String acc, BigDecimal amount) {
+        if (transaction == null || acc == null) {
             throw new IllegalArgumentException("Transaction and account are required");
         }
-
         BigDecimal normalizedAmount = normalizeAmount(amount);
-        account.setAvailableBalance(zeroIfNull(account.getAvailableBalance()).add(normalizedAmount));
-        account.setCurrentBalance(zeroIfNull(account.getCurrentBalance()).add(normalizedAmount));
+        if (accountRepository.existsByAccountNumber(acc)){
+            Account account = accountRepository.findAccountByAccountNumber(acc).orElseThrow(
+                    ()-> new RuntimeException("Account not found")
+            );
+            account.setAvailableBalance(zeroIfNull(account.getAvailableBalance()).add(normalizedAmount));
+            account.setCurrentBalance(zeroIfNull(account.getCurrentBalance()).add(normalizedAmount));
+        }
 
-        addEntry(transaction, account, EntryType.CREDIT, normalizedAmount);
+        addEntry(transaction, acc, EntryType.CREDIT, normalizedAmount);
     }
 
     /*
@@ -41,21 +50,27 @@ public class TransactionPostingService {
      * Use cases: Withdrawal, ATM, Fee, Penalty, Loan Repayment
      * Effect: availableBalance ↓  currentBalance ↓
      */
-    public void debit(Transaction transaction, Account account, BigDecimal amount) {
-        if (transaction == null || account == null) {
+    public void debit(Transaction transaction, String acc, BigDecimal amount) {
+        if (transaction == null || acc == null) {
             throw new IllegalArgumentException("Transaction and account are required");
         }
 
         BigDecimal normalizedAmount = normalizeAmount(amount);
-        BigDecimal availableBalance = zeroIfNull(account.getAvailableBalance());
-        if (availableBalance.compareTo(normalizedAmount) < 0) {
-            throw new IllegalArgumentException("Insufficient balance for transaction");
+        if (accountRepository.existsByAccountNumber(acc)){
+            Account account = accountRepository.findAccountByAccountNumber(acc).orElseThrow(
+                    ()-> new RuntimeException("Account not found")
+            );
+
+            BigDecimal availableBalance = zeroIfNull(account.getAvailableBalance());
+            if (availableBalance.compareTo(normalizedAmount) < 0) {
+                throw new IllegalArgumentException("Insufficient balance for transaction");
+            }
+
+            account.setAvailableBalance(availableBalance.subtract(normalizedAmount));
+            account.setCurrentBalance(zeroIfNull(account.getCurrentBalance()).subtract(normalizedAmount));
         }
 
-        account.setAvailableBalance(availableBalance.subtract(normalizedAmount));
-        account.setCurrentBalance(zeroIfNull(account.getCurrentBalance()).subtract(normalizedAmount));
-
-        addEntry(transaction, account, EntryType.DEBIT, normalizedAmount);
+        addEntry(transaction, acc, EntryType.DEBIT, normalizedAmount);
     }
 
     /*
@@ -70,8 +85,8 @@ public class TransactionPostingService {
      */
     public void transfer(
             Transaction transaction,
-            Account sender,
-            Account receiver,
+            String sender,
+            String receiver,
             BigDecimal amount
     ) {
         debit(transaction, sender, amount);
@@ -87,8 +102,8 @@ public class TransactionPostingService {
      */
     public void outwardTransfer(
             Transaction transaction,
-            Account customerAccount,
-            Account settlementAccount,
+            String customerAccount,
+            String settlementAccount,
             BigDecimal amount
     ) {
         debit(transaction, customerAccount, amount);
@@ -104,8 +119,8 @@ public class TransactionPostingService {
      */
     public void inwardTransfer(
             Transaction transaction,
-            Account settlementAccount,
-            Account customerAccount,
+            String settlementAccount,
+            String customerAccount,
             BigDecimal amount
     ) {
         debit(transaction, settlementAccount, amount);
@@ -121,8 +136,8 @@ public class TransactionPostingService {
      */
     public void atmCashDeposit(
             Transaction transaction,
-            Account atmCashAccount,
-            Account customerAccount,
+            String atmCashAccount,
+            String customerAccount,
             BigDecimal amount
     ) {
         debit(transaction, atmCashAccount, amount);
@@ -138,8 +153,8 @@ public class TransactionPostingService {
      */
     public void atmWithdrawal(
             Transaction transaction,
-            Account customerAccount,
-            Account atmCashAccount,
+            String customerAccount,
+            String atmCashAccount,
             BigDecimal amount
     ) {
         debit(transaction, customerAccount, amount);
@@ -155,8 +170,8 @@ public class TransactionPostingService {
      */
     public void cashDeposit(
             Transaction transaction,
-            Account cashVault,
-            Account customerAccount,
+            String cashVault,
+            String customerAccount,
             BigDecimal amount
     ) {
         debit(transaction, cashVault, amount);
@@ -172,8 +187,8 @@ public class TransactionPostingService {
      */
     public void cashWithdrawal(
             Transaction transaction,
-            Account customerAccount,
-            Account cashVault,
+            String customerAccount,
+            String cashVault,
             BigDecimal amount
     ) {
         debit(transaction, customerAccount, amount);
@@ -192,8 +207,8 @@ public class TransactionPostingService {
      */
     public void feeCharge(
             Transaction transaction,
-            Account customerAccount,
-            Account feeIncomeAccount,
+            String customerAccount,
+            String feeIncomeAccount,
             BigDecimal amount
     ) {
         debit(transaction, customerAccount, amount);
@@ -209,8 +224,8 @@ public class TransactionPostingService {
      */
     public void interestPosting(
             Transaction transaction,
-            Account interestExpenseAccount,
-            Account customerAccount,
+            String interestExpenseAccount,
+            String customerAccount,
             BigDecimal amount
     ) {
         debit(transaction, interestExpenseAccount, amount);
@@ -226,8 +241,8 @@ public class TransactionPostingService {
      */
     public void loanDisbursement(
             Transaction transaction,
-            Account loanControlAccount,
-            Account customerAccount,
+            String loanControlAccount,
+            String customerAccount,
             BigDecimal amount
     ) {
         debit(transaction, loanControlAccount, amount);
@@ -243,8 +258,8 @@ public class TransactionPostingService {
      */
     public void loanRepayment(
             Transaction transaction,
-            Account customerAccount,
-            Account loanControlAccount,
+            String customerAccount,
+            String loanControlAccount,
             BigDecimal amount
     ) {
         debit(transaction, customerAccount, amount);
@@ -263,8 +278,8 @@ public class TransactionPostingService {
      */
     public void settleCardPurchase(
             Transaction transaction,
-            Account customerAccount,
-            Account merchantSettlementAccount,
+            String customerAccount,
+            String merchantSettlementAccount,
             BigDecimal heldAmount,   // amount previously on hold
             BigDecimal settledAmount // actual settled amount (may differ from hold)
     ) {
@@ -295,7 +310,11 @@ public class TransactionPostingService {
      * Reversal of auth / expired hold
      * availableBalance ↑  holdBalance ↓
      */
-    public void releaseHold(Account account, BigDecimal amount) {
+    public void releaseHold(String acc, BigDecimal amount) {
+
+        Account account = accountRepository.findAccountByAccountNumber(acc).orElseThrow(
+                ()-> new RuntimeException("Account not found")
+        );
 
         account.setAvailableBalance(account.getAvailableBalance().add(amount));
         account.setHoldBalance(account.getHoldBalance().subtract(amount));
@@ -311,7 +330,7 @@ public class TransactionPostingService {
      */
     public void reverseDebit(
             Transaction reversalTransaction,
-            Account account,
+            String account,
             BigDecimal amount
     ) {
         credit(reversalTransaction, account, amount);
@@ -319,7 +338,7 @@ public class TransactionPostingService {
 
     public void reverseCredit(
             Transaction reversalTransaction,
-            Account account,
+            String account,
             BigDecimal amount
     ) {
         debit(reversalTransaction, account, amount);
@@ -332,13 +351,22 @@ public class TransactionPostingService {
      */
     private void addEntry(
             Transaction transaction,
-            Account account,
+            String account,
             EntryType entryType,
             BigDecimal amount
     ) {
+        if(!accountRepository.existsByAccountNumber(account)) {
+            return;
+        }
+
+        Account acc = accountRepository.findAccountByAccountNumber(account).orElseThrow(
+                ()-> new RuntimeException("Account not found")
+        );
+
         Journal entry = new Journal();
+        entry.setAccount(acc);
         entry.setTransaction(transaction);
-        entry.setAccount(account);
+        entry.setAccountNumber(account);
         entry.setEntryType(entryType);
         entry.setAmount(amount);
 

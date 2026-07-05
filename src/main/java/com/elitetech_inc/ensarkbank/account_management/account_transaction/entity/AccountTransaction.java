@@ -21,6 +21,10 @@ public class AccountTransaction extends BaseEntity {
     @JsonIgnore
     private Account account;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Account receiver;
+
     private String receiverAccountNumber;
     private String receiverName;
     private String bankName;

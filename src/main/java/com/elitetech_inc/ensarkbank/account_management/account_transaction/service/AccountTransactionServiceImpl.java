@@ -1,13 +1,16 @@
 package com.elitetech_inc.ensarkbank.account_management.account_transaction.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
-import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.response.TransactionResponse;
 import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
+import com.elitetech_inc.ensarkbank.customer_management.beneficiary.entity.Beneficiary;
+import com.elitetech_inc.ensarkbank.customer_management.beneficiary.repository.BeneficiaryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +38,8 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     private final TransactionService transactionService;
     private final AccountRepository accountRepository;
     private final TransactionMapper transactionMapper;
-    private final BranchRepository branchRepository;;
+    private final BranchRepository branchRepository;
+    private final BeneficiaryRepository beneficiaryRepository;
 
     @Override
     @Transactional
@@ -47,7 +51,17 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
         Account sender = accountRepository.findById(atr.getSenderId())
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
 
-        Account receiver = resolveReceiver(atr);
+        Account receiver = null;
+        if(atr.getBeneficiaryId() != null){
+            Beneficiary bt = beneficiaryRepository.findById(atr.getBeneficiaryId()).orElseThrow(() -> new IllegalArgumentException("Beneficiary not found"));
+            if(checkAccountNumber(bt.getAccNumber())){
+                receiver = accountRepository.findAccountByAccountNumber(bt.getAccNumber()).orElseThrow(() -> new IllegalArgumentException("Account number not found"));
+            }
+        }
+
+        if(atr.getReceiverId() != null){
+            receiver = accountRepository.findById(atr.getReceiverId()).orElseThrow(() -> new IllegalArgumentException("Receiver account not found"));
+        }
 
         Transaction transaction = new Transaction();
         transaction.setStatus(TransactionStatus.PENDING);
@@ -62,16 +76,28 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
         transaction.setChargeAmount(BigDecimal.ZERO);
         transaction.setVatAmount(BigDecimal.ZERO);
 
-        transactionService.createTransaction(atr.getRequest(), transaction, sender, receiver);
+        transactionService.createTransaction(atr.getRequest(), transaction, sender,
+                receiver != null ? receiver.getAccountNumber() : atr.getReceiverAccountNumber()
+                );
 
-        AccountTransaction accountTransaction = accountTransactionMapper.toAccountTransaction(atr);
+        AccountTransaction accountTransaction = new AccountTransaction();
+
         accountTransaction.setAccount(sender);
         accountTransaction.setTransaction(transaction);
         accountTransaction.setReceiverAccountNumber(receiver != null ? receiver.getAccountNumber() : atr.getReceiverAccountNumber());
-        accountTransaction.setReceiverName(atr.getReceiverName());
-        accountTransaction.setBankName(atr.getBankName());
+        accountTransaction.setReceiverName(receiver != null ? receiver.getHolders().getFirst().getCustomer().getName() :  atr.getReceiverName());
+        accountTransaction.setBankName(receiver != null ? "Ensark Bank" :atr.getBankName());
 
-        return accountTransactionMapper.toResponse(accountTransactionRepository.save(accountTransaction));
+        return accountTransactionMapper.toResponse(accountTransactionRepository.save(accountTransaction), sender.getAccountNumber());
+    }
+
+    @Override
+    public Optional<AccountTransactionResponse> findById(Long id) {
+        if (id == null) {
+            return Optional.empty();
+        }
+        return accountTransactionRepository.findById(id)
+                .map(at -> accountTransactionMapper.toResponse(at, at.getAccount().getAccountNumber()));
     }
 
     @Override
@@ -79,36 +105,55 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
         if (accountNumber == null || accountNumber.isBlank()) {
             return Optional.empty();
         }
-
         return accountTransactionRepository.findByAccountTransactionByAccountNumber(accountNumber)
                 .stream()
                 .findFirst()
-                .map(accountTransactionMapper::toResponse);
+                .map(at -> accountTransactionMapper.toResponse(at, accountNumber));
+    }
+
+    @Override
+    public List<AccountTransactionResponse> findAllByAccountNumber(String accountNumber) {
+        if (accountNumber == null || accountNumber.isBlank()) {
+            return List.of();
+        }
+        List<AccountTransaction> sent = accountTransactionRepository.findByAccountTransactionByAccountNumber(accountNumber);
+        List<AccountTransaction> received = accountTransactionRepository.findByReceiverAccountNumber(accountNumber);
+
+        List<AccountTransaction> all = new ArrayList<>();
+        all.addAll(sent);
+        all.addAll(received);
+
+        return all.stream()
+                .map(at -> accountTransactionMapper.toResponse(at, accountNumber))
+                .sorted(Comparator.comparing((AccountTransactionResponse r) -> r.getResponse().getReferenceNo()).reversed())
+                .toList();
     }
 
     @Override
     public List<AccountTransactionResponse> findAll() {
         return accountTransactionRepository.findAll()
                 .stream()
-                .map(accountTransactionMapper::toResponse)
+                .map(at -> accountTransactionMapper.toResponse(at, null))
                 .toList();
     }
 
-    private Account resolveReceiver(AccountTransactionRequest atr) {
-        if (atr.getReceiverAccountNumber() == null || atr.getReceiverAccountNumber().isBlank()) {
-            return null;
+    @Override
+    public List<AccountTransactionResponse> findByAccountId(Long accountId) {
+        if (accountId == null) {
+            return List.of();
         }
+        Account account = accountRepository.findById(accountId).orElse(null);
+        String accountNumber = account != null ? account.getAccountNumber() : null;
+        return accountTransactionRepository.findByAccountId(accountId)
+                .stream()
+                .map(at -> accountTransactionMapper.toResponse(at, accountNumber))
+                .toList();
+    }
 
-        if (accountRepository.existsByAccountNumber(atr.getReceiverAccountNumber())) {
-            return accountRepository.findAccountByAccountNumber(atr.getReceiverAccountNumber())
-                    .orElseThrow(() -> new IllegalArgumentException("Receiver account not found"));
+    private boolean checkAccountNumber(String accountNumber) {
+        if (accountNumber == null || accountNumber.isBlank()) {
+            return false;
         }
-
-        Account a = accountRepository.findById(atr.getSenderId()).orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
-
-        Branch b = branchRepository.findById(a.getBranch().getId()).orElseThrow(() -> new IllegalArgumentException("Branch not found"));
-
-        return accountRepository.findAccountByAccountNumber("br-" + b.getRoutingNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Settlement account not found"));
+        return accountRepository.existsByAccountNumber(accountNumber);
     }
 }

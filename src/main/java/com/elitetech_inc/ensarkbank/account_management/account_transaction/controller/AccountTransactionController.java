@@ -28,10 +28,24 @@ public class AccountTransactionController {
         return new ResponseEntity<>(accountTransactionService.findAll(), HttpStatus.OK);
     }
 
+    @GetMapping("{id}")
+    public ResponseEntity<AccountTransactionResponse> getById(@PathVariable Long id){
+        return accountTransactionService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
     @GetMapping("accountNumber/{accountNumber}")
-    public ResponseEntity<Optional<AccountTransactionResponse>> findByAccountNumber(@PathVariable String accountNumber){
-        return new ResponseEntity<>(accountTransactionService.findByAccountNumber(accountNumber), HttpStatus.OK);
+    public ResponseEntity<List<AccountTransactionResponse>> findByAccountNumber(@PathVariable String accountNumber){
+        return new ResponseEntity<>(
+                accountTransactionService.findAllByAccountNumber(accountNumber),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping("account/{accountId}")
+    public ResponseEntity<List<AccountTransactionResponse>> findByAccountId(@PathVariable Long accountId){
+        return new ResponseEntity<>(accountTransactionService.findByAccountId(accountId), HttpStatus.OK);
     }
 
 }

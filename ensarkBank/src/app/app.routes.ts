@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Dashboard } from './features/dashboard/dashboard';
 import { AccountList } from './features/accounts/account-list';
 import { AccountForm } from './features/accounts/account-form';
+import { AccountDetail } from './features/accounts/account-detail';
 import { BeneficiaryList } from './features/beneficiaries/beneficiary-list';
 import { BeneficiaryForm } from './features/beneficiaries/beneficiary-form';
 import { BranchList } from './features/branches/branch-list';
@@ -14,6 +15,7 @@ import { EmployeeList } from './features/employees/employee-list';
 import { EmployeeForm } from './features/employees/employee-form';
 import { TransactionList } from './features/transactions/transaction-list';
 import { TransactionForm } from './features/transactions/transaction-form';
+import { TransactionDetail } from './features/transactions/transaction-detail';
 import { DistrictList } from './features/districts/district-list';
 import { DivisionList } from './features/divisions/division-list';
 import { PoliceStationList } from './features/police-stations/police-station-list';
@@ -36,6 +38,11 @@ export const routes: Routes = [
     path: 'accounts/new',
     component: AccountForm,
     data: { title: 'New Account' }
+  },
+  {
+    path: 'accounts/:id',
+    component: AccountDetail,
+    data: { title: 'Account Details' }
   },
   {
     path: 'beneficiaries',
@@ -96,6 +103,11 @@ export const routes: Routes = [
     path: 'transactions/new',
     component: TransactionForm,
     data: { title: 'New Transaction' }
+  },
+  {
+    path: 'transactions/:id',
+    component: TransactionDetail,
+    data: { title: 'Transaction Details' }
   },
   {
     path: 'districts',

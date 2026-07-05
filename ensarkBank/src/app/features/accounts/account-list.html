@@ -25,7 +25,7 @@
       </thead>
       <tbody>
         @for (account of accounts(); track account.accountNumber) {
-          <tr>
+          <tr class="clickable-row" [routerLink]="['/accounts', account.id]">
             <td><code class="account-num">{{ account.accountNumber }}</code></td>
             <td><span class="badge badge-blue">{{ account.accountType }}</span></td>
             <td>

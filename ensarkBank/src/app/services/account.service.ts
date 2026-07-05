@@ -15,6 +15,12 @@ export class AccountService {
     );
   }
 
+  getById(id: number): Observable<AccountResponse> {
+    return this.http.get<AccountResponse>(`${this.url}${id}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   create(account: AccountRequest, photo: File, nidFront: File, nidBack: File): Observable<AccountResponse> {
     const formData = new FormData();
     formData.append('data', JSON.stringify(account));

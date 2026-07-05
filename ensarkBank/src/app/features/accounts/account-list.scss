@@ -22,3 +22,12 @@
   font-weight: 600;
   color: #2d8a4e;
 }
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #f0f4ff;
+  }
+}
