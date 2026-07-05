@@ -1,39 +1,109 @@
 <div class="page-header">
-  <h1 class="page-title">Employees</h1>
-  <a routerLink="/employees/new" class="btn btn-primary">+ New Employee</a>
+  <div>
+    <h1 class="page-title">Employees</h1>
+    <p class="page-subtitle">Manage your bank's workforce</p>
+  </div>
+  <a routerLink="/employees/new" class="btn btn-primary">
+    <span class="btn-icon">+</span> New Employee
+  </a>
 </div>
 
 @if (error()) {
-  <div class="alert alert-error">{{ error() }}</div>
+  <div class="alert alert-danger">{{ error() }}</div>
 }
 
 @if (loading()) {
-  <div class="loading">Loading employees...</div>
+  <div class="loading-state">
+    <div class="spinner"></div>
+    <span>Loading employees...</span>
+  </div>
 } @else {
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-value">{{ employees().length }}</span>
+      <span class="stat-label">Total Employees</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value stat-active">{{ activeCount() }}</span>
+      <span class="stat-label">Active</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value stat-inactive">{{ inactiveCount() }}</span>
+      <span class="stat-label">Inactive</span>
+    </div>
+  </div>
+
   <div class="table-card">
     <table class="data-table">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone</th>
+          <th>Employee</th>
+          <th>Contact</th>
           <th>Designation</th>
           <th>Branch</th>
-          <th>Gender</th>
+          <th>Status</th>
+          <th>Email Verified</th>
+          <th class="th-actions">Actions</th>
         </tr>
       </thead>
       <tbody>
         @for (emp of employees(); track emp.id) {
           <tr>
-            <td><strong>{{ emp.name }}</strong></td>
-            <td>{{ emp.email }}</td>
-            <td>{{ emp.phone }}</td>
+            <td>
+              <div class="employee-cell">
+                <div class="avatar">
+                  @if (emp.profile) {
+                    <img [src]="emp.profile" [alt]="emp.name" />
+                  } @else {
+                    <span class="avatar-fallback">{{ emp.name.charAt(0) }}</span>
+                  }
+                </div>
+                <div class="employee-info">
+                  <span class="employee-name">{{ emp.name }}</span>
+                  <span class="employee-meta">{{ emp.gender }} &middot; {{ emp.dob | date:'mediumDate' }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="contact-cell">
+                <span class="contact-email">{{ emp.email }}</span>
+                <span class="contact-phone">{{ emp.phone }}</span>
+              </div>
+            </td>
             <td><span class="badge badge-blue">{{ emp.designation }}</span></td>
             <td>{{ emp.branchName }}</td>
-            <td>{{ emp.gender }}</td>
+            <td>
+              @if (emp.active) {
+                <span class="badge badge-green">Active</span>
+              } @else {
+                <span class="badge badge-red">Inactive</span>
+              }
+            </td>
+            <td>
+              @if (emp.isEmailVerified) {
+                <span class="verified-badge verified">Verified</span>
+              } @else {
+                <span class="verified-badge unverified">Pending</span>
+              }
+            </td>
+            <td class="td-actions">
+              <a [routerLink]="['/employees', emp.id]" class="action-btn action-view" title="View Details">
+                &#128065;
+              </a>
+              <a [routerLink]="['/employees', emp.id, 'edit']" class="action-btn action-edit" title="Edit">
+                &#9998;
+              </a>
+            </td>
           </tr>
         } @empty {
-          <tr><td colspan="6" class="empty-state">No employees found</td></tr>
+          <tr>
+            <td colspan="7" class="empty-state">
+              <div class="empty-content">
+                <span class="empty-icon">&#128100;</span>
+                <p>No employees found</p>
+              </div>
+            </td>
+          </tr>
         }
       </tbody>
     </table>

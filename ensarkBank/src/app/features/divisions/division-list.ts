@@ -1,18 +1,20 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { AddressService } from '../../services';
-import { Division } from '../../models';
+import { District, Division } from '../../models';
 
 @Component({
   selector: 'app-division-list',
   standalone: true,
   imports: [FormsModule],
   templateUrl: './division-list.html',
-  styleUrl: './division-list.scss'
+  styleUrls: ['./division-list.scss']
 })
 export class DivisionList implements OnInit {
   private addressService = inject(AddressService);
   divisions = signal<Division[]>([]);
+  districts = signal<District[]>([]);
   loading = signal(true);
   error = signal('');
   newDivisionName = signal('');
@@ -23,10 +25,22 @@ export class DivisionList implements OnInit {
 
   loadDivisions() {
     this.loading.set(true);
-    this.addressService.getAllDivisions().subscribe({
-      next: (data) => { this.divisions.set(data); this.loading.set(false); },
+    forkJoin({
+      divisions: this.addressService.getAllDivisions(),
+      districts: this.addressService.getAllDistricts()
+    }).subscribe({
+      next: ({ divisions, districts }) => {
+        this.divisions.set(divisions);
+        this.districts.set(districts);
+        this.loading.set(false);
+      },
       error: (err) => { this.error.set(err.message); this.loading.set(false); }
     });
+  }
+
+  getDistrictByDivisionId(id?: number) {
+    if (!id) return [];
+    return this.districts().filter(d => d.division?.id === id);
   }
 
   addDivision() {

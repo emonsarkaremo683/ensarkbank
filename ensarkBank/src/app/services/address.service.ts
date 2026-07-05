@@ -39,6 +39,12 @@ export class AddressService {
     );
   }
 
+  getDistrictByDivisionId(id: number): Observable<District> {
+    return this.http.get<District>(environment.apiUrl + `/division/${id}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   updateDistrict(id: number, district: District): Observable<District> {
     return this.http.put<District>(environment.apiUrl + `/district/${id}`, district).pipe(
       catchError(this.handleError)

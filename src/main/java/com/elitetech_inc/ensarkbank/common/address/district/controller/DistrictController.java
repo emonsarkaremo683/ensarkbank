@@ -42,11 +42,9 @@ public class DistrictController {
     }
 
 
-    @GetMapping("{id}")
-    public ResponseEntity<District> findById(@PathVariable Long id){
-        District d = districtService.findByDistrictId(id).orElseThrow(
-                ()-> new RuntimeException("Division with id " + id + " not found")
-        );
+    @GetMapping("/division/{id}")
+    public ResponseEntity<List<District>> findById(@PathVariable Long id){
+        List<District> d = districtService.findByDivisionId(id).stream().toList();
         return new ResponseEntity<>(d, HttpStatus.OK);
     }
 

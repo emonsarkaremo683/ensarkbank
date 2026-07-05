@@ -13,7 +13,7 @@ public interface DistrictService {
 
     District save(District district);
     List<District> findAll();
-    Optional<District> findByDistrictId(Long id);
+    List<District> findByDivisionId(Long id);
     void delete(Long id);
 
 

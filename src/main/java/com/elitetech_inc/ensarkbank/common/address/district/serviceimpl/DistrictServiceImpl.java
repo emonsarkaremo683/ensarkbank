@@ -36,8 +36,8 @@ public class DistrictServiceImpl implements DistrictService {
     }
 
     @Override
-    public Optional<District> findByDistrictId(Long id) {
-        return districtRepository.findById(id);
+    public List<District> findByDivisionId(Long id) {
+        return districtRepository.findByDivisionId(id).stream().toList();
     }
 
     @Override

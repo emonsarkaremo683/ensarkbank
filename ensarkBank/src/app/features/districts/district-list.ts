@@ -1,19 +1,21 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { AddressService } from '../../services';
-import { District, Division } from '../../models';
+import { District, Division, PoliceStation } from '../../models';
 
 @Component({
   selector: 'app-district-list',
   standalone: true,
   imports: [FormsModule],
   templateUrl: './district-list.html',
-  styleUrl: './district-list.scss'
+  styleUrls: ['./district-list.scss']
 })
 export class DistrictList implements OnInit {
   private addressService = inject(AddressService);
   districts = signal<District[]>([]);
   divisions = signal<Division[]>([]);
+  policeStations = signal<PoliceStation[]>([]);
   loading = signal(true);
   error = signal('');
 
@@ -25,9 +27,17 @@ export class DistrictList implements OnInit {
 
   loadData() {
     this.loading.set(true);
-    this.addressService.getAllDistricts().subscribe({ next: (data) => this.districts.set(data) });
-    this.addressService.getAllDivisions().subscribe({
-      next: (data) => { this.divisions.set(data); this.loading.set(false); },
+    forkJoin({
+      districts: this.addressService.getAllDistricts(),
+      divisions: this.addressService.getAllDivisions(),
+      policeStations: this.addressService.getAllPoliceStations()
+    }).subscribe({
+      next: ({ districts, divisions, policeStations }) => {
+        this.districts.set(districts);
+        this.divisions.set(divisions);
+        this.policeStations.set(policeStations);
+        this.loading.set(false);
+      },
       error: (err) => { this.error.set(err.message); this.loading.set(false); }
     });
   }
@@ -47,5 +57,10 @@ export class DistrictList implements OnInit {
         error: (err) => this.error.set(err.message)
       });
     }
+  }
+
+  getPoliceStationsByDistrictId(districtId?: number) {
+    if (!districtId) return [];
+    return this.policeStations().filter(ps => ps.district?.id === districtId);
   }
 }

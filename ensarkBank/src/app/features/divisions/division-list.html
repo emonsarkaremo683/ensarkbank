@@ -32,7 +32,7 @@
           <tr>
             <td>{{ div.id }}</td>
             <td><strong>{{ div.name }}</strong></td>
-            <td>{{ div.districts?.length || 0 }} districts</td>
+            <td>{{ getDistrictByDivisionId(div.id).length || 0 }} districts</td>
             <td>
               <button class="btn btn-sm btn-danger" (click)="deleteDivision(div.id!)">Delete</button>
             </td>

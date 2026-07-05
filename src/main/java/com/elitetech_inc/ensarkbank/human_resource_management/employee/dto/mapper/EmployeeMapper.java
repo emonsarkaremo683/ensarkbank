@@ -5,6 +5,7 @@ import com.elitetech_inc.ensarkbank.common.address.address.dto.request.AddressRe
 import com.elitetech_inc.ensarkbank.common.address.address.dto.response.AddressResponse;
 import com.elitetech_inc.ensarkbank.common.address.address.entity.Address;
 import com.elitetech_inc.ensarkbank.common.enums.AddressType;
+import com.elitetech_inc.ensarkbank.common.enums.Role;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.dto.request.EmployeeRequest;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.dto.response.EmployeeResponse;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.entity.Employee;
@@ -24,7 +25,6 @@ public class EmployeeMapper {
                 .stream()
                 .map(this::toAddressResponse)
                 .toList();
-
 
         return EmployeeResponse.builder()
                 .user_id(emp.getUser().getId())
@@ -55,12 +55,11 @@ public class EmployeeMapper {
         return employee;
     }
 
-
-    public User toUser(EmployeeRequest er){
+    public User toUser(EmployeeRequest er) {
 
         User user = new User();
         user.setEmail(er.getEmail());
-        user.setRole(er.getRole());
+        user.setRole(resolveRole(er));
         user.setActive(false);
         user.setPassword(er.getPassword());
         user.setEmailVerified(false);
@@ -78,10 +77,37 @@ public class EmployeeMapper {
 
         if (present != null)   user.getAddresses().add(present);
         if (permanent != null) user.getAddresses().add(permanent);
-
         return user;
     }
 
+    //=========================================================
+    // Role Resolution
+    //=========================================================
+
+    private Role resolveRole(EmployeeRequest er) {
+
+        if (er.getDesignation() == null) {
+            throw new IllegalArgumentException("Designation is required");
+        }
+
+        Role expectedRole = er.getDesignation().getDefaultRole();
+        Role requestedRole = er.getRole();
+
+        // No role sent by client -> just use designation's default
+        if (requestedRole == null) {
+            return expectedRole;
+        }
+
+        // Role sent but doesn't match designation -> reject
+        if (requestedRole != expectedRole) {
+            throw new IllegalArgumentException(
+                    "Role '" + requestedRole + "' is not valid for designation '"
+                            + er.getDesignation() + "'. Expected role: '" + expectedRole + "'."
+            );
+        }
+
+        return requestedRole;
+    }
 
     //=========================================================
     // Address Mapping
@@ -99,7 +125,6 @@ public class EmployeeMapper {
 
         return address;
     }
-
 
     private AddressResponse toAddressResponse(Address address) {
 

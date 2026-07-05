@@ -17,9 +17,8 @@ export interface EmployeeRequest {
 export interface EmployeeResponse {
   user_id: number;
   email: string;
-  password: string;
   role: Role;
-  emailVerified: boolean;
+  isEmailVerified: boolean;
   active: boolean;
   id: number;
   name: string;
@@ -37,10 +36,10 @@ export interface AddressRequest {
   area: string;
   postalCode: string;
   addressType: string;
+  policeStation: { id: number };
   divisionId?: number;
   districtId?: number;
   policeStationId?: number;
-  policeStation?: { id: number };
 }
 
 export interface AddressResponse {

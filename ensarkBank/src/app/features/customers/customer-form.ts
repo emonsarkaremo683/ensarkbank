@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CustomerService, AddressService } from '../../services';
-import { CustomerRequest, PoliceStation, AddressRequest, Division, District, DocumentType } from '../../models';
+import { CustomerRequest, PoliceStation, AddressRequest, Division, District, DocumentType, Gender, CustomerOccupation } from '../../models';
 
 @Component({
   selector: 'app-customer-form',
@@ -37,8 +37,16 @@ export class CustomerForm implements OnInit {
   loading = signal(false);
   error = signal('');
 
-  genders = ['MALE', 'FEMALE', 'OTHER'];
-  occupations = ['STUDENT', 'SERVICE_HOLDER', 'GOVERNMENT_EMPLOYEE', 'BUSINESS_OWNER', 'SELF_EMPLOYED', 'FREELANCER', 'DOCTOR', 'ENGINEER', 'TEACHER', 'LAWYER', 'ACCOUNTANT', 'FARMER', 'OTHERS'];
+  genders: Gender[] = ['MALE', 'FEMALE', 'OTHER'];
+  occupations: CustomerOccupation[] = [
+    'STUDENT', 'SERVICE_HOLDER', 'GOVERNMENT_EMPLOYEE', 'BUSINESS_OWNER',
+    'SELF_EMPLOYED', 'FREELANCER', 'DOCTOR', 'ENGINEER', 'TEACHER', 'LAWYER',
+    'ACCOUNTANT', 'ARCHITECT', 'CONSULTANT', 'FARMER', 'LABORER', 'DRIVER',
+    'MECHANIC', 'ELECTRICIAN', 'PLUMBER', 'POLICE', 'MILITARY', 'CIVIL_SERVANT',
+    'BANKER', 'NGO_EMPLOYEE', 'RETIRED', 'HOMEMAKER', 'UNEMPLOYED',
+    'FOREIGN_EMPLOYEE', 'EXPATRIATE', 'POLITICIAN', 'JOURNALIST', 'ARTIST',
+    'WRITER', 'ACTOR', 'MUSICIAN', 'RELIGIOUS_LEADER', 'OTHERS'
+  ];
   addressTypes = ['PRESENT', 'PERMANENT'];
   documentTypes: DocumentType[] = ['NID', 'PASSPORT', 'DRIVING_LICENSE', 'BIRTH_CERTIFICATE'];
 

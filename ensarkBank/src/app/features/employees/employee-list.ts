@@ -1,12 +1,13 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { DatePipe } from '@angular/common';
 import { EmployeeService } from '../../services';
 import { EmployeeResponse } from '../../models';
 
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   templateUrl: './employee-list.html',
   styleUrl: './employee-list.scss'
 })
@@ -15,6 +16,9 @@ export class EmployeeList implements OnInit {
   employees = signal<EmployeeResponse[]>([]);
   loading = signal(true);
   error = signal('');
+
+  activeCount = computed(() => this.employees().filter(e => e.active).length);
+  inactiveCount = computed(() => this.employees().filter(e => !e.active).length);
 
   ngOnInit() {
     this.loadEmployees();

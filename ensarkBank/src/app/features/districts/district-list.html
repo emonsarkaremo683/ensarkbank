@@ -39,7 +39,7 @@
             <td>{{ dist.id }}</td>
             <td><strong>{{ dist.name }}</strong></td>
             <td>{{ dist.division?.name || '—' }}</td>
-            <td>{{ dist.policeStations?.length || 0 }} stations</td>
+            <td>{{ getPoliceStationsByDistrictId(dist.id).length || 0 }} stations</td>
             <td>
               <button class="btn btn-sm btn-danger" (click)="deleteDistrict(dist.id!)">Delete</button>
             </td>

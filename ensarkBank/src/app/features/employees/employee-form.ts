@@ -1,13 +1,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TitleCasePipe } from '@angular/common';
 import { EmployeeService, BranchService, AddressService } from '../../services';
-import { EmployeeRequest, Branch, PoliceStation, AddressRequest, Division, District } from '../../models';
+import { EmployeeRequest, Branch, PoliceStation, AddressRequest, Division, District, Gender, Designation, Role } from '../../models';
 
 @Component({
   selector: 'app-employee-form',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, TitleCasePipe],
   templateUrl: './employee-form.html',
   styleUrl: './employee-form.scss'
 })
@@ -39,9 +40,24 @@ export class EmployeeForm implements OnInit {
   loading = signal(false);
   error = signal('');
 
-  genders = ['MALE', 'FEMALE', 'OTHER'];
-  designations = ['MANAGING_DIRECTOR', 'GENERAL_MANAGER', 'BRANCH_MANAGER', 'TELLER', 'CASH_OFFICER', 'CUSTOMER_SERVICE_OFFICER', 'SOFTWARE_ENGINEER', 'HR_OFFICER', 'ACCOUNTS_OFFICER', 'LOAN_OFFICER', 'AUDIT_OFFICER', 'ADMIN_OFFICER', 'INTERN'];
-  roles = ['ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'LOAN_OFFICER', 'CUSTOMER_SERVICE', 'CUSTOMER'];
+  selectedDivisions: number[] = [0, 0];
+  selectedDistricts: number[] = [0, 0];
+
+  genders: Gender[] = ['MALE', 'FEMALE', 'OTHER'];
+  designations: Designation[] = [
+    'CHIEF_EXECUTIVE_OFFICER', 'MANAGING_DIRECTOR', 'DEPUTY_MANAGING_DIRECTOR',
+    'GENERAL_MANAGER', 'DEPUTY_GENERAL_MANAGER', 'ASSISTANT_GENERAL_MANAGER',
+    'BRANCH_MANAGER', 'ASSISTANT_BRANCH_MANAGER', 'OPERATIONS_MANAGER',
+    'TELLER', 'CASH_OFFICER', 'CUSTOMER_SERVICE_OFFICER', 'RELATIONSHIP_MANAGER',
+    'LOAN_OFFICER', 'ACCOUNTS_OFFICER', 'COMPLIANCE_OFFICER', 'AUDIT_OFFICER',
+    'SYSTEM_ADMINISTRATOR', 'SOFTWARE_ENGINEER', 'NETWORK_ENGINEER', 'DATABASE_ADMINISTRATOR',
+    'HR_OFFICER', 'ADMIN_OFFICER', 'FINANCE_OFFICER', 'TREASURY_OFFICER',
+    'SECURITY_OFFICER', 'OFFICE_ASSISTANT', 'INTERN'
+  ];
+  roles: Role[] = [
+    'SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER',
+    'LOAN_OFFICER', 'CUSTOMER_SERVICE', 'ATM_MANAGER', 'AUDITOR', 'CUSTOMER'
+  ];
   addressTypes = ['PRESENT', 'PERMANENT'];
 
   ngOnInit() {
@@ -58,21 +74,14 @@ export class EmployeeForm implements OnInit {
 
   private initializeAddresses() {
     this.employee.addresses = [
-      { holdingNo: '', area: '', postalCode: '', addressType: 'PRESENT', divisionId: 0, districtId: 0, policeStationId: 0, policeStation: { id: 0 } },
-      { holdingNo: '', area: '', postalCode: '', addressType: 'PERMANENT', divisionId: 0, districtId: 0, policeStationId: 0, policeStation: { id: 0 } }
+      { holdingNo: '', area: '', postalCode: '', addressType: 'PRESENT', policeStation: { id: 0 } },
+      { holdingNo: '', area: '', postalCode: '', addressType: 'PERMANENT', policeStation: { id: 0 } }
     ];
   }
 
   addAddress() {
     this.employee.addresses.push({
-      holdingNo: '',
-      area: '',
-      postalCode: '',
-      addressType: 'PRESENT',
-      divisionId: 0,
-      districtId: 0,
-      policeStationId: 0,
-      policeStation: { id: 0 }
+      holdingNo: '', area: '', postalCode: '', addressType: 'PRESENT', policeStation: { id: 0 }
     });
   }
 
@@ -81,12 +90,9 @@ export class EmployeeForm implements OnInit {
   }
 
   onDivisionChange(index: number, divisionId: number) {
-    const address = this.employee.addresses[index];
-
-    address.divisionId = divisionId;
-    address.districtId = 0;
-    address.policeStationId = 0;
-    address.policeStation = { id: 0 };
+    this.selectedDivisions[index] = divisionId;
+    this.selectedDistricts[index] = 0;
+    this.employee.addresses[index].policeStation = { id: 0 };
 
     if (this.sameAddress() && index === 0) {
       this.copyPresentToPermanent();
@@ -94,11 +100,8 @@ export class EmployeeForm implements OnInit {
   }
 
   onDistrictChange(index: number, districtId: number) {
-    const address = this.employee.addresses[index];
-
-    address.districtId = districtId;
-    address.policeStationId = 0;
-    address.policeStation = { id: 0 };
+    this.selectedDistricts[index] = districtId;
+    this.employee.addresses[index].policeStation = { id: 0 };
 
     if (this.sameAddress() && index === 0) {
       this.copyPresentToPermanent();
@@ -106,35 +109,23 @@ export class EmployeeForm implements OnInit {
   }
 
   onPoliceStationChange(index: number, policeStationId: number) {
-    const address = this.employee.addresses[index];
-
-    address.policeStationId = policeStationId;
-    address.policeStation = {
-      id: policeStationId
-    };
+    this.employee.addresses[index].policeStation = { id: policeStationId };
 
     if (this.sameAddress() && index === 0) {
       this.copyPresentToPermanent();
     }
   }
-  getDistrictsForAddress(address: AddressRequest): District[] {
-    if (!address.divisionId) {
-      return [];
-    }
 
-    return this.districts().filter(
-      district => district.division?.id === address.divisionId
-    );
+  getDistrictsForIndex(index: number): District[] {
+    const divisionId = this.selectedDivisions[index];
+    if (!divisionId) return [];
+    return this.districts().filter(d => d.division?.id === divisionId);
   }
 
-  getPoliceStationsForAddress(address: AddressRequest): PoliceStation[] {
-    if (!address.districtId) {
-      return [];
-    }
-
-    return this.allPoliceStations().filter(
-      ps => ps.district?.id === address.districtId
-    );
+  getPoliceStationsForIndex(index: number): PoliceStation[] {
+    const districtId = this.selectedDistricts[index];
+    if (!districtId) return [];
+    return this.allPoliceStations().filter(ps => ps.district?.id === districtId);
   }
 
   toggleSameAddress() {
@@ -150,10 +141,9 @@ export class EmployeeForm implements OnInit {
     permanent.holdingNo = present.holdingNo;
     permanent.area = present.area;
     permanent.postalCode = present.postalCode;
-    permanent.divisionId = present.divisionId;
-    permanent.districtId = present.districtId;
-    permanent.policeStationId = present.policeStationId;
-    permanent.policeStation = { id: present.policeStationId || present.policeStation?.id || 0 };
+    permanent.policeStation = { id: present.policeStation?.id || 0 };
+    this.selectedDivisions[1] = this.selectedDivisions[0];
+    this.selectedDistricts[1] = this.selectedDistricts[0];
   }
 
   handleProfileFile(event: Event) {
@@ -167,15 +157,15 @@ export class EmployeeForm implements OnInit {
     this.loading.set(true);
     this.error.set('');
 
-    const addresses = this.employee.addresses.map(({ divisionId, districtId, policeStationId, policeStation, ...rest }) => ({
-      ...rest,
-      addressType: rest.addressType,
-      policeStation: { id: policeStationId || policeStation?.id || 0 }
-    }));
-
     const payload: EmployeeRequest = {
       ...this.employee,
-      addresses
+      addresses: this.employee.addresses.map(addr => ({
+        holdingNo: addr.holdingNo,
+        area: addr.area,
+        postalCode: addr.postalCode,
+        addressType: addr.addressType,
+        policeStation: { id: addr.policeStation?.id || 0 }
+      }))
     };
 
     const formData = new FormData();
