@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
+import com.elitetech_inc.ensarkbank.atm_management.atm.ATM;
 import com.elitetech_inc.ensarkbank.common.address.policestation.entity.PoliceStation;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.common.enums.BranchStatus;
@@ -53,10 +54,10 @@ public class Branch extends BaseEntity {
     @JsonIgnore
     private List<Employee> employees = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "branch",  fetch = FetchType.LAZY)
-//    @JsonIgnore
-//    private List<ATM> atms = new ArrayList<>();
-//
+    @OneToMany(mappedBy = "branch", cascade =  CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ATM> atms = new ArrayList<>();
+
     @OneToMany(mappedBy = "branch",  fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Account>accounts = new ArrayList<>();

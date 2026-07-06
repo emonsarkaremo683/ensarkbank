@@ -34,6 +34,7 @@ export class Sidebar {
     { label: 'Districts', path: '/districts', icon: '📍' },
     { label: 'Divisions', path: '/divisions', icon: '🗂️' },
     { label: 'Police Stations', path: '/police-stations', icon: '🚔' },
+    { label: 'ATMs', path: '/atms', icon: '🏧' },
     { label: 'Loans', path: '/loans', icon: '📋' }
   ];
 

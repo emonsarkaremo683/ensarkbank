@@ -22,6 +22,8 @@ import { PoliceStationList } from './features/police-stations/police-station-lis
 import { LoanList } from './features/loans/loan-list';
 import { LoanForm } from './features/loans/loan-form';
 import { LoanDetail } from './features/loans/loan-detail';
+import { AtmList } from './features/atms/atm-list';
+import { AtmForm } from './features/atms/atm-form';
 
 export const routes: Routes = [
   {
@@ -138,5 +140,20 @@ export const routes: Routes = [
     path: 'loans/:id',
     component: LoanDetail,
     data: { title: 'Loan Details' }
+  },
+  {
+    path: 'atms',
+    component: AtmList,
+    data: { title: 'ATMs' }
+  },
+  {
+    path: 'atms/new',
+    component: AtmForm,
+    data: { title: 'New ATM' }
+  },
+  {
+    path: 'atms/:id',
+    component: AtmForm,
+    data: { title: 'Edit ATM' }
   }
 ];

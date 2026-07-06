@@ -8,3 +8,4 @@ export * from './transaction.model';
 export * from './beneficiary.model';
 export * from './address.model';
 export * from './loan.model';
+export * from './atm.model';
