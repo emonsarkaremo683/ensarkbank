@@ -66,7 +66,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Optional<EmployeeResponse> findByBranchId(Long branchId) {
-        return employeeRepository.findByBranchId(branchId).map(employeeMapper::toResponse);
+    public List<EmployeeResponse> findByBranchId(Long branchId) {
+        return employeeRepository.findEmployeeByBranchId(branchId).stream().map(employeeMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }

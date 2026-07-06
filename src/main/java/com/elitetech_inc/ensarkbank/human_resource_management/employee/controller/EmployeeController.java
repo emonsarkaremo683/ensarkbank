@@ -43,7 +43,7 @@ public class EmployeeController {
     }
 
     @GetMapping("branch/{branchId}")
-    public ResponseEntity<Optional<EmployeeResponse>> getAllEmployee(@PathVariable Long branchId){
+    public ResponseEntity<List<EmployeeResponse>> getAllEmployee(@PathVariable Long branchId){
         return new ResponseEntity<>(employeeService.findByBranchId(branchId), HttpStatus.OK);
     }
 

@@ -41,7 +41,6 @@ public class DistrictController {
         return new ResponseEntity<>(districtService.save(d), HttpStatus.OK);
     }
 
-
     @GetMapping("/division/{id}")
     public ResponseEntity<List<District>> findById(@PathVariable Long id){
         List<District> d = districtService.findByDivisionId(id).stream().toList();
