@@ -51,6 +51,7 @@ public class EmployeeMapper {
         employee.setDesignation(request.getDesignation());
         employee.setDob(request.getDob());
         employee.setEmail(request.getEmail());
+
         employee.setPhoneNumber(request.getPhone());
         return employee;
     }
@@ -60,9 +61,9 @@ public class EmployeeMapper {
         User user = new User();
         user.setEmail(er.getEmail());
         user.setRole(resolveRole(er));
-        user.setActive(false);
+        user.setActive(true);
         user.setPassword(er.getPassword());
-        user.setEmailVerified(false);
+        user.setEmailVerified(true);
 
         Address present = null;
         Address permanent = null;

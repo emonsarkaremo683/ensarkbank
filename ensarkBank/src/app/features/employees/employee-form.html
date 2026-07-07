@@ -147,7 +147,7 @@
             </div>
             <div class="form-group">
               <label>Police Station</label>
-              <select class="form-control" [ngModel]="addr.policeStation?.id || 0" [name]="'ps' + i"
+              <select class="form-control" [ngModel]="addr.policeStation.id || 0" [name]="'ps' + i"
                 (ngModelChange)="onPoliceStationChange(i, $event)">
                 <option [ngValue]="0">Select Police Station</option>
                 @for (ps of getPoliceStationsForIndex(i); track ps.id) {

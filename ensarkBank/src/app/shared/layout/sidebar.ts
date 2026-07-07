@@ -35,6 +35,7 @@ export class Sidebar {
     { label: 'Divisions', path: '/divisions', icon: '🗂️' },
     { label: 'Police Stations', path: '/police-stations', icon: '🚔' },
     { label: 'ATMs', path: '/atms', icon: '🏧' },
+    { label: 'Cashier Transactions', path: '/cashier-transactions', icon: '🏦' },
     { label: 'Loans', path: '/loans', icon: '📋' }
   ];
 

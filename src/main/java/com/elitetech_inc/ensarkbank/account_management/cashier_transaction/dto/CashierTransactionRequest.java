@@ -6,7 +6,10 @@ import lombok.Data;
 @Data
 public class CashierTransactionRequest {
     private String checkNo;
-    private Long branchId;
+    private Long branchId; // cashier's branch
     private String accountNumber;
+    private String accountName;
+    private String bankName;
+    private String routingNumber; // receiver branch
     private TransactionRequest transactionRequest;
 }

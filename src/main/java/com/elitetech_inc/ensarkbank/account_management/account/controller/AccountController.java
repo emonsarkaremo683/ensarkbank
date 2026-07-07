@@ -16,6 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/account/")
@@ -51,6 +52,13 @@ public class AccountController {
     @GetMapping("{id}")
     public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long id) {
         return accountService.getAccount(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("account-number/{accountNumber}")
+    public ResponseEntity<AccountResponse> getAccountByAccountNumber(@PathVariable String accountNumber) {
+        return accountService.getAccountByAccountNumber(accountNumber)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

@@ -36,10 +36,6 @@ public class CashierTransactionMapper {
             journalResponses = mapJournals(ct.getTransaction());
         }
 
-        AccountTransactionResponse accountTransactionResponse = null;
-        if (ct.getAccountTransaction() != null) {
-            accountTransactionResponse = accountTransactionMapper.toResponse(ct.getAccountTransaction(), null);
-        }
 
         String cashierName = "";
         String branchName = "";
@@ -59,7 +55,6 @@ public class CashierTransactionMapper {
                 .checkNo(ct.getCheckNo())
                 .cashierName(cashierName)
                 .branchName(branchName)
-                .accountTransaction(accountTransactionResponse)
                 .transaction(transactionResponse)
                 .journals(journalResponses)
                 .build();
@@ -75,8 +70,22 @@ public class CashierTransactionMapper {
                     jr.setAccountNumber(journal.getAccountNumber());
                     jr.setEntryType(journal.getEntryType());
                     jr.setAmount(journal.getAmount());
+                    if (journal.getAccount() != null) {
+                        jr.setAccountName(resolveAccountName(journal.getAccount()));
+                    }
                     return jr;
                 })
                 .collect(Collectors.toList());
+    }
+
+    private String resolveAccountName(com.elitetech_inc.ensarkbank.account_management.account.entity.Account account) {
+        if (account.getHolders() == null || account.getHolders().isEmpty()) {
+            return account.getAccountNumber();
+        }
+        return account.getHolders().stream()
+                .filter(h -> h.getHolderType() != null && "PRIMARY".equals(h.getHolderType().name()))
+                .findFirst()
+                .map(h -> h.getCustomer().getName())
+                .orElse(account.getHolders().getFirst().getCustomer().getName());
     }
 }

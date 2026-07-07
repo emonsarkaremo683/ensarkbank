@@ -9,8 +9,10 @@ import com.elitetech_inc.ensarkbank.account_management.loan.entity.Loan;
 import com.elitetech_inc.ensarkbank.account_management.loan.entity.LoanRepayment;
 import com.elitetech_inc.ensarkbank.account_management.loan.repository.LoanRepaymentRepository;
 import com.elitetech_inc.ensarkbank.account_management.loan.repository.LoanRepository;
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.request.TransactionRequest;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.response.TransactionResponse;
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.service.TransactionService;
 import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
@@ -39,6 +41,7 @@ public class LoanServiceImpl implements LoanService{
     private final TransactionService transactionService;
     private final LoanMapper loanMapper;
     private final BranchRepository branchRepository;
+    private final TransactionMapper transactionMapper;
 
     private static final int SCALE = 2;
     private static final RoundingMode RM = RoundingMode.HALF_UP;
@@ -103,7 +106,11 @@ public class LoanServiceImpl implements LoanService{
         request.setRemarks("Loan disbursement - Loan #" + loan.getId());
         request.setChannel(TransactionChannel.INTERNET_BANKING);
 
-        TransactionResponse response = transactionService.loanDisbursement(request, loanControlAccount, loan.getAccount());
+        Transaction transaction = transactionMapper.toTransaction(request);
+        TransactionResponse response = transactionService.createTransaction(request,
+                transaction,
+                loanControlAccount.getAccountNumber(),
+                loan.getAccount().getAccountNumber());
 
         loan.setStatus(LoanStatus.DISBURSED);
         loan.setDisbursementDate(LocalDate.now());
@@ -158,8 +165,14 @@ public class LoanServiceImpl implements LoanService{
         request.setAmount(repayment.getEmiAmount());
         request.setRemarks("EMI payment - Loan #" + loan.getId() + " Installment #" + repayment.getInstallmentNumber());
         request.setChannel(TransactionChannel.INTERNET_BANKING);
+        request.setTransactionType(TransactionType.LOAN_REPAYMENT);
 
-        TransactionResponse response = transactionService.loanRepayment(request, loan.getAccount(), loanControlAccount);
+        Transaction transaction = transactionMapper.toTransaction(request);
+
+        TransactionResponse response = transactionService.createTransaction(request,
+                transaction,
+                loan.getAccount().getAccountNumber(),
+                loanControlAccount.getAccountNumber());
 
         repayment.setStatus(repayment.getDueDate().isBefore(LocalDate.now())
                 ? RepaymentStatus.LATE

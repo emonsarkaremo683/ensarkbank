@@ -4,6 +4,7 @@ import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
 import com.elitetech_inc.ensarkbank.account_management.card.entity.Card;
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepository;
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.service.TransactionService;
 import com.elitetech_inc.ensarkbank.atm_management.atm.ATM;
@@ -11,6 +12,7 @@ import com.elitetech_inc.ensarkbank.atm_management.atm.ATMRepository;
 import com.elitetech_inc.ensarkbank.atm_management.atm_transaction.dto.ATMTransactionMapper;
 import com.elitetech_inc.ensarkbank.atm_management.atm_transaction.dto.ATMTransactionRequest;
 import com.elitetech_inc.ensarkbank.atm_management.atm_transaction.dto.ATMTransactionResponse;
+import com.elitetech_inc.ensarkbank.common.enums.ATMStatus;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
     private final ATMRepository atmRepository;
     private final TransactionService transactionService;
     private final AccountRepository accountRepository;
+    private final TransactionMapper  transactionMapper;
 
     @Override
     public ATMTransactionResponse transaction(ATMTransactionRequest request) {
@@ -39,7 +42,7 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
                 () -> new RuntimeException("ATM Not Found")
         );
 
-        if (atm.getStatus() != com.elitetech_inc.ensarkbank.common.enums.ATMStatus.ACTIVE) {
+        if (atm.getStatus() != ATMStatus.ACTIVE) {
             throw new RuntimeException("ATM is not active");
         }
 
@@ -47,13 +50,15 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
                 () -> new RuntimeException("Card Not Found")
         );
 
-        Transaction t = new Transaction();
-        t.setChannel(com.elitetech_inc.ensarkbank.common.enums.TransactionChannel.ATM);
+        Transaction t = transactionMapper.toTransaction(request.getTransactionRequest());
+        t.setChannel(TransactionChannel.ATM);
 
         ATMTransaction att = new ATMTransaction();
         att.setAtm(atm);
         att.setCard(card);
         att.setTransactionType(request.getTransactionType());
+
+
 
         switch (request.getTransactionType()) {
             case CASH_WITHDRAW -> {
@@ -75,8 +80,12 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
                 if (atm.getLimit() != null && withdrawAmount.compareTo(atm.getLimit()) > 0) {
                     throw new RuntimeException("Amount exceeds ATM limit");
                 }
+                t.setTransactionType(TransactionType.ATM_WITHDRAW);
 
-                transactionService.atmWithdraw(request.getTransactionRequest(), customerAccount, atmAccount);
+                transactionService.createTransaction(request.getTransactionRequest(),
+                        t,
+                        customerAccount.getAccountNumber(),
+                        atmAccount.getAccountNumber());
             }
             case CASH_DEPOSIT -> {
                 Account customerAccount = accountRepository.findAccountByAccountNumber(
@@ -86,9 +95,28 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
                 Account atmAccount = accountRepository.findAccountByAccountNumber(
                         atm.getAccount().getAccountNumber()
                 ).orElseThrow(() -> new RuntimeException("ATM account not found"));
+                t.setTransactionType(TransactionType.ATM_DEPOSIT);
 
-                transactionService.atmDeposit(request.getTransactionRequest(), atmAccount, customerAccount);
+                transactionService.createTransaction(request.getTransactionRequest(),
+                        t,
+                        atmAccount.getAccountNumber(),
+                        customerAccount.getAccountNumber());
             }
+
+            case REFILL -> {
+                Account atmAccount = accountRepository.findAccountByAccountNumber(
+                        atm.getAccount().getAccountNumber()
+                ).orElseThrow(() -> new RuntimeException("ATM account not found"));
+                t.setTransactionType(TransactionType.ATM_DEPOSIT);
+
+                transactionService.createTransaction(request.getTransactionRequest(),
+                        t,
+                        null,
+                        atmAccount.getAccountNumber()
+                        );
+
+            }
+
             default -> throw new RuntimeException("Invalid Transaction Type");
         }
 

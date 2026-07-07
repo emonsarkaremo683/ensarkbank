@@ -8,3 +8,4 @@ export * from './beneficiary.service';
 export * from './address.service';
 export * from './loan.service';
 export * from './atm.service';
+export * from './cashier-transaction.service';

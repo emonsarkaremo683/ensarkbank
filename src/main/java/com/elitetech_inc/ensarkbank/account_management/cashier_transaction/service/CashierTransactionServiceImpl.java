@@ -12,6 +12,7 @@ import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.repos
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.repository.TransactionRepository;
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.service.TransactionService;
 import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
@@ -31,36 +32,54 @@ import java.util.stream.Collectors;
 public class CashierTransactionServiceImpl implements CashierTransactionService {
 
     private final CashierTransactionRepository cashierTransactionRepository;
-    private final AccountTransactionRepository accountTransactionRepository;
     private final TransactionRepository transactionRepository;
     private final BranchRepository branchRepository;
     private final CashierTransactionMapper cashierTransactionMapper;
     private final TransactionMapper transactionMapper;
     private final AccountRepository accountRepository;
+    private final TransactionService transactionService;
 
     @Override
     public CashierTransactionResponse createTransaction(CashierTransactionRequest request) {
         if (request.getTransactionRequest() == null) {
             throw new IllegalArgumentException("Transaction request is required");
         }
-
-        Transaction transaction = transactionMapper.toTransaction(request.getTransactionRequest());
-        transaction.setTransactionType(TransactionType.DEPOSIT);
-        transaction.setChannel(TransactionChannel.BRANCH);
-        transaction.setStatus(TransactionStatus.SUCCESS);
-        Transaction savedTransaction = transactionRepository.save(transaction);
-
         Branch branch = branchRepository.findById(request.getBranchId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Branch", request.getBranchId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Branch", request.getBranchId()));
 
         Account branchAcc = accountRepository.findAccountByAccountNumber("br-"+branch.getRoutingNumber())
                 .orElseThrow();
 
         CashierTransaction cashierTransaction = new CashierTransaction();
         cashierTransaction.setCheckNo(request.getCheckNo());
-        cashierTransaction.setTransaction(savedTransaction);
-        cashierTransaction.set
         cashierTransaction.setBranch(branch);
+        cashierTransaction.setAccountNumber(request.getAccountNumber());
+        cashierTransaction.setAccountName(request.getAccountName());
+        cashierTransaction.setBankName(request.getBankName());
+
+
+        Transaction transaction = transactionMapper.toTransaction(request.getTransactionRequest());
+        transaction.setTransactionType(request.getTransactionRequest().getTransactionType());
+        transaction.setChannel(TransactionChannel.BRANCH);
+        transaction.setStatus(TransactionStatus.SUCCESS);
+
+        if(request.getTransactionRequest().getTransactionType() == TransactionType.DEPOSIT){
+            transactionService.createTransaction(
+                    request.getTransactionRequest(),
+                    transaction,
+                    branchAcc.getAccountNumber(),
+                    request.getAccountNumber()
+            );
+        } else{
+            transactionService.createTransaction(
+                    request.getTransactionRequest(),
+                    transaction,
+                    branchAcc.getAccountNumber(),
+                    request.getAccountNumber()
+            );
+        }
+
+        cashierTransaction.setTransaction(transaction);
 
         CashierTransaction saved = cashierTransactionRepository.save(cashierTransaction);
         return cashierTransactionMapper.toResponse(saved);
@@ -98,11 +117,6 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
             existing.setTransaction(savedTransaction);
         }
 
-        if (request.getAccountTransactionId() != null) {
-            AccountTransaction accountTransaction = accountTransactionRepository.findById(request.getAccountTransactionId())
-                    .orElseThrow(() -> new ResourceNotFoundException("AccountTransaction", request.getAccountTransactionId()));
-            existing.setAccountTransaction(accountTransaction);
-        }
 
         if (request.getBranchId() != null) {
             Branch branch = branchRepository.findById(request.getBranchId())
@@ -121,4 +135,5 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
         }
         cashierTransactionRepository.deleteById(id);
     }
+
 }

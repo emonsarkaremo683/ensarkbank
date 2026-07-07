@@ -76,7 +76,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
         transaction.setChargeAmount(BigDecimal.ZERO);
         transaction.setVatAmount(BigDecimal.ZERO);
 
-        transactionService.createTransaction(atr.getRequest(), transaction, sender,
+        transactionService.createTransaction(atr.getRequest(), transaction, sender.getAccountNumber(),
                 receiver != null ? receiver.getAccountNumber() : atr.getReceiverAccountNumber()
                 );
 

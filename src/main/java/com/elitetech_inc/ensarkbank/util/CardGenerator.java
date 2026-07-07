@@ -42,10 +42,12 @@ public class CardGenerator {
     }
 
     // Check if Card is valid using standard Luhn algorithm
-    public Boolean isCardValid(String number) {
-        if (number == null || number.length() != 16) {
+    public Boolean isCardValid(String number1) {
+        if (number1 == null || number1.length() != 16) {
             return false;
         }
+
+        final String number = number1.replace(" ", "");
 
         int sum = IntStream.range(0, number.length())
                 .map(i -> {

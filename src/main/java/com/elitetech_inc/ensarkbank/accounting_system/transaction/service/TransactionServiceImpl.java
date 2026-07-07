@@ -39,112 +39,18 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     @Transactional
     public TransactionResponse createTransaction(TransactionRequest tr, Transaction t,
-                                                 Account senderAccount,
+                                                 String sender,
                                                  String receiverAccount) {
         if (tr == null) {
             throw new IllegalArgumentException("Transaction request is required");
         }
 
+        Account senderAccount = accountRepository.findAccountByAccountNumber(sender)
+                .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+
 
         return processTransaction(tr, t, senderAccount, receiverAccount);
     }
-
-    @Override
-    @Transactional
-    public TransactionResponse deposit(TransactionRequest request, Account account) {
-        if (request == null) {
-            throw new IllegalArgumentException("Transaction request is required");
-        }
-        request.setTransactionType(TransactionType.DEPOSIT);
-        return processTransaction(request, null, account, null);
-    }
-
-    @Override
-    @Transactional
-    public TransactionResponse withdraw(TransactionRequest request, Account account) {
-        if (request == null) {
-            throw new IllegalArgumentException("Transaction request is required");
-        }
-        request.setTransactionType(TransactionType.WITHDRAW);
-        return processTransaction(request, null, account, null);
-    }
-
-    @Override
-    @Transactional
-    public TransactionResponse transfer(TransactionRequest request, Account senderAccount, String receiverAccount) {
-        if (request == null) {
-            throw new IllegalArgumentException("Transaction request is required");
-        }
-        request.setTransactionType(TransactionType.TRANSFER);
-        return processTransaction(request, null, senderAccount, receiverAccount);
-    }
-
-    @Override
-    @Transactional
-    public TransactionResponse payment(TransactionRequest request, Account senderAccount, String receiverAccount) {
-        if (request == null) {
-            throw new IllegalArgumentException("Transaction request is required");
-        }
-        request.setTransactionType(TransactionType.PAYMENT);
-        return processTransaction(request, null, senderAccount, receiverAccount);
-    }
-
-    @Override
-    @Transactional
-    public TransactionResponse refund(TransactionRequest request, Account senderAccount, Account receiverAccount) {
-        if (request == null) {
-            throw new IllegalArgumentException("Transaction request is required");
-        }
-        request.setTransactionType(TransactionType.REFUND);
-        return processTransaction(request, null, senderAccount, receiverAccount.getAccountNumber());
-    }
-
-    @Override
-    @Transactional
-    public TransactionResponse atmDeposit(TransactionRequest request, Account atmCashAccount, Account customerAccount) {
-        if (request == null) {
-            throw new IllegalArgumentException("Transaction request is required");
-        }
-        request.setTransactionType(TransactionType.ATM_DEPOSIT);
-        return processTransaction(request, null, customerAccount, atmCashAccount.getAccountNumber());
-    }
-
-    @Override
-    @Transactional
-    public TransactionResponse atmWithdraw(TransactionRequest request, Account customerAccount, Account atmCashAccount) {
-        if (request == null) {
-            throw new IllegalArgumentException("Transaction request is required");
-        }
-        request.setTransactionType(TransactionType.ATM_WITHDRAW);
-        return processTransaction(request, null, customerAccount, atmCashAccount.getAccountNumber());
-    }
-
-    @Override
-    @Transactional
-    public TransactionResponse loanDisbursement(TransactionRequest request, Account loanControlAccount, Account customerAccount) {
-        if (request == null) {
-            throw new IllegalArgumentException("Transaction request is required");
-        }
-        request.setTransactionType(TransactionType.LOAN_DISBURSEMENT);
-        return processTransaction(request, null, loanControlAccount, customerAccount.getAccountNumber());
-    }
-
-    @Override
-    @Transactional
-    public TransactionResponse loanRepayment(TransactionRequest request, Account customerAccount, Account loanControlAccount) {
-        if (request == null) {
-            throw new IllegalArgumentException("Transaction request is required");
-        }
-        request.setTransactionType(TransactionType.LOAN_REPAYMENT);
-        return processTransaction(request, null, customerAccount, loanControlAccount.getAccountNumber());
-    }
-
-
-
-
-
-
-
 
 
 
@@ -181,6 +87,18 @@ public class TransactionServiceImpl implements TransactionService {
                     transactionPostingService.transfer(transaction,
                             senderAccount.getAccountNumber(),
                             receiverAccount != null ? receiverAccount.getAccountNumber() : receiver,
+                            transaction.getAmount());
+                    break;
+                case DEPOSIT:
+                    transactionPostingService.cashDeposit(transaction,
+                            senderAccount.getAccountNumber(),
+                            receiverAccount != null ? receiverAccount.getAccountNumber() : receiver,
+                            transaction.getAmount());
+                    break;
+                case WITHDRAW:
+                    transactionPostingService.cashWithdrawal(transaction,
+                            receiverAccount != null ? receiverAccount.getAccountNumber() : receiver,
+                            senderAccount.getAccountNumber(),
                             transaction.getAmount());
                     break;
                 default:

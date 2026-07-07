@@ -1,0 +1,64 @@
+<div class="page-header">
+  <h1 class="page-title">Cashier Transactions</h1>
+  <a routerLink="/cashier-transactions/new" class="btn btn-primary">+ New Cashier Transaction</a>
+</div>
+
+@if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="loading">Loading cashier transactions...</div>
+} @else {
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Check No</th>
+          <th>Account Number</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Channel</th>
+          <th>Status</th>
+          <th>Cashier</th>
+          <th>Branch</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (tx of transactions(); track tx.id) {
+          <tr class="clickable-row" [routerLink]="['/cashier-transactions', tx.id]">
+            <td>{{ tx.id }}</td>
+            <td><code>{{ tx.checkNo || '-' }}</code></td>
+            <td><code>{{ tx.accountTransaction?.senderAccountNumber || '-' }}</code></td>
+            <td>
+              <span class="badge badge-blue">
+                {{ tx.transaction?.transactionType || '-' }}
+              </span>
+            </td>
+            <td class="amount">{{ tx.transaction?.amount | number:'1.2-2' }}</td>
+            <td><span class="badge badge-light">{{ tx.transaction?.channel || '-' }}</span></td>
+            <td>
+              <span class="badge"
+                [class.badge-green]="tx.transaction?.status === 'SUCCESS'"
+                [class.badge-red]="tx.transaction?.status === 'FAILED'"
+                [class.badge-yellow]="tx.transaction?.status === 'PENDING'">
+                {{ tx.transaction?.status || '-' }}
+              </span>
+            </td>
+            <td>{{ tx.cashierName || '-' }}</td>
+            <td>{{ tx.branchName || '-' }}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" (click)="deleteTransaction(tx.id); $event.stopPropagation()">
+                Delete
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="10" class="empty-state">No cashier transactions found</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

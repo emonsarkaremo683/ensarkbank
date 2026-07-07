@@ -6,6 +6,7 @@ import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -16,6 +17,11 @@ import lombok.EqualsAndHashCode;
 public class CashierTransaction extends BaseEntity {
 
     private String checkNo;
+
+    @NotNull private String accountNumber;
+    @NotNull private String accountName;
+    @NotNull private String bankName;
+    @NotNull private String routingNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transaction_id", nullable = false)

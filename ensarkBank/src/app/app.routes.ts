@@ -24,6 +24,9 @@ import { LoanForm } from './features/loans/loan-form';
 import { LoanDetail } from './features/loans/loan-detail';
 import { AtmList } from './features/atms/atm-list';
 import { AtmForm } from './features/atms/atm-form';
+import { CashierTransactionList } from './features/cashier-transactions/cashier-transaction-list';
+import { CashierTransactionForm } from './features/cashier-transactions/cashier-transaction-form';
+import { CashierTransactionDetail } from './features/cashier-transactions/cashier-transaction-detail';
 
 export const routes: Routes = [
   {
@@ -155,5 +158,20 @@ export const routes: Routes = [
     path: 'atms/:id',
     component: AtmForm,
     data: { title: 'Edit ATM' }
+  },
+  {
+    path: 'cashier-transactions',
+    component: CashierTransactionList,
+    data: { title: 'Cashier Transactions' }
+  },
+  {
+    path: 'cashier-transactions/new',
+    component: CashierTransactionForm,
+    data: { title: 'New Cashier Transaction' }
+  },
+  {
+    path: 'cashier-transactions/:id',
+    component: CashierTransactionDetail,
+    data: { title: 'Cashier Transaction Details' }
   }
 ];

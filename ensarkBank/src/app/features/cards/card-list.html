@@ -13,7 +13,7 @@
 
 <ng-template #loaded>
   <div class="cards-grid">
-    <ng-container *ngIf="cards()?.length; else emptyState">
+    <ng-container *ngIf="cards().length; else emptyState">
       <div *ngFor="let card of cards(); trackBy: trackByCardId" class="card-flip-container">
         <div class="card-flip-inner" [class.visa]="card.cardNetwork === 'VISA'"
           [class.mastercard]="card.cardNetwork === 'MASTERCARD'">

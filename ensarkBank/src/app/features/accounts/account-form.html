@@ -4,7 +4,7 @@
 </div>
 
 @if (error()) {
-  <div class="alert alert-danger">{{ error() }}</div>
+<div class="alert alert-danger">{{ error() }}</div>
 }
 
 <div class="form-card">
@@ -26,7 +26,8 @@
       </div>
       <div class="form-group">
         <label>Initial Balance *</label>
-        <input type="number" [(ngModel)]="account.availableBalance" name="balance" required class="form-control" min="0" step="0.01">
+        <input type="number" [(ngModel)]="account.availableBalance" name="balance" required class="form-control" min="0"
+          step="0.01">
       </div>
       <div class="form-group">
         <label>Status *</label>
@@ -38,51 +39,56 @@
 
     <h3 class="section-title">Account Holders</h3>
     @for (holder of account.accountHolders; track $index; let i = $index) {
-      <div class="repeatable-block">
-        <div class="block-header">
-          <span>Holder {{ i + 1 }}</span>
-          @if (account.accountHolders.length > 1) {
-            <button type="button" class="btn btn-sm btn-danger" (click)="removeHolder(i)">Remove</button>
-          }
+    <div class="repeatable-block">
+      <div class="block-header">
+        <span>Holder {{ i + 1 }}</span>
+        @if (account.accountHolders.length > 1) {
+        <button type="button" class="btn btn-sm btn-danger" (click)="removeHolder(i)">Remove</button>
+        }
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Customer *</label>
+          <select [(ngModel)]="holder.customerId" [name]="'cust' + i" required class="form-control">
+            <option [ngValue]="0">Select Customer</option>
+            @for (c of customers(); track c.id) {
+            <option [ngValue]="c.id">{{ c.name }} ({{ c.email }})</option>
+            }
+          </select>
         </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Customer *</label>
-            <select [(ngModel)]="holder.customerId" [name]="'cust' + i" required class="form-control">
-              <option [ngValue]="0">Select Customer</option>
-              @for (c of customers(); track c.id) {
-                <option [ngValue]="c.id">{{ c.name }} ({{ c.email }})</option>
-              }
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Holder Type *</label>
-            <select [(ngModel)]="holder.holderType" [name]="'hType' + i" required class="form-control">
-              @for (ht of holderTypes; track ht) { <option [value]="ht">{{ ht }}</option> }
-            </select>
-          </div>
-          <div class="form-group checkbox-group">
-            <label>
-              <input type="checkbox" [(ngModel)]="holder.canWithdraw" [name]="'canW' + i">
-              Can Withdraw
-            </label>
-          </div>
-          <div class="form-group checkbox-group">
-            <label>
-              <input type="checkbox" [(ngModel)]="holder.canDeposit" [name]="'canD' + i">
-              Can Deposit
-            </label>
-          </div>
-          <div class="form-group checkbox-group">
-            <label>
-              <input type="checkbox" [(ngModel)]="holder.canApproveTransaction" [name]="'canA' + i">
-              Can Approve Transaction
-            </label>
-          </div>
+        <div class="form-group">
+          <label>Holder Type *</label>
+          <select [(ngModel)]="holder.holderType" [name]="'hType' + i" required class="form-control">
+            @for (ht of holderTypes; track ht) { <option [value]="ht">{{ ht }}</option> }
+          </select>
+        </div>
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="holder.canWithdraw" [name]="'canW' + i">
+            Can Withdraw
+          </label>
+        </div>
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="holder.canDeposit" [name]="'canD' + i">
+            Can Deposit
+          </label>
+        </div>
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="holder.canApproveTransaction" [name]="'canA' + i">
+            Can Approve Transaction
+          </label>
         </div>
       </div>
+    </div>
     }
-    <button type="button" class="btn btn-outline btn-sm mb-3" (click)="addHolder()">+ Add Holder</button>
+    <div>
+      @if (account.accountType === 'JOINT_ACCOUNT' || account.accountType === 'BUSINESS') {
+       <button type="button" class="btn btn-outline btn-sm mb-3" (click)="addHolder()">+ Add Holder</button>
+      }
+    </div>
+
 
     <h3 class="section-title">Nominee Information</h3>
     <div class="form-grid">

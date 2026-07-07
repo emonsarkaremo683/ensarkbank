@@ -11,24 +11,24 @@ import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transac
 public interface TransactionService {
 
     TransactionResponse createTransaction(TransactionRequest tr, Transaction t,
-                                          Account senderAccount,
+                                          String senderAccount,
                                           String receiverAccount);
-
-    TransactionResponse deposit(TransactionRequest request, Account account);
-
-    TransactionResponse withdraw(TransactionRequest request, Account account);
-
-    TransactionResponse transfer(TransactionRequest request, Account senderAccount, String receiverAccount);
-
-    TransactionResponse payment(TransactionRequest request, Account senderAccount, String receiverAccount);
-
-    TransactionResponse refund(TransactionRequest request, Account senderAccount, Account receiverAccount);
-
-    TransactionResponse atmDeposit(TransactionRequest request, Account atmCashAccount, Account customerAccount);
-
-    TransactionResponse atmWithdraw(TransactionRequest request, Account customerAccount, Account atmCashAccount);
-
-
-    TransactionResponse loanDisbursement(TransactionRequest request, Account loanControlAccount, Account customerAccount);
-    TransactionResponse loanRepayment(TransactionRequest request, Account customerAccount, Account loanControlAccount);
+//
+//    TransactionResponse deposit(TransactionRequest request, Account account);
+//
+//    TransactionResponse withdraw(TransactionRequest request, Account account);
+//
+//    TransactionResponse transfer(TransactionRequest request,Transaction t, Account senderAccount, String receiverAccount);
+//
+//    TransactionResponse payment(TransactionRequest request, Account senderAccount, String receiverAccount);
+//
+//    TransactionResponse refund(TransactionRequest request, Account senderAccount, Account receiverAccount);
+//
+//    TransactionResponse atmDeposit(TransactionRequest request, Account atmCashAccount, Account customerAccount);
+//
+//    TransactionResponse atmWithdraw(TransactionRequest request, Account customerAccount, Account atmCashAccount);
+//
+//
+//    TransactionResponse loanDisbursement(TransactionRequest request, Account loanControlAccount, Account customerAccount);
+//    TransactionResponse loanRepayment(TransactionRequest request, Account customerAccount, Account loanControlAccount);
 }
