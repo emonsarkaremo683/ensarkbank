@@ -16,19 +16,19 @@ public class JoinHelper {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "transaction_id")
     private Transaction transaction;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "atm_transaction_id")
     private ATMTransaction atmTransaction;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "cashier_transaction_id")
     private CashierTransaction cashierTransaction;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "account_transaction_id")
     private AccountTransaction accountTransaction;
 }
