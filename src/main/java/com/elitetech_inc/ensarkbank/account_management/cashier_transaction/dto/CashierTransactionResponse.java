@@ -17,7 +17,6 @@ public class CashierTransactionResponse {
     private String cashierName;
     private String branchName;
 
-    private AccountTransactionResponse accountTransaction;
     private TransactionResponse transaction;
     private List<JournalResponse> journals;
 }

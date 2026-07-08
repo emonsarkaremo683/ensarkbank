@@ -31,6 +31,7 @@ export interface AccountResponse {
   currentBalance: number;
   holdBalance: number;
   branchName: string;
+  branchRoutingNumber: string;
   holderResponses: AccountHolderResponse[];
 }
 

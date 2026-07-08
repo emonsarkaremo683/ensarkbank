@@ -28,6 +28,7 @@ export class CashierTransactionForm implements OnInit {
   request: CashierTransactionRequest = {
     checkNo: '',
     branchId: 0,
+    routingNumber: '',
     accountNumber: '',
     accountName: '',
     bankName: '',
@@ -52,6 +53,11 @@ export class CashierTransactionForm implements OnInit {
 
   cashierForm = new FormGroup({
     branchId: new FormControl<number | null>(null, {
+      nonNullable: true,
+      validators: [Validators.required]
+    }),
+
+    routingNumber: new FormControl<string>('', {
       nonNullable: true,
       validators: [Validators.required]
     }),
@@ -172,6 +178,7 @@ export class CashierTransactionForm implements OnInit {
     this.accountNumberControl.setValue(account.accountNumber);
 
     this.cashierForm.patchValue({
+      routingNumber: account.branchRoutingNumber ?? '',
       accountName: account.holderResponses[0]?.accountHolderName ?? '',
       bankName: 'Ensark Bank'
     });
@@ -186,9 +193,10 @@ export class CashierTransactionForm implements OnInit {
       return;
     }
 
-    const value = this.cashierForm.value as {
+    const value = this.cashierForm.getRawValue() as {
       checkNo: string | null;
       branchId: number | null;
+      routingNumber: string | null;
       accountNumber: string | null;
       accountName: string | null,
       bankName: string | 'Ensark Bank',
@@ -210,6 +218,7 @@ export class CashierTransactionForm implements OnInit {
     this.request = {
       checkNo: value.checkNo ?? '',
       branchId: value.branchId ?? 0,
+      routingNumber: value.routingNumber ?? '',
       accountNumber: value.accountNumber ?? '',
       accountName: value.accountName ?? '',
       bankName: value.bankName ?? '',

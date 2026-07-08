@@ -10,3 +10,4 @@ export * from './address.model';
 export * from './loan.model';
 export * from './atm.model';
 export * from './cashier-transaction.model';
+export * from './history.model';

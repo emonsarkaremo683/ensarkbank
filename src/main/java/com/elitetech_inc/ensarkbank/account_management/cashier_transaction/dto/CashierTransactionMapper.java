@@ -4,6 +4,7 @@ import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.m
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response.AccountTransactionResponse;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.entity.AccountTransaction;
 import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.CashierTransaction;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.dto.JournalMapper;
 import com.elitetech_inc.ensarkbank.accounting_system.journal.dto.JournalResponse;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.response.TransactionResponse;
@@ -26,6 +27,7 @@ public class CashierTransactionMapper {
     private final EmployeeRepository employeeRepository;
     private final AccountTransactionMapper accountTransactionMapper;
     private final TransactionMapper transactionMapper;
+    private final JournalMapper journalMapper;
 
     public CashierTransactionResponse toResponse(CashierTransaction ct) {
         TransactionResponse transactionResponse = null;
@@ -50,6 +52,7 @@ public class CashierTransactionMapper {
                     .orElse("");
         }
 
+
         return CashierTransactionResponse.builder()
                 .id(ct.getId())
                 .checkNo(ct.getCheckNo())
@@ -65,16 +68,8 @@ public class CashierTransactionMapper {
             return Collections.emptyList();
         }
         return transaction.getEntries().stream()
-                .map(journal -> {
-                    JournalResponse jr = new JournalResponse();
-                    jr.setAccountNumber(journal.getAccountNumber());
-                    jr.setEntryType(journal.getEntryType());
-                    jr.setAmount(journal.getAmount());
-                    if (journal.getAccount() != null) {
-                        jr.setAccountName(resolveAccountName(journal.getAccount()));
-                    }
-                    return jr;
-                })
+                .map(journalMapper::toResponse
+                )
                 .collect(Collectors.toList());
     }
 

@@ -36,6 +36,7 @@ public class AccountMapper {
         ar.setCurrentBalance(acc.getCurrentBalance());
         ar.setHoldBalance(acc.getHoldBalance());
         ar.setBranchName(acc.getBranch() != null ? acc.getBranch().getName() : "");
+        ar.setBranchRoutingNumber(acc.getBranch() != null ? acc.getBranch().getRoutingNumber() : "");
 
         // Account Holder Response
         List<AccountHolderResponse> holders = acc.getHolders()

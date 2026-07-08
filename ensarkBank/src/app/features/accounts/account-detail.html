@@ -68,64 +68,38 @@
 
   <div class="table-card">
     <h3 class="section-title">Transaction History</h3>
-    @if (transactions().length > 0) {
+    @if (histories().length > 0) {
       <table class="data-table">
         <thead>
           <tr>
-            <th>Direction</th>
+            <th>Date</th>
             <th>Transaction ID</th>
-            <th>Type</th>
-            <th>Account</th>
-            <th>To Name</th>
-            <th>Amount</th>
+            <th>Account Number</th>
+            <th>Account Name</th>
+            <th>Entry Type</th>
             <th>Channel</th>
-            <th>Status</th>
+            <th>Amount</th>
           </tr>
         </thead>
         <tbody>
-          @for (tx of transactions(); track tx.id) {
+          @for (h of histories(); track h.transactionId) {
             <tr>
+              <td>{{ h.date | date:'medium' }}</td>
+              <td><code>{{ h.transactionId }}</code></td>
+              <td><code>{{ h.accountNumber }}</code></td>
+              <td>{{ h.accountName }}</td>
               <td>
                 <span class="badge"
-                  [class.badge-red]="tx.direction === 'OUT'"
-                  [class.badge-green]="tx.direction === 'IN'">
-                  {{ tx.direction === 'OUT' ? '↑ Sent' : '↓ Received' }}
+                  [class.badge-green]="h.entryType === 'CREDIT'"
+                  [class.badge-red]="h.entryType === 'DEBIT'">
+                  {{ h.entryType }}
                 </span>
               </td>
-              <td><code>{{ tx.transactionId }}</code></td>
-              <td><span class="badge badge-blue">{{ tx.response.transactionType }}</span></td>
-              <td>
-                
-                @if (tx.direction == 'IN') {
-                  <code>{{ tx.senderAccountNumber }}</code>
-                  <br /><small class="text-muted">{{ tx.senderName }}</small>
-                } @else {
-                  <code>{{ tx.receiverAccountNumber }}</code>
-                } 
-
-              </td>
-
-            
-              <td>
-
-                @if (tx.direction == 'IN') {
-                  <code>{{ tx.senderName }}</code>
-                } @else {
-                  <code>{{ tx.receiverName }}</code>
-                } 
-                
-              
-              </td>
+              <td><span class="badge badge-light">{{ h.channel }}</span></td>
               <td class="amount"
-                [class.amount-out]="tx.direction === 'OUT'"
-                [class.amount-in]="tx.direction === 'IN'">
-                {{ tx.direction === 'OUT' ? '-' : '+' }}{{ tx.response.amount | number:'1.2-2' }}
-              </td>
-              <td><span class="badge badge-light">{{ tx.response.channel }}</span></td>
-              <td>
-                <span class="badge" [class]="getTxStatusClass(tx.response.status)">
-                  {{ tx.response.status }}
-                </span>
+                [class.amount-in]="h.entryType === 'CREDIT'"
+                [class.amount-out]="h.entryType === 'DEBIT'">
+                {{ h.entryType === 'CREDIT' ? '+' : '-' }}{{ h.amount | number:'1.2-2' }}
               </td>
             </tr>
           }

@@ -3,9 +3,10 @@ import { TransactionRequest, AccountTransactionResponse, TransactionResponse, Jo
 export interface CashierTransactionRequest {
   checkNo: string;
   branchId: number;
+  routingNumber: string;
   accountNumber: string;
   accountName: string;
-  bankName:string;
+  bankName: string;
   transactionRequest: TransactionRequest;
 }
 
@@ -14,7 +15,7 @@ export interface CashierTransactionResponse {
   checkNo: string;
   cashierName: string;
   branchName: string;
-  accountTransaction: AccountTransactionResponse;
+  accountTransaction?: AccountTransactionResponse;
   transaction: TransactionResponse;
   journals: JournalResponse[];
 }

@@ -1,25 +1,26 @@
 import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, DatePipe } from '@angular/common';
 import { AccountService } from '../../services';
-import { TransactionService } from '../../services';
-import { AccountResponse, AccountTransactionResponse } from '../../models';
+import { AccountResponse } from '../../models';
+import { HistoryService } from '../../services/history.service';
+import { History } from '../../models';
 
 @Component({
   selector: 'app-account-detail',
   standalone: true,
-  imports: [RouterLink, DecimalPipe],
+  imports: [RouterLink, DecimalPipe, DatePipe],
   templateUrl: './account-detail.html',
   styleUrl: './account-detail.scss'
 })
 export class AccountDetail implements OnInit {
   private accountService = inject(AccountService);
-  private transactionService = inject(TransactionService);
+  private historyService = inject(HistoryService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef)
 
   account = signal<AccountResponse | null>(null);
-  transactions = signal<AccountTransactionResponse[]>([]);
+  histories = signal<History[]>([]);
   loading = signal(true);
   error = signal('');
 
@@ -35,16 +36,16 @@ export class AccountDetail implements OnInit {
     this.accountService.getById(id).subscribe({
       next: (data) => {
         this.account.set(data);
-        this.loadTransactions(data.accountNumber);
+        this.loadHistory(data.accountNumber);
       },
       error: (err) => { this.error.set(err.message); this.loading.set(false); }
     });
   }
 
-  loadTransactions(accountNumber: string) {
-    this.transactionService.getByAccountNumber(accountNumber).subscribe({
-      next: (data) => { this.transactions.set(data); this.cdr.markForCheck(); this.loading.set(false); },
-      error: () => { this.loading.set(false); }
+  loadHistory(accountNumber: string) {
+    this.historyService.getHistoryByAccountNumber(accountNumber).subscribe({
+      next: (data: History[]) => { this.histories.set(data); this.cdr.markForCheck(); this.loading.set(false); },
+      error: (err: Error) => { this.error.set(err.message); this.loading.set(false); }
     });
   }
 
@@ -54,15 +55,6 @@ export class AccountDetail implements OnInit {
       case 'PENDING': return 'badge-yellow';
       case 'BLOCKED':
       case 'CLOSED': return 'badge-red';
-      default: return 'badge-light';
-    }
-  }
-
-  getTxStatusClass(status: string): string {
-    switch (status) {
-      case 'SUCCESS': return 'badge-green';
-      case 'FAILED': return 'badge-red';
-      case 'PENDING': return 'badge-yellow';
       default: return 'badge-light';
     }
   }

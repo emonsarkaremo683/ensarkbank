@@ -15,19 +15,19 @@
       <h3>Transaction Information</h3>
       <div class="detail-row">
         <span class="detail-label">Status</span>
-        <span class="badge" [class]="getStatusClass(tx.transaction?.status || '')">{{ tx.transaction?.status }}</span>
+        <span class="badge" [class]="getStatusClass(tx.transaction.status || '')">{{ tx.transaction.status }}</span>
       </div>
       <div class="detail-row">
         <span class="detail-label">Transaction Type</span>
-        <span class="detail-value"><span class="badge badge-blue">{{ tx.transaction?.transactionType }}</span></span>
+        <span class="detail-value"><span class="badge badge-blue">{{ tx.transaction.transactionType }}</span></span>
       </div>
       <div class="detail-row">
         <span class="detail-label">Channel</span>
-        <span class="detail-value"><span class="badge badge-blue">{{ tx.transaction?.channel }}</span></span>
+        <span class="detail-value"><span class="badge badge-blue">{{ tx.transaction.channel }}</span></span>
       </div>
       <div class="detail-row">
         <span class="detail-label">Reference No</span>
-        <span class="detail-value"><code>{{ tx.transaction?.referenceNo }}</code></span>
+        <span class="detail-value"><code>{{ tx.transaction.referenceNo }}</code></span>
       </div>
       <div class="detail-row">
         <span class="detail-label">Check No</span>
@@ -39,20 +39,20 @@
       <h3>Amount Details</h3>
       <div class="detail-row">
         <span class="detail-label">Amount</span>
-        <span class="detail-value amount">{{ tx.transaction?.amount | number:'1.2-2' }}</span>
+        <span class="detail-value amount">{{ tx.transaction.amount | number:'1.2-2' }}</span>
       </div>
       <div class="detail-row">
         <span class="detail-label">Charge</span>
-        <span class="detail-value">{{ tx.transaction?.chargeAmount | number:'1.2-2' }}</span>
+        <span class="detail-value">{{ tx.transaction.chargeAmount | number:'1.2-2' }}</span>
       </div>
       <div class="detail-row">
         <span class="detail-label">VAT</span>
-        <span class="detail-value">{{ tx.transaction?.vatAmount | number:'1.2-2' }}</span>
+        <span class="detail-value">{{ tx.transaction.vatAmount | number:'1.2-2' }}</span>
       </div>
-      @if (tx.transaction?.remarks) {
+      @if (tx.transaction.remarks) {
         <div class="detail-row">
           <span class="detail-label">Remarks</span>
-          <span class="detail-value">{{ tx.transaction?.remarks }}</span>
+          <span class="detail-value">{{ tx.transaction.remarks }}</span>
         </div>
       }
     </div>
@@ -61,11 +61,11 @@
       <h3>Account & Branch Details</h3>
       <div class="detail-row">
         <span class="detail-label">Account Number</span>
-        <span class="detail-value"><code>{{ tx.accountTransaction?.senderAccountNumber || '-' }}</code></span>
+        <span class="detail-value"><code>{{ getAccountNumber(tx) }}</code></span>
       </div>
       <div class="detail-row">
         <span class="detail-label">Account Holder</span>
-        <span class="detail-value">{{ tx.accountTransaction?.senderName || '-' }}</span>
+        <span class="detail-value">{{ getAccountName(tx) }}</span>
       </div>
       <div class="detail-row">
         <span class="detail-label">Cashier</span>

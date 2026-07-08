@@ -44,4 +44,20 @@ export class CashierTransactionDetail implements OnInit {
       default: return 'badge-light';
     }
   }
+
+  getAccountNumber(tx: CashierTransactionResponse): string {
+    if (tx.accountTransaction?.senderAccountNumber) return tx.accountTransaction.senderAccountNumber;
+    if (!tx.journals?.length) return '-';
+    const entryType = tx.transaction?.transactionType === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
+    const journal = tx.journals.find(j => j.entryType === entryType);
+    return journal?.accountNumber || tx.journals[0]?.accountNumber || '-';
+  }
+
+  getAccountName(tx: CashierTransactionResponse): string {
+    if (tx.accountTransaction?.senderName) return tx.accountTransaction.senderName;
+    if (!tx.journals?.length) return '-';
+    const entryType = tx.transaction?.transactionType === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
+    const journal = tx.journals.find(j => j.entryType === entryType);
+    return journal?.accountName || tx.journals[0]?.accountName || '-';
+  }
 }

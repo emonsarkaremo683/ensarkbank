@@ -24,7 +24,9 @@ export class CashierTransactionList implements OnInit {
   loadTransactions() {
     this.loading.set(true);
     this.cashierTxService.getAll().subscribe({
-      next: (data) => { this.transactions.set(data); this.loading.set(false); },
+      next: (data) => { this.transactions.set(data); 
+        console.log('Loaded transactions:', data);
+        this.loading.set(false); },
       error: (err) => { this.error.set(err.message); this.loading.set(false); }
     });
   }
@@ -36,5 +38,12 @@ export class CashierTransactionList implements OnInit {
         error: (err) => this.error.set(err.message)
       });
     }
+  }
+
+  getJournalAccountNumber(tx: CashierTransactionResponse): string {
+    if (!tx.journals?.length) return '-';
+    const entryType = tx.transaction?.transactionType === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
+    const journal = tx.journals.find(j => j.entryType === entryType);
+    return journal?.accountNumber || tx.journals[0]?.accountNumber || '-';
   }
 }

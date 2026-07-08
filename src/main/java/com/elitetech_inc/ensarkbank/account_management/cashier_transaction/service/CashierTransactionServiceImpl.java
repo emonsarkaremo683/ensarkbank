@@ -9,6 +9,8 @@ import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.dto.C
 import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.dto.CashierTransactionRequest;
 import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.dto.CashierTransactionResponse;
 import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.repository.CashierTransactionRepository;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.entity.JoinHelper;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.repository.JoinHelperRepository;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.repository.TransactionRepository;
@@ -38,6 +40,7 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
     private final TransactionMapper transactionMapper;
     private final AccountRepository accountRepository;
     private final TransactionService transactionService;
+    private final JoinHelperRepository joinHelperRepository;
 
     @Override
     public CashierTransactionResponse createTransaction(CashierTransactionRequest request) {
@@ -56,6 +59,7 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
         cashierTransaction.setAccountNumber(request.getAccountNumber());
         cashierTransaction.setAccountName(request.getAccountName());
         cashierTransaction.setBankName(request.getBankName());
+        cashierTransaction.setRoutingNumber(request.getRoutingNumber());
 
 
         Transaction transaction = transactionMapper.toTransaction(request.getTransactionRequest());
@@ -82,6 +86,12 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
         cashierTransaction.setTransaction(transaction);
 
         CashierTransaction saved = cashierTransactionRepository.save(cashierTransaction);
+
+        JoinHelper jh = new JoinHelper();
+        jh.setCashierTransaction(saved);
+        jh.setTransaction(transaction);
+        joinHelperRepository.save(jh);
+
         return cashierTransactionMapper.toResponse(saved);
     }
 

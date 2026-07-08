@@ -4,6 +4,7 @@ import { DecimalPipe } from '@angular/common';
 import { AccountService } from '../../services';
 import { AccountResponse } from '../../models';
 
+
 @Component({
   selector: 'app-account-list',
   standalone: true,
@@ -13,6 +14,7 @@ import { AccountResponse } from '../../models';
 })
 export class AccountList implements OnInit {
   private accountService = inject(AccountService);
+
   accounts = signal<AccountResponse[]>([]);
   loading = signal(true);
   error = signal('');
@@ -24,7 +26,8 @@ export class AccountList implements OnInit {
   loadAccounts() {
     this.loading.set(true);
     this.accountService.getAll().subscribe({
-      next: (data) => { this.accounts.set(data); this.loading.set(false); },
+      next: (data) => { this.accounts.set(data);
+        this.loading.set(false); },
       error: (err) => { this.error.set(err.message); this.loading.set(false); }
     });
   }

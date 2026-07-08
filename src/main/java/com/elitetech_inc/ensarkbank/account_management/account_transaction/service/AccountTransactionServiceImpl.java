@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import com.elitetech_inc.ensarkbank.accounting_system.journal.entity.JoinHelper;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.repository.JoinHelperRepository;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
 import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
@@ -40,6 +42,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     private final TransactionMapper transactionMapper;
     private final BranchRepository branchRepository;
     private final BeneficiaryRepository beneficiaryRepository;
+    private final JoinHelperRepository joinHelperRepository;
 
     @Override
     @Transactional
@@ -87,6 +90,12 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
         accountTransaction.setReceiverAccountNumber(receiver != null ? receiver.getAccountNumber() : atr.getReceiverAccountNumber());
         accountTransaction.setReceiverName(receiver != null ? receiver.getHolders().getFirst().getCustomer().getName() :  atr.getReceiverName());
         accountTransaction.setBankName(receiver != null ? "Ensark Bank" :atr.getBankName());
+
+        JoinHelper jh = new JoinHelper();
+        jh.setAccountTransaction(accountTransaction);
+        jh.setTransaction(transaction);
+        joinHelperRepository.save(jh);
+
 
         return accountTransactionMapper.toResponse(accountTransactionRepository.save(accountTransaction), sender.getAccountNumber());
     }

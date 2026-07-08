@@ -28,7 +28,7 @@ public class CashierTransaction extends BaseEntity {
     @JsonIgnore
     private Transaction transaction;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "branch_id")
     @JsonIgnore
     private Branch branch;

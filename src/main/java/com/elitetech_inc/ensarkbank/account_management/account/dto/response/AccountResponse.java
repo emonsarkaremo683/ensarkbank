@@ -20,6 +20,7 @@ public class AccountResponse {
     private BigDecimal holdBalance;
 
     private String branchName;
+    private String branchRoutingNumber;
 
     // nominee info
     private String n_name;
