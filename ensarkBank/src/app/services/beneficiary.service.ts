@@ -21,6 +21,12 @@ export class BeneficiaryService {
     );
   }
 
+  getByCustomerId(id: number){
+     return this.http.get<BeneficiaryResponse>(`${this.url}customer/${id}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   create(beneficiary: BeneficiaryRequest): Observable<BeneficiaryResponse> {
     return this.http.post<BeneficiaryResponse>(this.url, beneficiary).pipe(
       catchError(this.handleError)

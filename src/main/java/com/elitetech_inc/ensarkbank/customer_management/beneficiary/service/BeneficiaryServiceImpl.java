@@ -54,4 +54,11 @@ public class BeneficiaryServiceImpl implements BeneficiaryService{
     public Optional<BeneficiaryResponse> findById(Long id) {
         return beneficiaryRepository.findById(id).map(beneficiaryMapper::toResponse);
     }
+
+    @Override
+    public List<BeneficiaryResponse> findByCustomerId(Long customerId) {
+        return beneficiaryRepository.findBeneficiaryByCustomer_id(customerId)
+                .stream().map(beneficiaryMapper::toResponse)
+                .collect(Collectors.toList());
+    }
 }

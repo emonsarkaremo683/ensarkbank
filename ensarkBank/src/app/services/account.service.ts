@@ -20,6 +20,11 @@ export class AccountService {
       catchError(this.handleError)
     );
   }
+  getByAccountNumber(accountNumber: string): Observable<AccountResponse> {
+    return this.http.get<AccountResponse>(`${this.url} +account-number/+${accountNumber}`).pipe(
+      catchError(this.handleError)
+    );
+  }
 
   create(account: AccountRequest, photo: File, nidFront: File, nidBack: File): Observable<AccountResponse> {
     const formData = new FormData();

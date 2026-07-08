@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +22,10 @@ public class JournalService {
                 .stream()
                 .map(journalMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public Optional<JournalResponse> getJournalByJournalId(Long journalId){
+        return journalRepository.findById(journalId).map(journalMapper::toResponse);
     }
 
 }

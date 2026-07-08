@@ -355,15 +355,8 @@ public class TransactionPostingService {
             EntryType entryType,
             BigDecimal amount
     ) {
-        if(!accountRepository.existsByAccountNumber(account)) {
-            return;
-        }
-
-        Account acc = accountRepository.findAccountByAccountNumber(account).orElseThrow(
-                ()-> new RuntimeException("Account not found")
-        );
-
         Journal entry = new Journal();
+        Account acc = accountRepository.findAccountByAccountNumber(account).orElse(null);
         entry.setAccount(acc);
         entry.setTransaction(transaction);
         entry.setAccountNumber(account);

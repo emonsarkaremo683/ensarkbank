@@ -22,4 +22,11 @@ public class JournalController {
     public ResponseEntity<List<JournalResponse>> getByNumber(@PathVariable String accountNumber){
         return ResponseEntity.ok(journalService.getByAccountNumber(accountNumber));
     }
+
+    @GetMapping("entry-id/{id}")
+    public ResponseEntity<JournalResponse> getByJournalId(@PathVariable Long id){
+        return ResponseEntity.ok(journalService.getJournalByJournalId(id).orElseThrow(
+                ()-> new IllegalArgumentException("not found")
+        ));
+    }
 }

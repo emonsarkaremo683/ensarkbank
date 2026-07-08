@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AccountService } from '../../services';
+import { AccountService, BeneficiaryService } from '../../services';
 import { BranchService } from '../../services';
 import { CustomerService } from '../../services';
-import { AccountRequest, Branch, CustomerResponse } from '../../models';
+import { AccountRequest, BeneficiaryResponse, Branch, CustomerResponse } from '../../models';
 
 @Component({
   selector: 'app-account-form',
@@ -18,6 +18,8 @@ export class AccountForm implements OnInit {
   private branchService = inject(BranchService);
   private customerService = inject(CustomerService);
   private router = inject(Router);
+  private beneficiaryService = inject(BeneficiaryService);
+  
 
   account: AccountRequest = {
     accountType: 'SAVINGS',
@@ -36,6 +38,7 @@ export class AccountForm implements OnInit {
   branches = signal<Branch[]>([]);
   customers = signal<CustomerResponse[]>([]);
   loading = signal(false);
+  beneficiary = signal<BeneficiaryResponse[]>([]);
   error = signal('');
 
   photoFile: File | null = null;

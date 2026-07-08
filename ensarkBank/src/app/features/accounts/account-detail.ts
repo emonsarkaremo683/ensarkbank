@@ -21,6 +21,7 @@ export class AccountDetail implements OnInit {
 
   account = signal<AccountResponse | null>(null);
   histories = signal<History[]>([]);
+  history = signal<History | null>(null);
   loading = signal(true);
   error = signal('');
 
@@ -44,8 +45,25 @@ export class AccountDetail implements OnInit {
 
   loadHistory(accountNumber: string) {
     this.historyService.getHistoryByAccountNumber(accountNumber).subscribe({
-      next: (data: History[]) => { this.histories.set(data); this.cdr.markForCheck(); this.loading.set(false); },
+      next: (data: History[]) => {
+        this.histories.set(data);
+        console.log(data);
+        this.cdr.markForCheck();
+        this.loading.set(false);
+      },
       error: (err: Error) => { this.error.set(err.message); this.loading.set(false); }
+    });
+  }
+
+
+  loadSingleData(id: number){
+    this.historyService.getHistoryById(id).subscribe({
+      next: (data: History) => {
+        this.history.set(data); console.log(data); this.cdr.markForCheck(); this.loading.set(false);
+      },
+      error: (err: Error) =>{
+       this.error.set(err.message); this.loading.set(false);
+      }
     });
   }
 
