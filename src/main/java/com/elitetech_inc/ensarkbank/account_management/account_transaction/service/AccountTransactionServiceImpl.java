@@ -28,6 +28,7 @@ import com.elitetech_inc.ensarkbank.accounting_system.transaction.service.Transa
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionStatus;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,10 +44,12 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     private final BranchRepository branchRepository;
     private final BeneficiaryRepository beneficiaryRepository;
     private final JoinHelperRepository joinHelperRepository;
+    private final RequestValidator requestValidator;
 
     @Override
     @Transactional
     public AccountTransactionResponse save(AccountTransactionRequest atr) {
+        requestValidator.validateAccountTransaction(atr);
         if (atr == null || atr.getRequest() == null) {
             throw new IllegalArgumentException("Account transaction request is required");
         }

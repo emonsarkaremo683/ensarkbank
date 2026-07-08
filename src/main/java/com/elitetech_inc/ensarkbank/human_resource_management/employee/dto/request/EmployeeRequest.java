@@ -14,7 +14,6 @@ import java.util.List;
 @Data
 public class EmployeeRequest {
 
-
     private String email;
     private String password;
     private Role role;

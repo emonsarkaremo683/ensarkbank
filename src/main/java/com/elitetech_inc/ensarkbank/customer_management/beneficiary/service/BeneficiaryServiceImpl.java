@@ -7,6 +7,7 @@ import com.elitetech_inc.ensarkbank.customer_management.beneficiary.entity.Benef
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.repository.BeneficiaryRepository;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +23,11 @@ public class BeneficiaryServiceImpl implements BeneficiaryService{
     private final BeneficiaryMapper beneficiaryMapper;
     private final BeneficiaryRepository beneficiaryRepository;
     private final CustomerRepository customerRepository;
+    private final RequestValidator requestValidator;
 
     @Override
     public BeneficiaryResponse save(BeneficiaryRequest br) {
+        requestValidator.validateBeneficiary(br);
 
         Beneficiary b = new Beneficiary();
         b.setName(br.getName());

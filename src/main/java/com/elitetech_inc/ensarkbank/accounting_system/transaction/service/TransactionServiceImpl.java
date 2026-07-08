@@ -20,6 +20,8 @@ import com.elitetech_inc.ensarkbank.accounting_system.transaction.repository.Tra
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionStatus;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
+import com.elitetech_inc.ensarkbank.util.BranchValidator;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,8 @@ public class TransactionServiceImpl implements TransactionService {
     private final BranchService branchService;
     private final AccountRepository accountRepository;
     private final BranchRepository branchRepository;
+    private final BranchValidator branchValidator;
+    private final RequestValidator requestValidator;
 
     @Override
     @Transactional
@@ -44,9 +48,14 @@ public class TransactionServiceImpl implements TransactionService {
         if (tr == null) {
             throw new IllegalArgumentException("Transaction request is required");
         }
+        requestValidator.validateTransactionRequest(tr);
 
         Account senderAccount = accountRepository.findAccountByAccountNumber(sender)
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+
+        if (senderAccount.getBranch() != null) {
+            branchValidator.assertNotAgentBank(senderAccount.getBranch().getId());
+        }
 
 
         return processTransaction(tr, t, senderAccount, receiverAccount);

@@ -11,4 +11,5 @@ export interface Branch {
   type: BranchType;
   status: BranchStatus;
   policeStation?: { id: number; name?: string; district?: { id: number; name?: string } };
+  parentBranch?: { id: number; name?: string };
 }

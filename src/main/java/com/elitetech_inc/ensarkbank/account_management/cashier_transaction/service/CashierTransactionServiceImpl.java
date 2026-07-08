@@ -21,6 +21,8 @@ import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionStatus;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
 import com.elitetech_inc.ensarkbank.common.exception.ResourceNotFoundException;
+import com.elitetech_inc.ensarkbank.util.BranchValidator;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,14 +43,19 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
     private final AccountRepository accountRepository;
     private final TransactionService transactionService;
     private final JoinHelperRepository joinHelperRepository;
+    private final BranchValidator branchValidator;
+    private final RequestValidator requestValidator;
 
     @Override
     public CashierTransactionResponse createTransaction(CashierTransactionRequest request) {
+        requestValidator.validateCashierTransaction(request);
         if (request.getTransactionRequest() == null) {
             throw new IllegalArgumentException("Transaction request is required");
         }
         Branch branch = branchRepository.findById(request.getBranchId())
                 .orElseThrow(() -> new ResourceNotFoundException("Branch", request.getBranchId()));
+
+        branchValidator.assertNotAgentBank(branch.getId());
 
         Account branchAcc = accountRepository.findAccountByAccountNumber("br-"+branch.getRoutingNumber())
                 .orElseThrow();

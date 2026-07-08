@@ -32,7 +32,7 @@ public class Card extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private CardStatus status;
 
-    @Temporal(TemporalType.DATE)
+
     private Date expiryDate;
 
     private double dailyLimit;

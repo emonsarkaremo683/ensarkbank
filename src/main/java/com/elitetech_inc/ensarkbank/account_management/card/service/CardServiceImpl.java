@@ -5,6 +5,7 @@ import com.elitetech_inc.ensarkbank.account_management.card.dto.request.CardRequ
 import com.elitetech_inc.ensarkbank.account_management.card.dto.response.CardResponse;
 import com.elitetech_inc.ensarkbank.account_management.card.entity.Card;
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepository;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +19,11 @@ public class CardServiceImpl implements CardService{
 
     private final CardRepository cardRepository;
     private final CardMapper cardMapper;
+    private final RequestValidator requestValidator;
 
     @Override
     public CardResponse createCard(CardRequest cr) {
+        requestValidator.validateCard(cr);
         Card card = cardMapper.toCard(cr);
         return cardMapper.toCardResponse(cardRepository.save(card));
     }

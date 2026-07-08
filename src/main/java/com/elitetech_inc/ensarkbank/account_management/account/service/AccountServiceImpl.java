@@ -10,6 +10,7 @@ import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.Acc
 import com.elitetech_inc.ensarkbank.account_management.nominee.entity.Nominee;
 import com.elitetech_inc.ensarkbank.account_management.nominee.repository.NomineeRepository;
 import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,10 +32,13 @@ public class AccountServiceImpl implements AccountService {
     private final AccountHolderMapper accountHolderMapper;
     private final Utils utils;
     private final NomineeRepository nomineeRepository;
+    private final RequestValidator requestValidator;
 
     @Transactional
     @Override
     public AccountResponse createAccount(AccountRequest ar, Map<String, MultipartFile> nominees) {
+
+        requestValidator.validateAccount(ar);
 
         Account account = accountMapper.toAccount(ar);
 

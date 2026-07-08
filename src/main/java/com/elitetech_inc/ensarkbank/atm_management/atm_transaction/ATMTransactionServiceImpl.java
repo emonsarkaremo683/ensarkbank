@@ -4,6 +4,8 @@ import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
 import com.elitetech_inc.ensarkbank.account_management.card.entity.Card;
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepository;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.entity.JoinHelper;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.repository.JoinHelperRepository;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.service.TransactionService;
@@ -13,13 +15,17 @@ import com.elitetech_inc.ensarkbank.atm_management.atm_transaction.dto.ATMTransa
 import com.elitetech_inc.ensarkbank.atm_management.atm_transaction.dto.ATMTransactionRequest;
 import com.elitetech_inc.ensarkbank.atm_management.atm_transaction.dto.ATMTransactionResponse;
 import com.elitetech_inc.ensarkbank.common.enums.ATMStatus;
+import com.elitetech_inc.ensarkbank.common.enums.CardStatus;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
+import com.elitetech_inc.ensarkbank.util.BranchValidator;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,8 +42,14 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
     private final AccountRepository accountRepository;
     private final TransactionMapper  transactionMapper;
 
+    private final JoinHelperRepository joinHelperRepository;
+
+    private final BranchValidator branchValidator;
+    private final RequestValidator requestValidator;
+
     @Override
     public ATMTransactionResponse transaction(ATMTransactionRequest request) {
+        requestValidator.validateATMTransaction(request);
         ATM atm = atmRepository.findById(request.getAtmId()).orElseThrow(
                 () -> new RuntimeException("ATM Not Found")
         );
@@ -46,19 +58,41 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
             throw new RuntimeException("ATM is not active");
         }
 
-        Card card = cardRepository.findById(request.getCardId()).orElseThrow(
-                () -> new RuntimeException("Card Not Found")
-        );
-
-        Transaction t = transactionMapper.toTransaction(request.getTransactionRequest());
-        t.setChannel(TransactionChannel.ATM);
-
+        if (atm.getBranch() != null) {
+            branchValidator.assertNotAgentBank(atm.getBranch().getId());
+        }
         ATMTransaction att = new ATMTransaction();
+
+        Card card = null;
+
+        if(atmTransactionMapper.checkCard(request.getCardNumber())){
+            if(cardRepository.existsCardByCardNumber(request.getCardNumber())){
+                card = cardRepository.findByCardNumber(request.getCardNumber()).orElseThrow(
+                        () -> new RuntimeException("Card Not Found")
+                );
+                if (card.getExpiryDate().before(new Date())){
+                    throw new RuntimeException("Card is expired");
+                }
+                if(!card.getPinHash().equals(request.getPin())){
+                    throw new RuntimeException("Card pin is Incorrect");
+                }
+                if(card.getStatus() != CardStatus.ACTIVE){
+                    throw new RuntimeException("Card is not Active");
+                }
+            }
+            else {
+                throw new RuntimeException("This Card is not exists");
+            }
+        } else{
+            throw new RuntimeException("Card Number not valid");
+        }
         att.setAtm(atm);
         att.setCard(card);
         att.setTransactionType(request.getTransactionType());
 
 
+        Transaction t = transactionMapper.toTransaction(request.getTransactionRequest());
+        t.setChannel(TransactionChannel.ATM);
 
         switch (request.getTransactionType()) {
             case CASH_WITHDRAW -> {
@@ -121,6 +155,11 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
         }
 
         att.setTransaction(t);
+
+        JoinHelper jh = new JoinHelper();
+        jh.setTransaction(t);
+        jh.setAtmTransaction(att);
+        joinHelperRepository.save(jh);
         return atmTransactionMapper.toResponse(atmTransactionRepository.save(att));
     }
 
@@ -129,6 +168,10 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
         ATM atm = atmRepository.findById(atmId).orElseThrow(
                 () -> new RuntimeException("ATM Not Found")
         );
+
+        if (atm.getBranch() != null) {
+            branchValidator.assertNotAgentBank(atm.getBranch().getId());
+        }
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Invalid refill amount");
@@ -181,5 +224,35 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
                 .stream()
                 .map(atmTransactionMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public BigDecimal checkBalance(String cardNumber, String pin) {
+
+        if(atmTransactionMapper.checkCard(cardNumber)){
+            if(cardRepository.existsCardByCardNumber(cardNumber)){
+                Card card = cardRepository.findByCardNumber(cardNumber).orElseThrow(
+                        () -> new RuntimeException("Card Not Found")
+                );
+                if (card.getExpiryDate().before(new Date())) {
+                    throw new RuntimeException("Card is expired");
+                }
+                if(!card.getPinHash().equals(pin)){
+                    throw new RuntimeException("Card pin is Incorrect");
+                }
+                if(card.getStatus() != CardStatus.ACTIVE){
+                    throw new RuntimeException("Card is not Active");
+                }
+
+                return accountRepository.findAccountByAccountNumber(card.getAccount().getAccountNumber())
+                        .map(Account::getAvailableBalance)
+                        .orElseThrow(()-> new RuntimeException("Not found account"));
+            }
+            else {
+                throw new RuntimeException("This Card is not exists");
+            }
+        } else{
+            throw new RuntimeException("Card Number not valid");
+        }
     }
 }

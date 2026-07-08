@@ -29,17 +29,22 @@ export class BranchForm implements OnInit {
   };
 
   policeStations = signal<PoliceStation[]>([]);
+  branches = signal<Branch[]>([]);
   loading = signal(false);
   error = signal('');
   isEdit = signal(false);
   branchId = signal<number | null>(null);
 
-  branchTypes = ['HEAD_OFFICE', 'BRANCH', 'SUB_BRANCH'];
+  branchTypes = ['HEAD_OFFICE', 'BRANCH', 'AGENT_BANK'];
   branchStatuses = ['ACTIVE', 'CLOSED'];
 
   ngOnInit() {
     this.addressService.getAllPoliceStations().subscribe({
       next: (data) => this.policeStations.set(data),
+      error: () => {}
+    });
+    this.branchService.getAll().subscribe({
+      next: (data) => this.branches.set(data),
       error: () => {}
     });
     const id = this.route.snapshot.paramMap.get('id');

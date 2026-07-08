@@ -12,7 +12,7 @@
   </div>
 
   <ul class="nav-menu">
-    @for (item of navItems; track item.path) {
+    @for (item of visibleNavItems(); track item.path) {
       <li class="nav-item">
         <a
           [routerLink]="item.path"

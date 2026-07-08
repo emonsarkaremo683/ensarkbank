@@ -7,8 +7,8 @@ import lombok.Data;
 @Data
 public class ATMTransactionRequest {
     private Long atmId;
-    private Long cardId;
+    private String cardNumber;
     private ATMTransactionType transactionType;
-
+    private String pin;
     private TransactionRequest  transactionRequest;
 }

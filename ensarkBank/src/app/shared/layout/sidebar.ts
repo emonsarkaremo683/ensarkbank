@@ -1,5 +1,7 @@
-import { Component, signal, HostBinding } from '@angular/core';
+import { Component, signal, HostBinding, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { BranchType } from '../../models';
+import { isModuleAllowedForBranch } from '../branch-access';
 
 interface NavItem {
   label: string;
@@ -16,6 +18,9 @@ interface NavItem {
 })
 export class Sidebar {
   isOpen = signal(true);
+
+  /** Branch context for the logged-in outlet. null = unrestricted (no auth in this app). */
+  currentBranchType = signal<BranchType | null>(null);
 
   @HostBinding('class.collapsed')
   get hostCollapsed() {
@@ -35,9 +40,17 @@ export class Sidebar {
     { label: 'Divisions', path: '/divisions', icon: '🗂️' },
     { label: 'Police Stations', path: '/police-stations', icon: '🚔' },
     { label: 'ATMs', path: '/atms', icon: '🏧' },
+    { label: 'ATM Transactions', path: '/atm-transactions', icon: '💵' },
     { label: 'Cashier Transactions', path: '/cashier-transactions', icon: '🏦' },
-    { label: 'Loans', path: '/loans', icon: '📋' }
+    { label: 'Loans', path: '/loans', icon: '📋' },
+    { label: 'Ledger', path: '/reports/ledger', icon: '📒' },
+    { label: 'Trial Balance', path: '/reports/trial-balance', icon: '⚖️' },
+    { label: 'Balance Sheet', path: '/reports/balance-sheet', icon: '📊' }
   ];
+
+  visibleNavItems = computed(() =>
+    this.navItems.filter(item => isModuleAllowedForBranch(this.currentBranchType(), item.path))
+  );
 
   toggleSidebar() {
     this.isOpen.set(!this.isOpen());

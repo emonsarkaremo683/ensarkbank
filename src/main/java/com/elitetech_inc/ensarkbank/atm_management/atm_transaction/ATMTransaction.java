@@ -28,9 +28,11 @@ public class ATMTransaction extends BaseEntity {
     private ATM atm;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_id", nullable = false)
+    @JoinColumn(name = "card_id")
     @JsonIgnore
     private Card card;
+
+    private String cardNumber;
 
     @Enumerated(EnumType.STRING)
     private ATMTransactionType transactionType;

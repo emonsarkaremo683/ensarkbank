@@ -51,6 +51,19 @@
           }
         </select>
       </div>
+      @if (branch.type === 'AGENT_BANK') {
+        <div class="form-group">
+          <label>Parent Branch *</label>
+          <select [(ngModel)]="branch.parentBranch" name="parentBranch" required class="form-control">
+            <option [ngValue]="undefined">Select Parent Branch</option>
+            @for (b of branches(); track b.id) {
+              @if (b.type !== 'AGENT_BANK') {
+                <option [ngValue]="{ id: b.id }">{{ b.name }} ({{ b.branchCode }})</option>
+              }
+            }
+          </select>
+        </div>
+      }
     </div>
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" [disabled]="loading() || !branchForm.valid">

@@ -1,4 +1,4 @@
-export type BranchType = 'HEAD_OFFICE' | 'BRANCH' | 'SUB_BRANCH';
+export type BranchType = 'HEAD_OFFICE' | 'BRANCH' | 'AGENT_BANK';
 export type BranchStatus = 'ACTIVE' | 'CLOSED';
 export type AccountType = 'SAVINGS' | 'CURRENT' | 'FIXED_DEPOSIT' | 'JOINT_ACCOUNT' | 'STUDENT' | 'BUSINESS' | 'BRANCH_VAULT' | 'ATM_VAULT' | 'INTER_BANK_VAULT' | 'LOAN_VAULT';
 export type AccountStatus = 'ACTIVE' | 'INACTIVE' | 'BLOCKED' | 'CLOSED' | 'FREEZE' | 'PENDING';
@@ -21,3 +21,4 @@ export type CustomerOccupation = 'STUDENT' | 'SERVICE_HOLDER' | 'GOVERNMENT_EMPL
 export type LoanStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'DISBURSED' | 'ACTIVE' | 'CLOSED' | 'OVERDUE' | 'DEFAULTED';
 export type LoanType = 'PERSONAL' | 'HOME' | 'CAR' | 'EDUCATION' | 'BUSINESS' | 'AGRICULTURE' | 'GOLD' | 'MORTGAGE' | 'SME' | 'OVERDRAFT';
 export type ATMStatus = 'ACTIVE' | 'OFFLINE' | 'OUT_OF_SERVICE' | 'MAINTENANCE';
+export type ATMTransactionType = 'CASH_WITHDRAW' | 'CASH_DEPOSIT' | 'REFILL';

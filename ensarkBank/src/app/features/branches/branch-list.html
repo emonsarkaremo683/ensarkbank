@@ -20,6 +20,7 @@
           <th>Email</th>
           <th>Phone</th>
           <th>Type</th>
+          <th>Parent</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -34,6 +35,13 @@
             <td>{{ branch.phoneNumber }}</td>
             <td><span class="badge badge-blue">{{ branch.type }}</span></td>
             <td>
+              @if (branch.type === 'AGENT_BANK') {
+                {{ branch.parentBranch?.name || '—' }}
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+            <td>
               <span class="badge" [class.badge-green]="branch.status === 'ACTIVE'" [class.badge-red]="branch.status === 'CLOSED'">
                 {{ branch.status }}
               </span>
@@ -44,7 +52,7 @@
             </td>
           </tr>
         } @empty {
-          <tr><td colspan="8" class="empty-state">No branches found</td></tr>
+          <tr><td colspan="9" class="empty-state">No branches found</td></tr>
         }
       </tbody>
     </table>

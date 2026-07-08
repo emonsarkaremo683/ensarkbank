@@ -45,6 +45,11 @@ public class Branch extends BaseEntity {
     @Column(name = "status")
     private BranchStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_branch_id")
+    @JsonIgnore
+    private Branch parentBranch;
+
 
     @ManyToOne
     @JoinColumn(name = "policeStationID")

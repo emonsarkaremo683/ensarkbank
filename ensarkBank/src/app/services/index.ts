@@ -8,5 +8,7 @@ export * from './beneficiary.service';
 export * from './address.service';
 export * from './loan.service';
 export * from './atm.service';
+export * from './atm-transaction.service';
 export * from './cashier-transaction.service';
 export * from './history.service';
+export * from './report.service';

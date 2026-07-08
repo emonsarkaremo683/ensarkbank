@@ -24,9 +24,15 @@ import { LoanForm } from './features/loans/loan-form';
 import { LoanDetail } from './features/loans/loan-detail';
 import { AtmList } from './features/atms/atm-list';
 import { AtmForm } from './features/atms/atm-form';
+import { AtmTransactionList } from './features/atm-transactions/atm-transaction-list';
+import { AtmTransactionForm } from './features/atm-transactions/atm-transaction-form';
+import { AtmTransactionDetail } from './features/atm-transactions/atm-transaction-detail';
 import { CashierTransactionList } from './features/cashier-transactions/cashier-transaction-list';
 import { CashierTransactionForm } from './features/cashier-transactions/cashier-transaction-form';
 import { CashierTransactionDetail } from './features/cashier-transactions/cashier-transaction-detail';
+import { Ledger } from './features/reports/ledger';
+import { TrialBalance } from './features/reports/trial-balance';
+import { BalanceSheet } from './features/reports/balance-sheet';
 
 export const routes: Routes = [
   {
@@ -160,6 +166,21 @@ export const routes: Routes = [
     data: { title: 'Edit ATM' }
   },
   {
+    path: 'atm-transactions',
+    component: AtmTransactionList,
+    data: { title: 'ATM Transactions' }
+  },
+  {
+    path: 'atm-transactions/new',
+    component: AtmTransactionForm,
+    data: { title: 'New ATM Transaction' }
+  },
+  {
+    path: 'atm-transactions/:id',
+    component: AtmTransactionDetail,
+    data: { title: 'ATM Transaction Receipt' }
+  },
+  {
     path: 'cashier-transactions',
     component: CashierTransactionList,
     data: { title: 'Cashier Transactions' }
@@ -173,5 +194,20 @@ export const routes: Routes = [
     path: 'cashier-transactions/:id',
     component: CashierTransactionDetail,
     data: { title: 'Cashier Transaction Details' }
+  },
+  {
+    path: 'reports/ledger',
+    component: Ledger,
+    data: { title: 'Ledger' }
+  },
+  {
+    path: 'reports/trial-balance',
+    component: TrialBalance,
+    data: { title: 'Trial Balance' }
+  },
+  {
+    path: 'reports/balance-sheet',
+    component: BalanceSheet,
+    data: { title: 'Balance Sheet' }
   }
 ];

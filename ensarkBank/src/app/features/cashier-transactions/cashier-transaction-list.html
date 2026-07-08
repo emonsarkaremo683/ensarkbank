@@ -34,17 +34,17 @@
         <td><code>{{ getJournalAccountNumber(tx) }}</code></td>
         <td>
           <span class="badge badge-blue">
-            {{ tx.transaction?.transactionType || '-' }}
+            {{ tx.transaction.transactionType || '-' }}
           </span>
         </td>
-        <td class="amount">{{ tx.transaction?.amount | number:'1.2-2' }}</td>
-        <td><span class="badge badge-light">{{ tx.transaction?.channel || '-' }}</span></td>
+        <td class="amount">{{ tx.transaction.amount | number:'1.2-2' }}</td>
+        <td><span class="badge badge-light">{{ tx.transaction.channel || '-' }}</span></td>
         <td>
           <span class="badge"
-            [class.badge-green]="tx.transaction?.status === 'SUCCESS'"
-            [class.badge-red]="tx.transaction?.status === 'FAILED'"
-            [class.badge-yellow]="tx.transaction?.status === 'PENDING'">
-            {{ tx.transaction?.status || '-' }}
+            [class.badge-green]="tx.transaction.status === 'SUCCESS'"
+            [class.badge-red]="tx.transaction.status === 'FAILED'"
+            [class.badge-yellow]="tx.transaction.status === 'PENDING'">
+            {{ tx.transaction.status || '-' }}
           </span>
         </td>
         <td>{{ tx.cashierName || '-' }}</td>

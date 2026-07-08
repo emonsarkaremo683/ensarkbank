@@ -15,6 +15,7 @@ import com.elitetech_inc.ensarkbank.customer_management.customer.repository.Cust
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.Kyc;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.KycDocuments;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.repository.KycRepository;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +42,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final KycRepository kycRepository;
     private final Utils utils;
+    private final RequestValidator requestValidator;
 
 
     @Override
@@ -48,6 +50,8 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerResponse saveData(CustomerRequest cr,
                                      MultipartFile profile,
                                      Map<DocumentType, MultipartFile> documents) {
+
+        requestValidator.validateCustomer(cr);
 
         //
         Customer c = customerMapper.toCustomer(cr);

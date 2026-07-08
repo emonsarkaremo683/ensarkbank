@@ -11,6 +11,8 @@ import com.elitetech_inc.ensarkbank.common.enums.ATMStatus;
 import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.common.enums.AccountType;
 import com.elitetech_inc.ensarkbank.util.AccountNumberGenerator;
+import com.elitetech_inc.ensarkbank.util.BranchValidator;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,15 +34,20 @@ public class ATMServiceImpl implements ATMService {
     private final BranchRepository branchRepository;
     private final Utils utils;
     private final AccountNumberGenerator generator;
+    private final BranchValidator branchValidator;
+    private final RequestValidator requestValidator;
 
     @Override
     public ATMResponse createATM(ATMRequest atmRequest) {
+        requestValidator.validateATM(atmRequest);
 
         ATM atm = atmMapper.toATM(atmRequest);
 
         Branch branch = branchRepository.findById(atmRequest.getBranchId()).orElseThrow(
                 ()-> new RuntimeException("Branch not found")
         );
+
+        branchValidator.assertNotAgentBank(branch.getId());
 
         atm.setBranch(branch);
         atm.setAtmRouting(utils.generateRouteNumber());
@@ -73,6 +80,9 @@ public class ATMServiceImpl implements ATMService {
         ATM atm = atmRepository.findById(id).orElseThrow(
                 ()-> new RuntimeException("ATM not found")
         );
+        if (atm.getBranch() != null) {
+            branchValidator.assertNotAgentBank(atm.getBranch().getId());
+        }
         atm.setStatus(atmStatus);
 
         Account acc = atm.getAccount();

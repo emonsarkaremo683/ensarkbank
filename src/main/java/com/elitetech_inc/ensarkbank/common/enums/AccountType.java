@@ -12,6 +12,7 @@ public enum AccountType {
     BRANCH_VAULT,
     ATM_VAULT,
     INTER_BANK_VAULT,
+    AGENT_BANK_VAULT,
 
     // LOAN
     LOAN_VAULT

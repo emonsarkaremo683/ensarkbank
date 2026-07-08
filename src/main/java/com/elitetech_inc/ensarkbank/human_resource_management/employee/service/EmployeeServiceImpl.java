@@ -9,6 +9,7 @@ import com.elitetech_inc.ensarkbank.human_resource_management.employee.dto.reque
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.dto.response.EmployeeResponse;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.entity.Employee;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.repository.EmployeeRepository;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,9 +28,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final BranchRepository branchRepository;
     private final UserRepository userRepository;
     private final Utils utils;
+    private final RequestValidator requestValidator;
 
     @Override
     public EmployeeResponse save(EmployeeRequest emp,  MultipartFile profile) {
+        requestValidator.validateEmployee(emp);
 
         Employee employee = employeeMapper.toEmployee(emp);
 

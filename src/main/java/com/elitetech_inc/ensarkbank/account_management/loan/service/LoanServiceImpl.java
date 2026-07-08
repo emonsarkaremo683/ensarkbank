@@ -20,6 +20,7 @@ import com.elitetech_inc.ensarkbank.common.enums.LoanStatus;
 import com.elitetech_inc.ensarkbank.common.enums.RepaymentStatus;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
+import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,7 @@ public class LoanServiceImpl implements LoanService{
     private final LoanMapper loanMapper;
     private final BranchRepository branchRepository;
     private final TransactionMapper transactionMapper;
+    private final RequestValidator requestValidator;
 
     private static final int SCALE = 2;
     private static final RoundingMode RM = RoundingMode.HALF_UP;
@@ -49,6 +51,7 @@ public class LoanServiceImpl implements LoanService{
 
     @Override
     public LoanApplicationResponse applyLoan(LoanApplicationRequest lar) {
+        requestValidator.validateLoanApplication(lar);
         if (lar.getPrincipalAmount().compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Principal must be positive");
         if (lar.getTenureMonths() <= 0)

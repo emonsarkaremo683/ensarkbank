@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface CardRepository extends JpaRepository<Card, Long> {
     Optional<Card> findByCardNumber(String cardNumber);
     Optional<Card> findByAccountId(Long accountId);
-
+    boolean existsCardByCardNumber(String cardNumber);
     @Query("""
     SELECT DISTINCT c
     FROM Card c

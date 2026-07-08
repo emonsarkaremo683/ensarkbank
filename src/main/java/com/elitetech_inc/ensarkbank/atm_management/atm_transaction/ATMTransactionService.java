@@ -12,4 +12,5 @@ public interface ATMTransactionService {
     List<ATMTransactionResponse> getAll();
     ATMTransactionResponse getById(Long id);
     List<ATMTransactionResponse> getByAtmId(Long atmId);
+    BigDecimal checkBalance(String cardNumber, String pin);
 }
