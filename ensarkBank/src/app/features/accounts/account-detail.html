@@ -74,20 +74,18 @@
           <tr>
             <th>Date</th>
             <th>Transaction ID</th>
-            <th>Account Number</th>
-            <th>Account Name</th>
+            <th>Particulars</th>
             <th>Entry Type</th>
-            <th>Channel</th>
             <th>Amount</th>
           </tr>
         </thead>
         <tbody>
           @for (h of histories(); track h.transactionId) {
-            <tr>
+            <tr (click)="loadSingleData(h.id)">
               <td>{{ h.date | date:'medium' }}</td>
               <td><code>{{ h.transactionId }}</code></td>
-              <td><code>{{ h.accountNumber }}</code></td>
-              <td>{{ h.accountName }}</td>
+              <td><code>{{ h.particulars }}</code></td>
+             
               <td>
                 <span class="badge"
                   [class.badge-green]="h.entryType === 'CREDIT'"
@@ -95,7 +93,7 @@
                   {{ h.entryType }}
                 </span>
               </td>
-              <td><span class="badge badge-light">{{ h.channel }}</span></td>
+            
               <td class="amount"
                 [class.amount-in]="h.entryType === 'CREDIT'"
                 [class.amount-out]="h.entryType === 'DEBIT'">

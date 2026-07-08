@@ -97,6 +97,13 @@ public class TransactionServiceImpl implements TransactionService {
                     break;
                 case WITHDRAW:
                     transactionPostingService.cashWithdrawal(transaction,
+                            senderAccount.getAccountNumber(),
+                            receiverAccount != null ? receiverAccount.getAccountNumber() : receiver,
+                            transaction.getAmount());
+                    break;
+
+                case LOAN_DISBURSEMENT:
+                    transactionPostingService.loanDisbursement(transaction,
                             receiverAccount != null ? receiverAccount.getAccountNumber() : receiver,
                             senderAccount.getAccountNumber(),
                             transaction.getAmount());

@@ -9,11 +9,11 @@ import java.time.LocalDateTime;
 
 @Data
 public class JournalResponse {
+    private Long id;
     private LocalDateTime date;
     private String transactionId;
-    private String accountName;
+    private String particulars;
     private String accountNumber;
-    private TransactionChannel channel;
     private EntryType entryType;
     private BigDecimal amount;
 }

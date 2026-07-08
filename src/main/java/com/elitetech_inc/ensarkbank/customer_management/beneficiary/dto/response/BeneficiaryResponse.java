@@ -11,5 +11,6 @@ public class BeneficiaryResponse {
     private String name;
     private String provider;
     private BeneficiaryType beneficiaryType;
-    private String CustomerName;
+    private Long customerId;
+    private String customerName;
 }

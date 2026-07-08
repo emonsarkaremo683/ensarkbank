@@ -31,4 +31,9 @@ public class BeneficiaryController {
     public ResponseEntity<Optional<BeneficiaryResponse>> findById(@PathVariable Long id){
         return ResponseEntity.ok(beneficiaryService.findById(id));
     }
+
+    @GetMapping("customer/{id}")
+    public ResponseEntity<List<BeneficiaryResponse>> findByCustomerId(@PathVariable Long id){
+        return ResponseEntity.ok(beneficiaryService.findByCustomerId(id));
+    }
 }

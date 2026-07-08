@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
-import { CashierTransactionRequest, CashierTransactionResponse } from '../models';
+import { AccountResponse, CashierTransactionRequest, CashierTransactionResponse } from '../models';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CashierTransactionService {
   private http = inject(HttpClient);
   private url = environment.apiUrl + '/cashier-transactions';
+
 
   getAll(): Observable<CashierTransactionResponse[]> {
     return this.http.get<CashierTransactionResponse[]>(this.url).pipe(
@@ -20,6 +21,8 @@ export class CashierTransactionService {
       catchError(this.handleError)
     );
   }
+
+
 
   create(request: CashierTransactionRequest): Observable<CashierTransactionResponse> {
     return this.http.post<CashierTransactionResponse>(this.url, request).pipe(

@@ -1,7 +1,9 @@
 package com.elitetech_inc.ensarkbank.account_management.account_transaction.repository;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,4 +34,6 @@ public interface AccountTransactionRepository extends JpaRepository<AccountTrans
         order by at.createdAt desc
 """)
     List<AccountTransaction> findByAccountId(@Param("accountId") Long accountId);
+
+    Optional<AccountTransaction> findAccountTransactionByTransactionId(Long transactionId);
 }

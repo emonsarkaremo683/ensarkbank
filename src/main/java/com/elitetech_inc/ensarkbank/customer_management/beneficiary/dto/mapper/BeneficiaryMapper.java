@@ -21,6 +21,7 @@ public class BeneficiaryMapper {
         br.setAccNumber(b.getAccNumber());
         br.setBeneficiaryType(b.getBeneficiaryType());
         br.setProvider(b.getProvider());
+        br.setCustomerId(b.getCustomer().getId());
         Customer c = customerRepository.findById(b.getCustomer().getId()).orElseThrow();
         br.setCustomerName(c.getName());
 

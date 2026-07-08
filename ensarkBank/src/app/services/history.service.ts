@@ -14,4 +14,7 @@ export class HistoryService {
   getHistoryByAccountNumber(accountNumber: string): Observable<History[]> {
     return this.http.get<History[]>(`${this.apiUrl}${accountNumber}`);
   }
+  getHistoryById(id: number): Observable<History> {
+    return this.http.get<History>(`${this.apiUrl}entry-id/${id}`);
+  }
 }

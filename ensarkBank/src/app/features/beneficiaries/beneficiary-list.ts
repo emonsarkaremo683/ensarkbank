@@ -23,7 +23,7 @@ export class BeneficiaryList implements OnInit {
   loadBeneficiaries() {
     this.loading.set(true);
     this.beneficiaryService.getAll().subscribe({
-      next: (data) => { this.beneficiaries.set(data); this.loading.set(false); },
+      next: (data) => { this.beneficiaries.set(data); console.log(data); this.loading.set(false); },
       error: (err) => { this.error.set(err.message); this.loading.set(false); }
     });
   }

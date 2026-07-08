@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 public class Journal extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
+    @JoinColumn(name = "account_id")
     @JsonIgnore
     private Account account;
     private String accountNumber;

@@ -81,6 +81,12 @@ public class LoanServiceImpl implements LoanService{
         requireStatus(loan, LoanStatus.PENDING);
         loan.setStatus(LoanStatus.APPROVED);
         loan.setApprovalDate(LocalDate.now());
+
+        Account account = accountRepository.findById(loan.getAccount().getId()).orElseThrow(
+                () -> new IllegalArgumentException("Account does not exist")
+        );
+        account.setAvailableBalance(account.getAvailableBalance().add(loan.getPrincipalAmount().setScale(SCALE, RM)));
+        accountRepository.save(account);
         return loanMapper.toResponse(loanRepository.save(loan));
     }
 
@@ -101,7 +107,7 @@ public class LoanServiceImpl implements LoanService{
         Account loanControlAccount = getAccountOrThrow(loan);
 
         TransactionRequest request = new TransactionRequest();
-        request.setAmount(loan.getPrincipalAmount());
+        request.setAmount(loan.getEmiAmount().setScale(SCALE, RM));
         request.setTransactionType(TransactionType.LOAN_DISBURSEMENT);
         request.setRemarks("Loan disbursement - Loan #" + loan.getId());
         request.setChannel(TransactionChannel.INTERNET_BANKING);
