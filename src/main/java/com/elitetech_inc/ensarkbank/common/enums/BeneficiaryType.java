@@ -4,5 +4,6 @@ public enum BeneficiaryType {
     BKASH,
     NAGAD,
     BANK,
-    CARD
+    CARD,
+    INTER_BANK
 }

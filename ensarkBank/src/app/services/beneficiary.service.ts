@@ -37,7 +37,6 @@ export class BeneficiaryService {
     const message = error.status === 0
       ? 'Cannot connect to server. Please ensure the backend is running on port 8085.'
       : error.error?.message || error.error?.error || error.statusText || 'Server error';
-    console.error('BeneficiaryService Error:', message);
     return throwError(() => new Error(message));
   }
 }

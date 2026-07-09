@@ -214,7 +214,7 @@ public class RequestValidator {
             throw new IllegalArgumentException("Customer not found: " + req.getCustomerId());
         }
         if (req.getBeneficiaryType() == BeneficiaryType.INTER_BANK) {
-            ValidationUtils.notBlank(req.getBankName(), "Beneficiary bank name");
+            ValidationUtils.notBlank(req.getProvider(), "Beneficiary bank name");
             ValidationUtils.notBlank(req.getRoutingNumber(), "Beneficiary routing number");
         }
     }

@@ -12,3 +12,5 @@ export * from './atm-transaction.service';
 export * from './cashier-transaction.service';
 export * from './history.service';
 export * from './report.service';
+export * from './journal.service';
+export * from './toast.service';

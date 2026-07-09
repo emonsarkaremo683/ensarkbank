@@ -76,8 +76,8 @@ public class EmployeeMapper {
             }
         }
 
-        if (present != null)   user.getAddresses().add(present);
-        if (permanent != null) user.getAddresses().add(permanent);
+        if (present != null)  user.addAddress(present);
+        if (permanent != null) user.addAddress(permanent);
         return user;
     }
 

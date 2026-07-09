@@ -3,7 +3,7 @@
 
   <div class="stats-grid">
     @for (stat of stats(); track stat.label) {
-      <div class="stat-card" [style.border-left-color]="stat.color">
+      <a [routerLink]="stat.route" class="stat-card" [style.border-left-color]="stat.color">
         <div class="stat-icon" [style.background]="stat.color + '20'" [style.color]="stat.color">
           {{ stat.icon }}
         </div>
@@ -17,11 +17,11 @@
           </div>
           <div class="stat-label">{{ stat.label }}</div>
         </div>
-      </div>
+      </a>
     }
   </div>
 
-  <div class="welcome-section">
+  <div class="dashboard-grid">
     <div class="welcome-card">
       <h2>Welcome to EnsarBank Management System</h2>
       <p>Manage your branches, customers, employees, accounts, cards, and transactions from this central dashboard.</p>
@@ -29,11 +29,57 @@
         <h3>Quick Actions</h3>
         <div class="action-grid">
           <a routerLink="/branches" class="action-btn">🏦 Manage Branches</a>
-          <a routerLink="/employees" class="action-btn">👥 Manage Employees</a>
+          <a routerLink="/employees" class="action-btn">👨‍💼 Manage Employees</a>
           <a routerLink="/customers" class="action-btn">👤 Manage Customers</a>
           <a routerLink="/accounts" class="action-btn">💳 Manage Accounts</a>
           <a routerLink="/cards" class="action-btn">🃏 Manage Cards</a>
           <a routerLink="/transactions" class="action-btn">💸 View Transactions</a>
+          <a routerLink="/loans" class="action-btn">📋 Manage Loans</a>
+          <a routerLink="/atms" class="action-btn">🏧 Manage ATMs</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Loan Overview</h3>
+      <div class="info-rows">
+        <div class="info-row">
+          <span class="info-label">Pending Applications</span>
+          <span class="info-value badge badge-yellow">{{ loanStats().pending }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Approved (Awaiting Disbursement)</span>
+          <span class="info-value badge badge-blue">{{ loanStats().approved }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Active / Disbursed Loans</span>
+          <span class="info-value badge badge-green">{{ loanStats().active }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total Disbursed Amount</span>
+          <span class="info-value amount">{{ loanStats().totalDisbursed | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Financial Summary</h3>
+      <div class="info-rows">
+        <div class="info-row">
+          <span class="info-label">Total Account Balance</span>
+          <span class="info-value amount">{{ totalBalance() | number:'1.2-2' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total Accounts</span>
+          <span class="info-value">{{ stats()[2].value }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total Cards Issued</span>
+          <span class="info-value">{{ stats()[3].value }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total Transactions</span>
+          <span class="info-value">{{ stats()[4].value }}</span>
         </div>
       </div>
     </div>

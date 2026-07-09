@@ -10,6 +10,7 @@ public class BeneficiaryResponse {
     private String accNumber;
     private String name;
     private String provider;
+    private String routingNumber;
     private BeneficiaryType beneficiaryType;
     private Long customerId;
     private String customerName;

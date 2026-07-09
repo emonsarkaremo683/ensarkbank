@@ -3,6 +3,7 @@ package com.elitetech_inc.ensarkbank.util;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,17 +83,17 @@ public final class ValidationUtils {
         }
     }
 
-    public static void notFuture(LocalDate date, String field) {
-        if (date != null && date.isAfter(LocalDate.now())) {
+    public static void notFuture(Date date, String field) {
+        if (date != null && date.after(new Date())) {
             throw new IllegalArgumentException(field + " cannot be in the future");
         }
     }
 
-    public static void notFuture(LocalDateTime dateTime, String field) {
-        if (dateTime != null && dateTime.isAfter(LocalDateTime.now())) {
-            throw new IllegalArgumentException(field + " cannot be in the future");
-        }
-    }
+//    public static void notFuture(LocalDateTime dateTime, String field) {
+//        if (dateTime != null && dateTime.isAfter(LocalDateTime.now())) {
+//            throw new IllegalArgumentException(field + " cannot be in the future");
+//        }
+//    }
 
     public static void inRange(int value, int min, int max, String field) {
         if (value < min || value > max) {

@@ -21,6 +21,7 @@ import com.elitetech_inc.ensarkbank.common.enums.RepaymentStatus;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
+import com.elitetech_inc.ensarkbank.util.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,7 @@ public class LoanServiceImpl implements LoanService{
     private final BranchRepository branchRepository;
     private final TransactionMapper transactionMapper;
     private final RequestValidator requestValidator;
+    private final Validator validator;
 
     private static final int SCALE = 2;
     private static final RoundingMode RM = RoundingMode.HALF_UP;
@@ -61,8 +63,8 @@ public class LoanServiceImpl implements LoanService{
         BigDecimal emi = calculateEMI(lar.getPrincipalAmount(), lar.getAnnualInterestRate(), lar.getTenureMonths());
         BigDecimal totalPayable = emi.multiply(BigDecimal.valueOf(lar.getTenureMonths())).setScale(SCALE, RM);
 
-        Account account = accountRepository.findById(lar.getAccountId()).orElse(null);
-
+        Account account = accountRepository.findById(lar.getAccountId()).orElseThrow(()->new RuntimeException("Account not found"));
+        validator.checkAccountStatus(account.getAccountNumber());
         Loan loan = new Loan();
         loan.setAccount(account);
         loan.setPrincipalAmount(lar.getPrincipalAmount().setScale(SCALE, RM));
@@ -159,6 +161,7 @@ public class LoanServiceImpl implements LoanService{
 
 
     @Transactional
+    @Override
     public LoanRepayment payInstallment(Long loanRepaymentId) {
         LoanRepayment repayment = repaymentRepository.findById(loanRepaymentId)
                 .orElseThrow(() -> new IllegalArgumentException("Repayment not found: " + loanRepaymentId));

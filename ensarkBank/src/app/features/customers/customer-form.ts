@@ -36,6 +36,7 @@ export class CustomerForm implements OnInit {
   kycUploads = signal<{ file?: File; doc_type: DocumentType }[]>([{ doc_type: 'NID' }]);
   loading = signal(false);
   error = signal('');
+  addressError = signal('');
 
   genders: Gender[] = ['MALE', 'FEMALE', 'OTHER'];
   occupations: CustomerOccupation[] = [
@@ -56,9 +57,18 @@ export class CustomerForm implements OnInit {
   }
 
   private loadAddressData() {
-    this.addressService.getAllDivisions().subscribe({ next: (data) => this.divisions.set(data), error: () => { } });
-    this.addressService.getAllDistricts().subscribe({ next: (data) => this.districts.set(data), error: () => { } });
-    this.addressService.getAllPoliceStations().subscribe({ next: (data) => this.allPoliceStations.set(data), error: () => { } });
+    this.addressService.getAllDivisions().subscribe({
+      next: (data) => this.divisions.set(data),
+      error: (err) => { this.addressError.set('Failed to load divisions: ' + err.message); }
+    });
+    this.addressService.getAllDistricts().subscribe({
+      next: (data) => this.districts.set(data),
+      error: (err) => { this.addressError.set('Failed to load districts: ' + err.message); }
+    });
+    this.addressService.getAllPoliceStations().subscribe({
+      next: (data) => this.allPoliceStations.set(data),
+      error: (err) => { this.addressError.set('Failed to load police stations: ' + err.message); }
+    });
   }
 
   private initializeAddresses() {
@@ -221,7 +231,7 @@ export class CustomerForm implements OnInit {
 
     this.kycUploads().forEach((upload) => {
       if (upload.file) {
-        formData.append('kycFiles', upload.file, upload.file.name);
+        formData.append(upload.doc_type, upload.file, upload.file.name);
       }
     });
 

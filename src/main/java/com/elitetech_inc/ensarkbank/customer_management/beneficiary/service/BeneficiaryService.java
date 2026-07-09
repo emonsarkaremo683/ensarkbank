@@ -14,4 +14,6 @@ public interface BeneficiaryService {
     List<BeneficiaryResponse> getAll();
     Optional<BeneficiaryResponse> findById(Long id);
     List<BeneficiaryResponse>findByCustomerId(Long customerId);
+
+
 }

@@ -1,4 +1,4 @@
-import { LoanStatus } from './enums';
+import { LoanStatus, RepaymentStatus } from './enums';
 
 export interface LoanApplicationRequest {
   accountId: number;
@@ -24,4 +24,17 @@ export interface LoanApplicationResponse {
   nextDueDate: string;
   rejectionReason: string;
   disbursementTransactionRef: string;
+}
+
+export interface LoanRepaymentResponse {
+  id: number;
+  installmentNumber: number;
+  dueDate: string;
+  principalComponent: number;
+  interestComponent: number;
+  emiAmount: number;
+  remainingBalanceAfter: number;
+  status: RepaymentStatus;
+  paidDate: string;
+  transactionRef: string;
 }

@@ -1,9 +1,11 @@
 package com.elitetech_inc.ensarkbank.accounting_system.journal.dto;
 
+import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.entity.AccountTransaction;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.repository.AccountTransactionRepository;
 import com.elitetech_inc.ensarkbank.accounting_system.journal.entity.Journal;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.repository.JournalRepository;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.repository.TransactionRepository;
 import com.elitetech_inc.ensarkbank.common.enums.AccountType;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -22,6 +25,7 @@ public class JournalMapper {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final AccountTransactionRepository accountTransactionRepository;
+    private final JournalRepository journalRepository;
 
     public JournalResponse toResponse(Journal journal) {
         JournalResponse jr = new JournalResponse();
@@ -127,4 +131,6 @@ public class JournalMapper {
                 .orElse(null);
 
     }
+
+
 }

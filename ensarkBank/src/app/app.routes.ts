@@ -11,6 +11,7 @@ import { CardList } from './features/cards/card-list';
 import { CardForm } from './features/cards/card-form';
 import { CustomerList } from './features/customers/customer-list';
 import { CustomerForm } from './features/customers/customer-form';
+import { CustomerDetail } from './features/customers/customer-detail';
 import { EmployeeList } from './features/employees/employee-list';
 import { EmployeeForm } from './features/employees/employee-form';
 import { TransactionList } from './features/transactions/transaction-list';
@@ -94,6 +95,11 @@ export const routes: Routes = [
     path: 'customers/new',
     component: CustomerForm,
     data: { title: 'New Customer' }
+  },
+  {
+    path: 'customers/:id',
+    component: CustomerDetail,
+    data: { title: 'Customer Details' }
   },
   {
     path: 'employees',

@@ -2,6 +2,7 @@ package com.elitetech_inc.ensarkbank.account_management.loan.controller;
 
 import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanApplicationRequest;
 import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanApplicationResponse;
+import com.elitetech_inc.ensarkbank.account_management.loan.entity.LoanRepayment;
 import com.elitetech_inc.ensarkbank.account_management.loan.service.LoanService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -51,5 +52,10 @@ public class LoanController {
     @PostMapping("{id}/disburse")
     public ResponseEntity<LoanApplicationResponse> disburse(@PathVariable Long id) {
         return ResponseEntity.ok(loanService.disburse(id));
+    }
+
+    @PostMapping("repayments/{repaymentId}/pay")
+    public ResponseEntity<LoanRepayment> payInstallment(@PathVariable Long repaymentId) {
+        return ResponseEntity.ok(loanService.payInstallment(repaymentId));
     }
 }

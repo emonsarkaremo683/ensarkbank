@@ -57,4 +57,17 @@ public class Utils {
             throw new RuntimeException("File upload failed [" + prefix + "]: " + e.getMessage());
         }
     }
+
+    public void deleteFile(String subFolder, String fileName) {
+        try {
+            Path filePath = Paths.get(uploadDir, subFolder, fileName);
+
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("File delete failed [" + fileName + "]: " + e.getMessage());
+        }
+    }
 }

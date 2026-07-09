@@ -36,4 +36,12 @@ public class User extends BaseEntity {
     private List<Address> addresses = new ArrayList<>();
 
 
+    public void addAddress(Address address) {
+        if (address != null) {
+            this.addresses.add(address);
+            address.setUser(this);
+        }
+    }
+
+
 }

@@ -8,6 +8,7 @@ import com.elitetech_inc.ensarkbank.account_management.card.entity.Card;
 import com.elitetech_inc.ensarkbank.common.enums.CardStatus;
 import com.elitetech_inc.ensarkbank.common.enums.HolderType;
 import com.elitetech_inc.ensarkbank.util.CardGenerator;
+import com.elitetech_inc.ensarkbank.util.Validator;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ public class CardMapper {
 
     private final AccountRepository accountRepository;
     private final CardGenerator cardGenerator;
+    private final Validator validator;
 
 
     public Card toCard(CardRequest cr){
@@ -30,6 +32,7 @@ public class CardMapper {
         Account account = accountRepository.findById(cr.getAccountId())
                 .orElseThrow(() -> new RuntimeException("Account"+ cr.getAccountId()));
 
+        validator.checkAccountStatus(account.getAccountNumber());
 
         Card card = new Card();
         card.setAccount(account);

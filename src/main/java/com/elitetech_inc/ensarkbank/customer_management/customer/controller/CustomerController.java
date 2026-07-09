@@ -1,14 +1,23 @@
 package com.elitetech_inc.ensarkbank.customer_management.customer.controller;
 
+import com.elitetech_inc.ensarkbank.account_management.account.dto.response.AccountResponse;
+import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
+import com.elitetech_inc.ensarkbank.account_management.account.service.AccountService;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.dto.JournalResponse;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.service.JournalService;
 import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
+import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.request.CustomerRequest;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.response.CustomerResponse;
 import com.elitetech_inc.ensarkbank.customer_management.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +30,8 @@ public class CustomerController {
 
     private final CustomerService customerService;
     private final ObjectMapper objectMapper;
+    private final AccountService accountService;
+    private final JournalService journalService;
 
     /**
      * POST /api/customer/
@@ -67,4 +78,65 @@ public class CustomerController {
     public Optional<CustomerResponse> findById(@PathVariable Long id) {
         return customerService.findById(id);
     }
+
+    @PutMapping("{id}/kyc-status")
+    public CustomerResponse changeKycStatus(@PathVariable Long id,
+                                            @RequestParam KYCStatus status) {
+        return customerService.changeKycStatus(id, status);
+    }
+
+    @PutMapping("{id}/kyc")
+    public CustomerResponse changeKyc(
+            @PathVariable Long id,
+            @RequestPart(value = "NID",               required = false) MultipartFile nid,
+            @RequestPart(value = "PASSPORT",          required = false) MultipartFile passport,
+            @RequestPart(value = "DRIVING_LICENSE",   required = false) MultipartFile drivingLicense,
+            @RequestPart(value = "BIRTH_CERTIFICATE", required = false) MultipartFile birthCertificate
+    ) {
+        Map<DocumentType, MultipartFile> documents = new EnumMap<>(DocumentType.class);
+
+        if (nid != null && !nid.isEmpty()) documents.put(DocumentType.NID, nid);
+        if (passport != null && !passport.isEmpty()) documents.put(DocumentType.PASSPORT, passport);
+        if (drivingLicense != null && !drivingLicense.isEmpty()) documents.put(DocumentType.DRIVING_LICENSE, drivingLicense);
+        if (birthCertificate != null && !birthCertificate.isEmpty()) documents.put(DocumentType.BIRTH_CERTIFICATE, birthCertificate);
+
+        return customerService.changeKyc(id, documents);
+    }
+
+    @PutMapping("{id}")
+    public CustomerResponse changeCustomerDetails(
+            @PathVariable Long id,
+            @RequestPart("data") String data,
+            @RequestPart(value = "profile", required = false) MultipartFile profile
+    ) throws Exception {
+        CustomerRequest dto = objectMapper.readValue(data, CustomerRequest.class);
+        return customerService.changeCustomerDetails(id, dto, profile);
+    }
+
+    @PutMapping("{id}/profile")
+    public CustomerResponse changeProfilePic(
+            @PathVariable Long id,
+            @RequestPart("profile") MultipartFile profile
+    ) {
+        return customerService.changeProfilePic(id, profile);
+    }
+
+    @GetMapping("customer/{id}")
+    public ResponseEntity<List<AccountResponse>> getAccountsByCustomerId(@PathVariable Long id) {
+        return ResponseEntity.ok(accountService.getAccountsByCustomerId(id));
+    }
+
+    @GetMapping("/history/customer/{id}")
+    public ResponseEntity<List<JournalResponse>> getHistory(
+            @PathVariable Long id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime endDate) {
+
+        return ResponseEntity.ok(
+                journalService.getJournalByAccountNumber(id, startDate, endDate)
+        );
+    }
+
 }

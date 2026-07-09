@@ -39,8 +39,8 @@ export class AddressService {
     );
   }
 
-  getDistrictByDivisionId(id: number): Observable<District> {
-    return this.http.get<District>(environment.apiUrl + `/division/${id}`).pipe(
+  getDistrictByDivisionId(id: number): Observable<District[]> {
+    return this.http.get<District[]>(environment.apiUrl + `/district/division/${id}`).pipe(
       catchError(this.handleError)
     );
   }
@@ -79,7 +79,6 @@ export class AddressService {
     const message = error.status === 0
       ? 'Cannot connect to server. Please ensure the backend is running on port 8085.'
       : error.error?.message || error.error?.error || error.statusText || 'Server error';
-    console.error('AddressService Error:', message);
     return throwError(() => new Error(message));
   }
 }

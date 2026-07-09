@@ -20,6 +20,8 @@ public class Beneficiary extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private BeneficiaryType beneficiaryType;
 
+    private String routingNumber;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_id")
     @JsonIgnore

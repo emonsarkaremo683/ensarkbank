@@ -3,6 +3,8 @@ package com.elitetech_inc.ensarkbank.account_management.card.controller;
 import com.elitetech_inc.ensarkbank.account_management.card.dto.request.CardRequest;
 import com.elitetech_inc.ensarkbank.account_management.card.dto.response.CardResponse;
 import com.elitetech_inc.ensarkbank.account_management.card.service.CardService;
+import com.elitetech_inc.ensarkbank.common.enums.CardStatus;
+import com.elitetech_inc.ensarkbank.common.enums.CardType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +36,21 @@ public class CardController {
     @GetMapping("customer/{id}")
     public ResponseEntity<Optional<CardResponse>> getCardByCustomerId(@PathVariable Long id) {
         return ResponseEntity.ok(cardService.findCardsByCustomerId(id));
+    }
+
+    @PatchMapping("{id}/status")
+    public ResponseEntity<CardResponse> updateCardStatus(@PathVariable Long id, @RequestParam CardStatus status) {
+        return ResponseEntity.ok(cardService.updateCardStatus(id, status));
+    }
+
+    @PatchMapping("{id}/type")
+    public ResponseEntity<CardResponse> updateCardType(@PathVariable Long id, @RequestParam CardType type) {
+        return ResponseEntity.ok(cardService.updateCardType(id, type));
+    }
+
+    @PatchMapping("{id}/international")
+    public ResponseEntity<CardResponse> enableInternationalTransaction(@PathVariable Long id, @RequestParam boolean enabled) {
+        return ResponseEntity.ok(cardService.enableInternationalTransaction(id, enabled));
     }
 
 }

@@ -21,7 +21,19 @@ export class AccountService {
     );
   }
   getByAccountNumber(accountNumber: string): Observable<AccountResponse> {
-    return this.http.get<AccountResponse>(`${this.url} +account-number/+${accountNumber}`).pipe(
+    return this.http.get<AccountResponse>(`${this.url}account-number/${accountNumber}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getByBranchId(branchId: number): Observable<AccountResponse> {
+    return this.http.get<AccountResponse>(`${this.url}branch/${branchId}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getByCustomerId(customerId: number): Observable<AccountResponse[]> {
+    return this.http.get<AccountResponse[]>(`${this.url}customer/${customerId}`).pipe(
       catchError(this.handleError)
     );
   }
@@ -42,7 +54,6 @@ export class AccountService {
     const message = error.status === 0
       ? 'Cannot connect to server. Please ensure the backend is running on port 8085.'
       : error.error?.message || error.error?.error || error.statusText || 'Server error';
-    console.error('AccountService Error:', message);
     return throwError(() => new Error(message));
   }
 }

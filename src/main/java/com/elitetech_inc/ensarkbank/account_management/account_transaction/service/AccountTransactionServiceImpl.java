@@ -13,6 +13,7 @@ import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.entity.Beneficiary;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.repository.BeneficiaryRepository;
+import com.elitetech_inc.ensarkbank.util.Validator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     private final BeneficiaryRepository beneficiaryRepository;
     private final JoinHelperRepository joinHelperRepository;
     private final RequestValidator requestValidator;
+    private final Validator validator;
 
     @Override
     @Transactional
@@ -56,6 +58,8 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
 
         Account sender = accountRepository.findById(atr.getSenderId())
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+
+        validator.checkAccountStatus(sender.getAccountNumber());
 
         Account receiver = null;
         if(atr.getBeneficiaryId() != null){

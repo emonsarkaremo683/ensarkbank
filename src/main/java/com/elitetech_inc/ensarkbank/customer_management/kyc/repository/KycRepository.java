@@ -7,5 +7,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface KycRepository extends JpaRepository<Kyc, Long> {
 
-    boolean checkStatusByAccount_id(Long customerId);
 }

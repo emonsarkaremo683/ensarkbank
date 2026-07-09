@@ -47,7 +47,6 @@ export class AccountDetail implements OnInit {
     this.historyService.getHistoryByAccountNumber(accountNumber).subscribe({
       next: (data: History[]) => {
         this.histories.set(data);
-        console.log(data);
         this.cdr.markForCheck();
         this.loading.set(false);
       },
@@ -59,7 +58,7 @@ export class AccountDetail implements OnInit {
   loadSingleData(id: number){
     this.historyService.getHistoryById(id).subscribe({
       next: (data: History) => {
-        this.history.set(data); console.log(data); this.cdr.markForCheck(); this.loading.set(false);
+        this.history.set(data); this.cdr.markForCheck(); this.loading.set(false);
       },
       error: (err: Error) =>{
        this.error.set(err.message); this.loading.set(false);

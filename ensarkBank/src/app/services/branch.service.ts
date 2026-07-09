@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { Branch } from '../models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class BranchService {
   private http = inject(HttpClient);
-  private url = 'http://localhost:8085/api/branches';
+  private url = environment.apiUrl + '/branches';
 
   getAll(): Observable<Branch[]> {
     return this.http.get<Branch[]>(this.url).pipe(
@@ -42,7 +43,6 @@ export class BranchService {
     const message = error.status === 0
       ? 'Cannot connect to server. Please ensure the backend is running on port 8085.'
       : error.error?.message || error.error?.error || error.statusText || 'Server error';
-    console.error('BranchService Error:', message);
     return throwError(() => new Error(message));
   }
 }

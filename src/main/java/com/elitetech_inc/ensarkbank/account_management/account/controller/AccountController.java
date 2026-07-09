@@ -4,6 +4,7 @@ package com.elitetech_inc.ensarkbank.account_management.account.controller;
 import com.elitetech_inc.ensarkbank.account_management.account.dto.request.AccountRequest;
 import com.elitetech_inc.ensarkbank.account_management.account.dto.response.AccountResponse;
 import com.elitetech_inc.ensarkbank.account_management.account.service.AccountService;
+import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.request.CustomerRequest;
 import lombok.RequiredArgsConstructor;
@@ -56,11 +57,29 @@ public class AccountController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PatchMapping("{id}/status/{status}")
+    public ResponseEntity<AccountResponse> setAccountStatus(@PathVariable Long id, @PathVariable AccountStatus status) {
+        return ResponseEntity.ok(accountService.updateAccountStatus(id, status));
+    }
+
     @GetMapping("account-number/{accountNumber}")
     public ResponseEntity<AccountResponse> getAccountByAccountNumber(@PathVariable String accountNumber) {
         return accountService.getAccountByAccountNumber(accountNumber)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("branch/{branchId}")
+    public ResponseEntity<AccountResponse> getAccountsByBranchId(@PathVariable Long branchId) {
+        return accountService.getAccountsByBranchId(branchId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("customer/{customerId}")
+    public ResponseEntity<List<AccountResponse>> getAccountsByCustomerId(@PathVariable Long customerId) {
+        return ResponseEntity.ok(accountService.getAccountsByCustomerId(customerId));
+    }
+
 
 }

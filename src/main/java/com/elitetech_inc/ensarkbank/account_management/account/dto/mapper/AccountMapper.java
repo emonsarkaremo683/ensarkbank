@@ -52,7 +52,7 @@ public class AccountMapper {
     @Transactional
     public Account toAccount(AccountRequest ar) {
         Account acc = new Account();
-        acc.setAccountNumber("acc_"+accountNumberGenerator.generateAccountNumber(ar.getBranchId(), ar.getAccountType()));
+        acc.setAccountNumber("acc-"+accountNumberGenerator.generateAccountNumber(ar.getBranchId(), ar.getAccountType()));
         acc.setAccountType(ar.getAccountType());
         acc.setAvailableBalance(ar.getAvailableBalance());
         acc.setCurrentBalance(ar.getAvailableBalance());

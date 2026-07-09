@@ -23,4 +23,16 @@ public interface JournalRepository extends JpaRepository<Journal, Long> {
     @Query("select j from Journal j where j.createdAt >= :from and j.createdAt <= :to")
     List<Journal> findByDateRange(@Param("from") LocalDateTime from,
                                   @Param("to") LocalDateTime to);
+
+    @Query("""
+    SELECT j
+    FROM Journal j
+    WHERE j.accountNumber IN :accountNumbers
+      AND j.createdAt BETWEEN :startDate AND :endDate
+    ORDER BY j.createdAt DESC
+    """)
+    List<Journal> findTransactionHistory(
+            @Param("accountNumbers") List<String> accountNumbers,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 }

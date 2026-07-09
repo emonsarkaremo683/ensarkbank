@@ -17,9 +17,9 @@ public class Validator {
     private final CardRepository cardRepository;
 
 
-    public boolean checkKycStatus(Long customerId) {
-        return customerRepository.findById(customerId)
-                .map(c -> {
+    public void checkKycStatus(Long customerId) {
+                 customerRepository.findById(customerId)
+                    .map(c -> {
                     if (c.getKyc() == null) {
                         throw new RuntimeException("KYC data is missing for this customer");
                     }
@@ -34,12 +34,11 @@ public class Validator {
                 .orElseThrow(() -> new RuntimeException("Customer not found with id: " + customerId));
     }
 
-    public boolean checkAccountStatus(String accountNumber){
-        return accountRepository.findAccountByAccountNumber(accountNumber)
+    public void checkAccountStatus(String accountNumber){
+                accountRepository.findAccountByAccountNumber(accountNumber)
                 .map(a->{
                     String msg = "Account is " + a.getAccountStatus();
                     return switch (a.getAccountStatus()){
-                        case PENDING, BLOCKED, CLOSED, FREEZE, INACTIVE -> throw new RuntimeException(msg);
                         case ACTIVE -> true;
                         default -> throw new RuntimeException(msg);
                     };
@@ -47,12 +46,11 @@ public class Validator {
                 .orElseThrow(()-> new RuntimeException("Account Not Found"));
     }
 
-    public boolean checkCardStatus(String cardNumber){
-        return cardRepository.findByCardNumber(cardNumber)
+    public void checkCardStatus(String cardNumber){
+                 cardRepository.findByCardNumber(cardNumber)
                 .map(card->{
                     String msg = "Account is " + card.getStatus();
                     return switch (card.getStatus()){
-                        case PENDING, BLOCKED, DISABLED, EXPIRED -> throw new RuntimeException(msg);
                         case ACTIVE -> true;
                         default -> throw new RuntimeException(msg);
                     };
@@ -61,5 +59,11 @@ public class Validator {
                 })
                 .orElseThrow(()-> new RuntimeException("Card Not Found"));
     }
+
+    public boolean checkAccountExists(String accountNumber){
+        return accountRepository.existsByAccountNumber(accountNumber);
+    }
+
+
 
 }

@@ -12,6 +12,7 @@ import com.elitetech_inc.ensarkbank.account_management.nominee.repository.Nomine
 import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
+import com.elitetech_inc.ensarkbank.util.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,12 +34,17 @@ public class AccountServiceImpl implements AccountService {
     private final Utils utils;
     private final NomineeRepository nomineeRepository;
     private final RequestValidator requestValidator;
+    private final Validator validator;
 
     @Transactional
     @Override
     public AccountResponse createAccount(AccountRequest ar, Map<String, MultipartFile> nominees) {
 
         requestValidator.validateAccount(ar);
+
+        List<AccountHolder> accountHolders = ar.getAccountHolders().stream().map(accountHolderMapper::toAccountHolder).toList();
+
+        validator.checkKycStatus(accountHolders.stream().map(ah -> ah.getCustomer().getId()).findFirst().orElseThrow());
 
         Account account = accountMapper.toAccount(ar);
 
@@ -73,10 +79,6 @@ public class AccountServiceImpl implements AccountService {
         return accountMapper.toAccountResponse(saved);
     }
 
-    @Override
-    public AccountResponse updateAccount(Long id, AccountRequest ar) {
-        return null;
-    }
 
     @Override
     public void deleteAccount(Long id) {
@@ -89,11 +91,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountResponse updateAccountStatus(Long id, AccountRequest ar) {
+    public AccountResponse updateAccountStatus(Long id, AccountStatus status) {
         Account acc = accountRepository.findById(id).orElseThrow(
                 ()-> new RuntimeException("Account not found")
         );
-        acc.setAccountStatus(ar.getAccountStatus());
+        acc.setAccountStatus(status);
         Account updated = accountRepository.save(acc);
         return accountMapper.toAccountResponse(updated);
     }
@@ -111,6 +113,14 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<AccountResponse> getAccounts() {
         return accountRepository.findAll()
+                .stream()
+                .map(accountMapper::toAccountResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AccountResponse> getAccountsByCustomerId(Long customerId) {
+        return accountRepository.findDistinctByHoldersCustomerId(customerId)
                 .stream()
                 .map(accountMapper::toAccountResponse)
                 .collect(Collectors.toList());

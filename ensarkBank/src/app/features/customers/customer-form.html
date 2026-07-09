@@ -46,6 +46,11 @@
     </div>
 
     <h3 class="section-title">Addresses</h3>
+
+    @if (addressError()) {
+    <div class="alert alert-danger">{{ addressError() }}</div>
+    }
+
     <div class="form-check mb-3">
       <input class="form-check-input" type="checkbox" id="sameAddress" [checked]="sameAddress()"
         (change)="toggleSameAddress()" />

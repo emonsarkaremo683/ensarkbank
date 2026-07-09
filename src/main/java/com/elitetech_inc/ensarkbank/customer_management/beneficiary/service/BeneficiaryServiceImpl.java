@@ -8,6 +8,7 @@ import com.elitetech_inc.ensarkbank.customer_management.beneficiary.repository.B
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
+import com.elitetech_inc.ensarkbank.util.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService{
     private final BeneficiaryRepository beneficiaryRepository;
     private final CustomerRepository customerRepository;
     private final RequestValidator requestValidator;
+    private final Validator validator;
 
     @Override
     public BeneficiaryResponse save(BeneficiaryRequest br) {
@@ -34,6 +36,8 @@ public class BeneficiaryServiceImpl implements BeneficiaryService{
         b.setProvider(br.getProvider());
         b.setBeneficiaryType(br.getBeneficiaryType());
         b.setAccNumber(br.getAccNumber());
+
+        b.setRoutingNumber(br.getRoutingNumber());
 
         Customer c = customerRepository.findById(br.getCustomerId()).orElseThrow(
                 ()-> new RuntimeException("Customer not found")

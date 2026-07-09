@@ -4,6 +4,7 @@ import com.elitetech_inc.ensarkbank.auth_management.user.entity.User;
 import com.elitetech_inc.ensarkbank.auth_management.user.repository.UserRepository;
 import com.elitetech_inc.ensarkbank.common.address.address.dto.request.AddressRequest;
 import com.elitetech_inc.ensarkbank.common.address.address.entity.Address;
+import com.elitetech_inc.ensarkbank.common.address.address.repository.AddressRepository;
 import com.elitetech_inc.ensarkbank.common.enums.AddressType;
 import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
 import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
@@ -18,18 +19,13 @@ import com.elitetech_inc.ensarkbank.customer_management.kyc.repository.KycReposi
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +39,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final KycRepository kycRepository;
     private final Utils utils;
     private final RequestValidator requestValidator;
+    private final AddressRepository addressRepository;
 
 
     @Override
@@ -64,18 +61,22 @@ public class CustomerServiceImpl implements CustomerService {
         // Address
         Address present = null;
         Address permanent = null;
+        User u = customerMapper.toUser(cr);
 
         for (AddressRequest a : cr.getAddresses()) {
             if (a.getAddressType() == AddressType.PRESENT) {
                 present = customerMapper.toAddress(a);
+
+
             } else {
                 permanent = customerMapper.toAddress(a);
+
             }
         }
 
-        User u = customerMapper.toUser(cr);
-        if (present != null)   u.getAddresses().add(present);
-        if (permanent != null) u.getAddresses().add(permanent);
+
+        if (present != null)  u.addAddress(present);
+        if (permanent != null) u.addAddress(permanent);
 
         // User save
         c.setUser(userRepository.save(u));
@@ -129,5 +130,114 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findById(id).map(customerMapper::toResponse);
     }
 
+    @Override
+    public CustomerResponse changeKycStatus(Long id, KYCStatus status) {
+
+        Customer c = customerRepository.findById(id).orElseThrow(
+                ()-> new RuntimeException("Customer with id " + id + " not found")
+        );
+
+        c.getKyc().setStatus(status);
+
+        return customerMapper.toResponse(customerRepository.save(c));
+    }
+
+    @Override
+    public CustomerResponse changeKyc(Long id, Map<DocumentType, MultipartFile> documents) {
+        Customer c = customerRepository.findById(id).orElseThrow(
+                ()-> new RuntimeException("Customer with id " + id + " not found")
+        );
+
+        Kyc kyc = kycRepository.findById(c.getKyc().getId()).orElseThrow(
+                ()-> new RuntimeException("Customer with id " + id + " not found")
+        );
+
+
+
+        kyc.setStatus(KYCStatus.PENDING);
+        kyc.getDocuments().clear();
+
+        if (documents != null && !documents.isEmpty()) {
+            for (Map.Entry<DocumentType, MultipartFile> entry : documents.entrySet()) {
+
+                DocumentType docType  = entry.getKey();
+                MultipartFile docFile = entry.getValue();
+
+                if (docFile == null || docFile.isEmpty()) continue;
+
+                String filePath = utils.uploadFile(docFile, "kyc", docType.name());
+
+                KycDocuments kycDoc = new KycDocuments();
+                kycDoc.setDoc_type(docType);
+                kycDoc.setPath(filePath);
+                kycDoc.setKyc(kyc);
+
+                kyc.getDocuments().add(kycDoc);
+            }
+        }
+
+        Kyc savedKyc = kycRepository.save(kyc);
+        c.setKyc(savedKyc);
+
+        return customerMapper.toResponse(c);
+    }
+
+    @Override
+    @Transactional
+    public CustomerResponse changeCustomerDetails(Long id, CustomerRequest cr, MultipartFile profile) {
+
+        requestValidator.validateCustomer(cr);
+
+        Customer c = customerRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("Customer with id " + id + " not found")
+        );
+
+        c.setName(cr.getName());
+        c.setPhone(cr.getPhone());
+        c.setGender(cr.getGender());
+        c.setOccupation(cr.getOccupation());
+        c.setDob(cr.getDob());
+
+        if (profile != null && !profile.isEmpty()) {
+            c.setProfile(utils.uploadFile(profile, "customer", cr.getName()));
+        }
+
+        User u = c.getUser();
+        u.setEmail(cr.getEmail());
+
+        if (cr.getAddresses() != null) {
+            for (AddressRequest a : cr.getAddresses()) {
+                if (a.getAddressType() == AddressType.PRESENT) {
+                    Address present = customerMapper.toAddress(a);
+                    u.getAddresses().add(present);
+                } else {
+                    Address permanent = customerMapper.toAddress(a);
+                    u.getAddresses().add(permanent);
+                }
+            }
+        }
+
+        userRepository.save(u);
+        Customer savedCustomer = customerRepository.save(c);
+
+        return customerMapper.toResponse(savedCustomer);
+    }
+
+    @Override
+    @Transactional
+    public CustomerResponse changeProfilePic(Long id, MultipartFile profile) {
+
+        Customer c = customerRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("Customer with id " + id + " not found")
+        );
+
+        utils.deleteFile("customer",c.getProfile());
+
+        if (profile != null && !profile.isEmpty()) {
+            c.setProfile(utils.uploadFile(profile, "customer", c.getName()));
+        }
+
+        return customerMapper.toResponse(customerRepository.save(c));
+    }
 
 }
