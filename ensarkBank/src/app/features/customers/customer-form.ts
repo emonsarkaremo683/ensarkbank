@@ -1,15 +1,25 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CustomerService, AddressService } from '../../services';
-import { CustomerRequest, PoliceStation, AddressRequest, Division, District, DocumentType, Gender, CustomerOccupation } from '../../models';
+import {
+  CustomerRequest,
+  PoliceStation,
+  AddressRequest,
+  Division,
+  District,
+  DocumentType,
+  Gender,
+  CustomerOccupation,
+} from '../../models';
 
 @Component({
   selector: 'app-customer-form',
   standalone: true,
   imports: [FormsModule, RouterLink],
   templateUrl: './customer-form.html',
-  styleUrl: './customer-form.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './customer-form.scss',
 })
 export class CustomerForm implements OnInit {
   private customerService = inject(CustomerService);
@@ -25,7 +35,7 @@ export class CustomerForm implements OnInit {
     occupation: 'STUDENT',
     dob: '',
     addresses: [],
-    kycRequests: []
+    kycRequests: [],
   };
 
   divisions = signal<Division[]>([]);
@@ -40,13 +50,43 @@ export class CustomerForm implements OnInit {
 
   genders: Gender[] = ['MALE', 'FEMALE', 'OTHER'];
   occupations: CustomerOccupation[] = [
-    'STUDENT', 'SERVICE_HOLDER', 'GOVERNMENT_EMPLOYEE', 'BUSINESS_OWNER',
-    'SELF_EMPLOYED', 'FREELANCER', 'DOCTOR', 'ENGINEER', 'TEACHER', 'LAWYER',
-    'ACCOUNTANT', 'ARCHITECT', 'CONSULTANT', 'FARMER', 'LABORER', 'DRIVER',
-    'MECHANIC', 'ELECTRICIAN', 'PLUMBER', 'POLICE', 'MILITARY', 'CIVIL_SERVANT',
-    'BANKER', 'NGO_EMPLOYEE', 'RETIRED', 'HOMEMAKER', 'UNEMPLOYED',
-    'FOREIGN_EMPLOYEE', 'EXPATRIATE', 'POLITICIAN', 'JOURNALIST', 'ARTIST',
-    'WRITER', 'ACTOR', 'MUSICIAN', 'RELIGIOUS_LEADER', 'OTHERS'
+    'STUDENT',
+    'SERVICE_HOLDER',
+    'GOVERNMENT_EMPLOYEE',
+    'BUSINESS_OWNER',
+    'SELF_EMPLOYED',
+    'FREELANCER',
+    'DOCTOR',
+    'ENGINEER',
+    'TEACHER',
+    'LAWYER',
+    'ACCOUNTANT',
+    'ARCHITECT',
+    'CONSULTANT',
+    'FARMER',
+    'LABORER',
+    'DRIVER',
+    'MECHANIC',
+    'ELECTRICIAN',
+    'PLUMBER',
+    'POLICE',
+    'MILITARY',
+    'CIVIL_SERVANT',
+    'BANKER',
+    'NGO_EMPLOYEE',
+    'RETIRED',
+    'HOMEMAKER',
+    'UNEMPLOYED',
+    'FOREIGN_EMPLOYEE',
+    'EXPATRIATE',
+    'POLITICIAN',
+    'JOURNALIST',
+    'ARTIST',
+    'WRITER',
+    'ACTOR',
+    'MUSICIAN',
+    'RELIGIOUS_LEADER',
+    'OTHERS',
   ];
   addressTypes = ['PRESENT', 'PERMANENT'];
   documentTypes: DocumentType[] = ['NID', 'PASSPORT', 'DRIVING_LICENSE', 'BIRTH_CERTIFICATE'];
@@ -59,22 +99,46 @@ export class CustomerForm implements OnInit {
   private loadAddressData() {
     this.addressService.getAllDivisions().subscribe({
       next: (data) => this.divisions.set(data),
-      error: (err) => { this.addressError.set('Failed to load divisions: ' + err.message); }
+      error: (err) => {
+        this.addressError.set('Failed to load divisions: ' + err.message);
+      },
     });
     this.addressService.getAllDistricts().subscribe({
       next: (data) => this.districts.set(data),
-      error: (err) => { this.addressError.set('Failed to load districts: ' + err.message); }
+      error: (err) => {
+        this.addressError.set('Failed to load districts: ' + err.message);
+      },
     });
     this.addressService.getAllPoliceStations().subscribe({
       next: (data) => this.allPoliceStations.set(data),
-      error: (err) => { this.addressError.set('Failed to load police stations: ' + err.message); }
+      error: (err) => {
+        this.addressError.set('Failed to load police stations: ' + err.message);
+      },
     });
   }
 
   private initializeAddresses() {
     this.customer.addresses = [
-      { holdingNo: '', area: '', postalCode: '', addressType: 'PRESENT', divisionId: 0, districtId: 0, policeStationId: 0, policeStation: { id: 0 } },
-      { holdingNo: '', area: '', postalCode: '', addressType: 'PERMANENT', divisionId: 0, districtId: 0, policeStationId: 0, policeStation: { id: 0 } }
+      {
+        holdingNo: '',
+        area: '',
+        postalCode: '',
+        addressType: 'PRESENT',
+        divisionId: 0,
+        districtId: 0,
+        policeStationId: 0,
+        policeStation: { id: 0 },
+      },
+      {
+        holdingNo: '',
+        area: '',
+        postalCode: '',
+        addressType: 'PERMANENT',
+        divisionId: 0,
+        districtId: 0,
+        policeStationId: 0,
+        policeStation: { id: 0 },
+      },
     ];
   }
 
@@ -87,7 +151,7 @@ export class CustomerForm implements OnInit {
       divisionId: 0,
       districtId: 0,
       policeStationId: 0,
-      policeStation: { id: 0 }
+      policeStation: { id: 0 },
     });
   }
 
@@ -125,7 +189,7 @@ export class CustomerForm implements OnInit {
 
     address.policeStationId = policeStationId;
     address.policeStation = {
-      id: policeStationId
+      id: policeStationId,
     };
 
     if (this.sameAddress() && index === 0) {
@@ -137,9 +201,7 @@ export class CustomerForm implements OnInit {
       return [];
     }
 
-    return this.districts().filter(
-      district => district.division?.id === address.divisionId
-    );
+    return this.districts().filter((district) => district.division?.id === address.divisionId);
   }
 
   getPoliceStationsForAddress(address: AddressRequest): PoliceStation[] {
@@ -147,9 +209,7 @@ export class CustomerForm implements OnInit {
       return [];
     }
 
-    return this.allPoliceStations().filter(
-      ps => ps.district?.id === address.districtId
-    );
+    return this.allPoliceStations().filter((ps) => ps.district?.id === address.districtId);
   }
 
   toggleSameAddress() {
@@ -208,18 +268,20 @@ export class CustomerForm implements OnInit {
     this.loading.set(true);
     this.error.set('');
 
-    const addresses = this.customer.addresses.map(({ divisionId, districtId, policeStationId, policeStation, ...rest }) => ({
-      ...rest,
-      addressType: rest.addressType,
-      policeStation: { id: policeStationId || policeStation?.id || 0 }
-    }));
+    const addresses = this.customer.addresses.map(
+      ({ divisionId, districtId, policeStationId, policeStation, ...rest }) => ({
+        ...rest,
+        addressType: rest.addressType,
+        policeStation: { id: policeStationId || policeStation?.id || 0 },
+      }),
+    );
 
     const payload: CustomerRequest = {
       ...this.customer,
       addresses,
       kycRequests: this.kycUploads()
         .filter((upload) => upload.file)
-        .map((upload) => ({ doc_type: upload.doc_type, path: upload.file?.name ?? '' }))
+        .map((upload) => ({ doc_type: upload.doc_type, path: upload.file?.name ?? '' })),
     };
 
     const formData = new FormData();
@@ -243,7 +305,7 @@ export class CustomerForm implements OnInit {
       error: (err) => {
         this.error.set(err.message);
         this.loading.set(false);
-      }
+      },
     });
   }
 }

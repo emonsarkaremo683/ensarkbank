@@ -94,7 +94,7 @@
           @for (journal of tx.journals; track journal.accountNumber) {
             <tr>
               <td><code>{{ journal.accountNumber }}</code></td>
-              <td>{{ journal.accountName }}</td>
+              <td>{{ journal.particulars || journal.accountNumber || '-' }}</td>
               <td>
                 <span class="badge"
                   [class.badge-red]="journal.entryType === 'DEBIT'"

@@ -1,23 +1,50 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatOptionModule } from '@angular/material/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map, Observable, shareReplay, startWith } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  Observable,
+  shareReplay,
+  startWith,
+} from 'rxjs';
 import { CashierTransactionService } from '../../services';
 import { BranchService } from '../../services';
 import { AccountService } from '../../services';
-import { CashierTransactionRequest, Branch, AccountResponse, TransactionChannel, TransactionType } from '../../models';
+import {
+  CashierTransactionRequest,
+  Branch,
+  AccountResponse,
+  TransactionChannel,
+  TransactionType,
+} from '../../models';
 
 @Component({
   selector: 'app-cashier-transaction-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, MatFormFieldModule, MatInputModule, MatAutocompleteModule, MatOptionModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule,
+    MatOptionModule,
+  ],
   templateUrl: './cashier-transaction-form.html',
-  styleUrl: './cashier-transaction-form.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './cashier-transaction-form.scss',
 })
 export class CashierTransactionForm implements OnInit {
   private cashierTxService = inject(CashierTransactionService);
@@ -36,8 +63,8 @@ export class CashierTransactionForm implements OnInit {
       transactionType: 'DEPOSIT',
       channel: 'BRANCH',
       amount: 0,
-      remarks: ''
-    }
+      remarks: '',
+    },
   };
 
   branches = signal<Branch[]>([]);
@@ -54,32 +81,29 @@ export class CashierTransactionForm implements OnInit {
   cashierForm = new FormGroup({
     branchId: new FormControl<number | null>(null, {
       nonNullable: true,
-      validators: [Validators.required]
+      validators: [Validators.required],
     }),
 
     routingNumber: new FormControl<string>('', {
       nonNullable: true,
-      validators: [Validators.required]
+      validators: [Validators.required],
     }),
 
     accountQuery: new FormControl<string | AccountResponse>('', {
       nonNullable: true,
-      validators: [Validators.required]
+      validators: [Validators.required],
     }),
 
     accountNumber: new FormControl<string>('', {
       nonNullable: true,
-      validators: [Validators.required]
+      validators: [Validators.required],
     }),
 
-    accountName: new FormControl<string>(
-      { value: '', disabled: true },
-      Validators.required
-    ),
+    accountName: new FormControl<string>({ value: '', disabled: true }, Validators.required),
 
     bankName: new FormControl<string>(
       { value: '', disabled: true },
-      { nonNullable: true, validators: Validators.required }
+      { nonNullable: true, validators: Validators.required },
     ),
 
     checkNo: new FormControl<string>(''),
@@ -87,17 +111,17 @@ export class CashierTransactionForm implements OnInit {
     transactionRequest: new FormGroup({
       transactionType: new FormControl<TransactionType>('DEPOSIT', {
         nonNullable: true,
-        validators: [Validators.required]
+        validators: [Validators.required],
       }),
       channel: new FormControl<TransactionChannel>('BRANCH', {
         nonNullable: true,
-        validators: [Validators.required]
+        validators: [Validators.required],
       }),
       amount: new FormControl<number | null>(null, {
-        validators: [Validators.required, Validators.min(0.01)]
+        validators: [Validators.required, Validators.min(0.01)],
       }),
-      remarks: new FormControl<string>('')
-    })
+      remarks: new FormControl<string>(''),
+    }),
   });
 
   filteredAccounts$: Observable<AccountResponse[]> = combineLatest([
@@ -106,20 +130,23 @@ export class CashierTransactionForm implements OnInit {
       startWith(''),
       debounceTime(150),
       distinctUntilChanged((a, b) => {
-        const aValue = typeof a === 'string' ? a : a?.accountNumber ?? '';
-        const bValue = typeof b === 'string' ? b : b?.accountNumber ?? '';
+        const aValue = typeof a === 'string' ? a : (a?.accountNumber ?? '');
+        const bValue = typeof b === 'string' ? b : (b?.accountNumber ?? '');
         return aValue === bValue;
-      })
-    )
+      }),
+    ),
   ]).pipe(
     map(([accounts, query]) => {
-      const normalized = typeof query === 'string' ? query.trim().toLowerCase() : query?.accountNumber.toLowerCase() ?? '';
+      const normalized =
+        typeof query === 'string'
+          ? query.trim().toLowerCase()
+          : (query?.accountNumber.toLowerCase() ?? '');
       if (!normalized) {
         return accounts.slice(0, 50);
       }
       return accounts.filter((account) => account.accountNumber.toLowerCase().includes(normalized));
     }),
-    shareReplay({ bufferSize: 1, refCount: true })
+    shareReplay({ bufferSize: 1, refCount: true }),
   );
 
   get accountQueryControl() {
@@ -144,33 +171,32 @@ export class CashierTransactionForm implements OnInit {
       next: (data) => {
         this.accounts.set(data);
         this.accounts$.next(data);
-      }
+      },
     });
 
-    this.accountQueryControl.valueChanges.pipe(
-      distinctUntilChanged((prev, next) => {
-        const prevValue = typeof prev === 'string' ? prev : prev?.accountNumber ?? '';
-        const nextValue = typeof next === 'string' ? next : next?.accountNumber ?? '';
-        return prevValue === nextValue;
-      })
-    ).subscribe((value) => {
-      if (typeof value === 'string') {
-        this.accountNumberControl.setValue('', { emitEvent: false });
-      }
-    });
+    this.accountQueryControl.valueChanges
+      .pipe(
+        distinctUntilChanged((prev, next) => {
+          const prevValue = typeof prev === 'string' ? prev : (prev?.accountNumber ?? '');
+          const nextValue = typeof next === 'string' ? next : (next?.accountNumber ?? '');
+          return prevValue === nextValue;
+        }),
+      )
+      .subscribe((value) => {
+        if (typeof value === 'string') {
+          this.accountNumberControl.setValue('', { emitEvent: false });
+        }
+      });
   }
 
   displayAccount(account: AccountResponse | string): string {
     if (!account) {
       return '';
     }
-    return typeof account === 'string'
-      ? account
-      : `${account.accountNumber}`;
+    return typeof account === 'string' ? account : `${account.accountNumber}`;
   }
 
   onAccountSelected(event: MatAutocompleteSelectedEvent): void {
-
     const account = event.option.value as AccountResponse;
 
     if (!account) return;
@@ -180,7 +206,7 @@ export class CashierTransactionForm implements OnInit {
     this.cashierForm.patchValue({
       routingNumber: account.branchRoutingNumber ?? '',
       accountName: account.holderResponses[0]?.accountHolderName ?? '',
-      bankName: 'Ensark Bank'
+      bankName: 'Ensark Bank',
     });
 
     this.cashierForm.controls.accountName.disable();
@@ -198,8 +224,8 @@ export class CashierTransactionForm implements OnInit {
       branchId: number | null;
       routingNumber: string | null;
       accountNumber: string | null;
-      accountName: string | null,
-      bankName: string | 'Ensark Bank',
+      accountName: string | null;
+      bankName: string | 'Ensark Bank';
       transactionRequest?: {
         transactionType: TransactionType | null;
         channel: TransactionChannel | null;
@@ -212,7 +238,7 @@ export class CashierTransactionForm implements OnInit {
       transactionType: 'DEPOSIT' as TransactionType,
       channel: 'BRANCH' as TransactionChannel,
       amount: 0,
-      remarks: ''
+      remarks: '',
     };
 
     this.request = {
@@ -226,8 +252,8 @@ export class CashierTransactionForm implements OnInit {
         transactionType: transactionRequest.transactionType ?? 'DEPOSIT',
         channel: transactionRequest.channel ?? 'BRANCH',
         amount: transactionRequest.amount ?? 0,
-        remarks: transactionRequest.remarks ?? ''
-      }
+        remarks: transactionRequest.remarks ?? '',
+      },
     };
 
     this.loading.set(true);
@@ -243,7 +269,7 @@ export class CashierTransactionForm implements OnInit {
       error: (err) => {
         this.error.set(err.message);
         this.loading.set(false);
-      }
+      },
     });
   }
 }

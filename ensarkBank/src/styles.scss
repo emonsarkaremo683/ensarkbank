@@ -405,3 +405,122 @@ label {
   cursor: not-allowed;
 }
 
+/* ── Public page nav / hero / footer shared styles ──────────────── */
+.public-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+  .brand-icon { font-size: 26px; }
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  .nav-link {
+    text-decoration: none;
+    color: #555;
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.2s;
+    &:hover, &.active { color: #667eea; }
+  }
+}
+
+.nav-actions { display: flex; gap: 12px; }
+
+.public-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  &-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    &:hover { opacity: 0.9; transform: translateY(-1px); }
+  }
+  &-outline {
+    background: transparent;
+    color: #667eea;
+    border: 2px solid #667eea;
+    &:hover { background: #667eea; color: white; }
+  }
+  &-lg { padding: 14px 36px; font-size: 16px; }
+}
+
+.public-footer {
+  background: #1a1a2e;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 60px 24px 0;
+  .footer-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr;
+    gap: 40px;
+  }
+  .footer-brand .brand-icon { font-size: 26px; }
+  .footer-brand .brand-text { font-size: 20px; font-weight: 700; margin-left: 8px; }
+  .footer-brand p { font-size: 14px; opacity: 0.7; margin-top: 12px; }
+  .footer-links h4, .footer-contact h4 { color: white; font-size: 16px; margin: 0 0 16px; }
+  .footer-links a {
+    display: block; color: rgba(255,255,255,0.6);
+    text-decoration: none; font-size: 14px; margin-bottom: 10px;
+    &:hover { color: white; }
+  }
+  .footer-contact p { font-size: 14px; opacity: 0.7; margin-bottom: 8px; }
+  .footer-bottom {
+    max-width: 1200px; margin: 0 auto;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding: 20px 0; margin-top: 40px; text-align: center;
+    p { font-size: 13px; opacity: 0.5; margin: 0; }
+  }
+}
+
+.public-hero {
+  padding: 120px 24px 60px;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  h1 { font-size: 40px; margin: 0 0 12px; }
+  p { font-size: 18px; opacity: 0.9; margin: 0; }
+}
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-actions .public-btn-outline { display: none; }
+  .public-footer .footer-grid { grid-template-columns: 1fr; }
+}
+

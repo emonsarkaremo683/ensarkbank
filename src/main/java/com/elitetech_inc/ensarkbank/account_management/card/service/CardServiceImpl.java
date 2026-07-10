@@ -10,6 +10,7 @@ import com.elitetech_inc.ensarkbank.common.enums.CardType;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Validator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class CardServiceImpl implements CardService{
     private final CardMapper cardMapper;
     private final RequestValidator requestValidator;
     private final Validator validator;
+    private final PasswordEncoder encoder;
 
     @Override
     public CardResponse createCard(CardRequest cr) {
@@ -65,6 +67,14 @@ public class CardServiceImpl implements CardService{
         validator.checkCardStatus(card.getCardNumber());
         card.setCardType(cr);
         card.setStatus(CardStatus.PENDING);
+        return cardMapper.toCardResponse(cardRepository.save(card));
+    }
+
+    @Override
+    public CardResponse updateCardPin(Long cardId, String pin) {
+        Card card = cardRepository.findById(cardId).orElseThrow(()-> new RuntimeException("not found"));
+        validator.checkCardStatus(card.getCardNumber());
+        card.setPinHash(encoder.encode(pin));
         return cardMapper.toCardResponse(cardRepository.save(card));
     }
 

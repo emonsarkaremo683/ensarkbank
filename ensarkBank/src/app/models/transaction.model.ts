@@ -43,7 +43,10 @@ export interface TransactionResponse {
 }
 
 export interface JournalResponse {
-  accountName: string;
+  id: number;
+  date: string;
+  transactionId: string;
+  particulars: string;
   accountNumber: string;
   entryType: EntryType;
   amount: number;

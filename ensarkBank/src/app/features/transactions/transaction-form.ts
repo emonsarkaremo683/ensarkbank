@@ -1,4 +1,11 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
@@ -11,7 +18,8 @@ import { AccountTransactionRequest, AccountResponse } from '../../models';
   standalone: true,
   imports: [FormsModule, RouterLink, DecimalPipe],
   templateUrl: './transaction-form.html',
-  styleUrl: './transaction-form.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './transaction-form.scss',
 })
 export class TransactionForm implements OnInit {
   private transactionService = inject(TransactionService);
@@ -27,8 +35,8 @@ export class TransactionForm implements OnInit {
       transactionType: 'TRANSFER',
       channel: 'INTERNET_BANKING',
       amount: 0,
-      remarks: ''
-    }
+      remarks: '',
+    },
   };
 
   accounts = signal<AccountResponse[]>([]);
@@ -41,14 +49,25 @@ export class TransactionForm implements OnInit {
   filteredAccounts = computed(() => {
     const filter = this.receiverFilter().toLowerCase();
     if (!filter) return this.accounts();
-    return this.accounts().filter(a =>
-      a.accountNumber.toLowerCase().includes(filter) ||
-      a.holderResponses?.some(h => h.accountHolderName.toLowerCase().includes(filter))
+    return this.accounts().filter(
+      (a) =>
+        a.accountNumber.toLowerCase().includes(filter) ||
+        a.holderResponses?.some((h) => h.accountHolderName.toLowerCase().includes(filter)),
     );
   });
 
   transactionTypes = ['TRANSFER', 'DEPOSIT', 'WITHDRAW', 'PAYMENT', 'REFUND'];
-  channels = ['BRANCH', 'ATM', 'INTERNET_BANKING', 'MOBILE_BANKING', 'POS', 'E_COMMERCE', 'BEFTN', 'NPSB', 'RTGS'];
+  channels = [
+    'BRANCH',
+    'ATM',
+    'INTERNET_BANKING',
+    'MOBILE_BANKING',
+    'POS',
+    'E_COMMERCE',
+    'BEFTN',
+    'NPSB',
+    'RTGS',
+  ];
 
   ngOnInit() {
     this.accountService.getAll().subscribe({ next: (data) => this.accounts.set(data) });
@@ -83,7 +102,10 @@ export class TransactionForm implements OnInit {
         this.loading.set(false);
         this.success.set(`Transfer successful! Transaction ID: ${res.transactionId}`);
       },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 }

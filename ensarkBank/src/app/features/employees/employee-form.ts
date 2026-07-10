@@ -1,16 +1,27 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TitleCasePipe } from '@angular/common';
 import { EmployeeService, BranchService, AddressService } from '../../services';
-import { EmployeeRequest, Branch, PoliceStation, AddressRequest, Division, District, Gender, Designation, Role } from '../../models';
+import {
+  EmployeeRequest,
+  Branch,
+  PoliceStation,
+  AddressRequest,
+  Division,
+  District,
+  Gender,
+  Designation,
+  Role,
+} from '../../models';
 
 @Component({
   selector: 'app-employee-form',
   standalone: true,
   imports: [FormsModule, RouterLink, TitleCasePipe],
   templateUrl: './employee-form.html',
-  styleUrl: './employee-form.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './employee-form.scss',
 })
 export class EmployeeForm implements OnInit {
   private employeeService = inject(EmployeeService);
@@ -28,7 +39,7 @@ export class EmployeeForm implements OnInit {
     phone: '',
     designation: 'TELLER',
     dob: '',
-    addresses: []
+    addresses: [],
   };
 
   branches = signal<Branch[]>([]);
@@ -45,18 +56,46 @@ export class EmployeeForm implements OnInit {
 
   genders: Gender[] = ['MALE', 'FEMALE', 'OTHER'];
   designations: Designation[] = [
-    'CHIEF_EXECUTIVE_OFFICER', 'MANAGING_DIRECTOR', 'DEPUTY_MANAGING_DIRECTOR',
-    'GENERAL_MANAGER', 'DEPUTY_GENERAL_MANAGER', 'ASSISTANT_GENERAL_MANAGER',
-    'BRANCH_MANAGER', 'ASSISTANT_BRANCH_MANAGER', 'OPERATIONS_MANAGER',
-    'TELLER', 'CASH_OFFICER', 'CUSTOMER_SERVICE_OFFICER', 'RELATIONSHIP_MANAGER',
-    'LOAN_OFFICER', 'ACCOUNTS_OFFICER', 'COMPLIANCE_OFFICER', 'AUDIT_OFFICER',
-    'SYSTEM_ADMINISTRATOR', 'SOFTWARE_ENGINEER', 'NETWORK_ENGINEER', 'DATABASE_ADMINISTRATOR',
-    'HR_OFFICER', 'ADMIN_OFFICER', 'FINANCE_OFFICER', 'TREASURY_OFFICER',
-    'SECURITY_OFFICER', 'OFFICE_ASSISTANT', 'INTERN'
+    'CHIEF_EXECUTIVE_OFFICER',
+    'MANAGING_DIRECTOR',
+    'DEPUTY_MANAGING_DIRECTOR',
+    'GENERAL_MANAGER',
+    'DEPUTY_GENERAL_MANAGER',
+    'ASSISTANT_GENERAL_MANAGER',
+    'BRANCH_MANAGER',
+    'ASSISTANT_BRANCH_MANAGER',
+    'OPERATIONS_MANAGER',
+    'TELLER',
+    'CASH_OFFICER',
+    'CUSTOMER_SERVICE_OFFICER',
+    'RELATIONSHIP_MANAGER',
+    'LOAN_OFFICER',
+    'ACCOUNTS_OFFICER',
+    'COMPLIANCE_OFFICER',
+    'AUDIT_OFFICER',
+    'SYSTEM_ADMINISTRATOR',
+    'SOFTWARE_ENGINEER',
+    'NETWORK_ENGINEER',
+    'DATABASE_ADMINISTRATOR',
+    'HR_OFFICER',
+    'ADMIN_OFFICER',
+    'FINANCE_OFFICER',
+    'TREASURY_OFFICER',
+    'SECURITY_OFFICER',
+    'OFFICE_ASSISTANT',
+    'INTERN',
   ];
   roles: Role[] = [
-    'SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER',
-    'LOAN_OFFICER', 'CUSTOMER_SERVICE', 'ATM_MANAGER', 'AUDITOR', 'CUSTOMER'
+    'SUPER_ADMIN',
+    'ADMIN',
+    'BRANCH_MANAGER',
+    'ACCOUNTANT',
+    'CASHIER',
+    'LOAN_OFFICER',
+    'CUSTOMER_SERVICE',
+    'ATM_MANAGER',
+    'AUDITOR',
+    'CUSTOMER',
   ];
   addressTypes = ['PRESENT', 'PERMANENT'];
 
@@ -67,21 +106,37 @@ export class EmployeeForm implements OnInit {
   }
 
   private loadAddressData() {
-    this.addressService.getAllDivisions().subscribe({ next: (data) => this.divisions.set(data), error: () => { } });
-    this.addressService.getAllDistricts().subscribe({ next: (data) => this.districts.set(data), error: () => { } });
-    this.addressService.getAllPoliceStations().subscribe({ next: (data) => this.allPoliceStations.set(data), error: () => { } });
+    this.addressService
+      .getAllDivisions()
+      .subscribe({ next: (data) => this.divisions.set(data), error: () => {} });
+    this.addressService
+      .getAllDistricts()
+      .subscribe({ next: (data) => this.districts.set(data), error: () => {} });
+    this.addressService
+      .getAllPoliceStations()
+      .subscribe({ next: (data) => this.allPoliceStations.set(data), error: () => {} });
   }
 
   private initializeAddresses() {
     this.employee.addresses = [
       { holdingNo: '', area: '', postalCode: '', addressType: 'PRESENT', policeStation: { id: 0 } },
-      { holdingNo: '', area: '', postalCode: '', addressType: 'PERMANENT', policeStation: { id: 0 } }
+      {
+        holdingNo: '',
+        area: '',
+        postalCode: '',
+        addressType: 'PERMANENT',
+        policeStation: { id: 0 },
+      },
     ];
   }
 
   addAddress() {
     this.employee.addresses.push({
-      holdingNo: '', area: '', postalCode: '', addressType: 'PRESENT', policeStation: { id: 0 }
+      holdingNo: '',
+      area: '',
+      postalCode: '',
+      addressType: 'PRESENT',
+      policeStation: { id: 0 },
     });
   }
 
@@ -119,13 +174,13 @@ export class EmployeeForm implements OnInit {
   getDistrictsForIndex(index: number): District[] {
     const divisionId = this.selectedDivisions[index];
     if (!divisionId) return [];
-    return this.districts().filter(d => d.division?.id === divisionId);
+    return this.districts().filter((d) => d.division?.id === divisionId);
   }
 
   getPoliceStationsForIndex(index: number): PoliceStation[] {
     const districtId = this.selectedDistricts[index];
     if (!districtId) return [];
-    return this.allPoliceStations().filter(ps => ps.district?.id === districtId);
+    return this.allPoliceStations().filter((ps) => ps.district?.id === districtId);
   }
 
   toggleSameAddress() {
@@ -159,13 +214,13 @@ export class EmployeeForm implements OnInit {
 
     const payload: EmployeeRequest = {
       ...this.employee,
-      addresses: this.employee.addresses.map(addr => ({
+      addresses: this.employee.addresses.map((addr) => ({
         holdingNo: addr.holdingNo,
         area: addr.area,
         postalCode: addr.postalCode,
         addressType: addr.addressType,
-        policeStation: { id: addr.policeStation?.id || 0 }
-      }))
+        policeStation: { id: addr.policeStation?.id || 0 },
+      })),
     };
 
     const formData = new FormData();
@@ -176,8 +231,14 @@ export class EmployeeForm implements OnInit {
     }
 
     this.employeeService.create(formData).subscribe({
-      next: () => { this.loading.set(false); this.router.navigate(['/employees']); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/employees']);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 }

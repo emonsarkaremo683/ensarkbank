@@ -1,16 +1,13 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
-import {
-  AtmTransactionService,
-  AtmService
-} from '../../services';
+import { AtmTransactionService, AtmService } from '../../services';
 import {
   ATMTransactionResponse,
   ATMResponse,
   ATM_TRANSACTION_TYPES,
-  ATMTransactionType
+  ATMTransactionType,
 } from '../../models';
 
 @Component({
@@ -18,7 +15,8 @@ import {
   standalone: true,
   imports: [FormsModule, RouterLink, DecimalPipe],
   templateUrl: './atm-transaction-form.html',
-  styleUrl: './atm-transaction-form.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './atm-transaction-form.scss',
 })
 export class AtmTransactionForm implements OnInit {
   private atmTxService = inject(AtmTransactionService);
@@ -45,8 +43,8 @@ export class AtmTransactionForm implements OnInit {
 
   ngOnInit() {
     this.atmService.getAll().subscribe({
-      next: (data) => this.atms.set(data.filter(a => a.status === 'ACTIVE')),
-      error: () => {}
+      next: (data) => this.atms.set(data.filter((a) => a.status === 'ACTIVE')),
+      error: () => {},
     });
   }
 
@@ -90,8 +88,14 @@ export class AtmTransactionForm implements OnInit {
     this.error.set('');
     this.balance.set(null);
     this.atmTxService.checkBalance(this.cardNumber(), this.pin()).subscribe({
-      next: (b) => { this.balance.set(b); this.balanceLoading.set(false); },
-      error: (err) => { this.error.set(err.message); this.balanceLoading.set(false); }
+      next: (b) => {
+        this.balance.set(b);
+        this.balanceLoading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.balanceLoading.set(false);
+      },
     });
   }
 
@@ -144,7 +148,7 @@ export class AtmTransactionForm implements OnInit {
     const hasType = !!this.selectedType();
     const hasAtm = !!this.atmId();
     const hasAmount = this.amount > 0;
-    const hasCard = this.needsCard ? (this.cardNumber().length > 0 && this.pin().length > 0) : true;
+    const hasCard = this.needsCard ? this.cardNumber().length > 0 && this.pin().length > 0 : true;
     return hasType && hasAtm && hasAmount && hasCard && !this.loading();
   }
 
@@ -156,31 +160,34 @@ export class AtmTransactionForm implements OnInit {
     const type = this.selectedType()!;
     const atmId = this.atmId()!;
     const amount = this.amount;
-    const remarks = this.remarks() || this.txTypes.find(t => t.value === type)?.label;
+    const remarks = this.remarks() || this.txTypes.find((t) => t.value === type)?.label;
 
     if (type === 'REFILL') {
       this.atmTxService.refill({ atmId, amount }).subscribe({
         next: (res) => this.onSuccess(res),
-        error: (err) => this.onError(err)
+        error: (err) => this.onError(err),
       });
       return;
     }
 
-    this.atmTxService.transact({
-      atmId,
-      cardNumber: this.cardNumber(),
-      pin: this.pin(),
-      transactionType: type,
-      transactionRequest: {
-        transactionType: type === 'CASH_WITHDRAW' ? 'ATM_WITHDRAW' as any : 'ATM_DEPOSIT' as any,
-        channel: 'ATM' as any,
-        amount,
-        remarks
-      }
-    }).subscribe({
-      next: (res) => this.onSuccess(res),
-      error: (err) => this.onError(err)
-    });
+    this.atmTxService
+      .transact({
+        atmId,
+        cardNumber: this.cardNumber(),
+        pin: this.pin(),
+        transactionType: type,
+        transactionRequest: {
+          transactionType:
+            type === 'CASH_WITHDRAW' ? ('ATM_WITHDRAW' as any) : ('ATM_DEPOSIT' as any),
+          channel: 'ATM' as any,
+          amount,
+          remarks,
+        },
+      })
+      .subscribe({
+        next: (res) => this.onSuccess(res),
+        error: (err) => this.onError(err),
+      });
   }
 
   private onSuccess(res: ATMTransactionResponse) {

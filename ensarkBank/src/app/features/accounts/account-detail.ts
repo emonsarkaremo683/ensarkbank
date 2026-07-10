@@ -1,4 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { AccountService } from '../../services';
@@ -11,13 +18,14 @@ import { History } from '../../models';
   standalone: true,
   imports: [RouterLink, DecimalPipe, DatePipe],
   templateUrl: './account-detail.html',
-  styleUrl: './account-detail.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './account-detail.scss',
 })
 export class AccountDetail implements OnInit {
   private accountService = inject(AccountService);
   private historyService = inject(HistoryService);
   private route = inject(ActivatedRoute);
-  private cdr = inject(ChangeDetectorRef)
+  private cdr = inject(ChangeDetectorRef);
 
   account = signal<AccountResponse | null>(null);
   histories = signal<History[]>([]);
@@ -39,7 +47,10 @@ export class AccountDetail implements OnInit {
         this.account.set(data);
         this.loadHistory(data.accountNumber);
       },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 
@@ -50,29 +61,38 @@ export class AccountDetail implements OnInit {
         this.cdr.markForCheck();
         this.loading.set(false);
       },
-      error: (err: Error) => { this.error.set(err.message); this.loading.set(false); }
+      error: (err: Error) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 
-
-  loadSingleData(id: number){
+  loadSingleData(id: number) {
     this.historyService.getHistoryById(id).subscribe({
       next: (data: History) => {
-        this.history.set(data); this.cdr.markForCheck(); this.loading.set(false);
+        this.history.set(data);
+        this.cdr.markForCheck();
+        this.loading.set(false);
       },
-      error: (err: Error) =>{
-       this.error.set(err.message); this.loading.set(false);
-      }
+      error: (err: Error) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'ACTIVE': return 'badge-green';
-      case 'PENDING': return 'badge-yellow';
+      case 'ACTIVE':
+        return 'badge-green';
+      case 'PENDING':
+        return 'badge-yellow';
       case 'BLOCKED':
-      case 'CLOSED': return 'badge-red';
-      default: return 'badge-light';
+      case 'CLOSED':
+        return 'badge-red';
+      default:
+        return 'badge-light';
     }
   }
 }

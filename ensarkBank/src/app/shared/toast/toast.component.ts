@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ToastService } from '../../services';
 
 @Component({
@@ -11,10 +11,18 @@ import { ToastService } from '../../services';
         <div class="toast" [class]="'toast-' + toast.type" (click)="toastService.dismiss(toast.id)">
           <span class="toast-icon">
             @switch (toast.type) {
-              @case ('success') { &#10003; }
-              @case ('error') { &#10007; }
-              @case ('warning') { &#9888; }
-              @default { &#8505; }
+              @case ('success') {
+                &#10003;
+              }
+              @case ('error') {
+                &#10007;
+              }
+              @case ('warning') {
+                &#9888;
+              }
+              @default {
+                &#8505;
+              }
             }
           </span>
           <span class="toast-message">{{ toast.message }}</span>
@@ -23,6 +31,7 @@ import { ToastService } from '../../services';
       }
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: `
     .toast-container {
       position: fixed;
@@ -50,15 +59,31 @@ import { ToastService } from '../../services';
       transition: opacity 0.2s ease;
     }
 
-    .toast:hover { opacity: 0.9; }
+    .toast:hover {
+      opacity: 0.9;
+    }
 
-    .toast-success { background: #198754; }
-    .toast-error { background: #dc3545; }
-    .toast-warning { background: #ffc107; color: #212529; }
-    .toast-info { background: #0d6efd; }
+    .toast-success {
+      background: #198754;
+    }
+    .toast-error {
+      background: #dc3545;
+    }
+    .toast-warning {
+      background: #ffc107;
+      color: #212529;
+    }
+    .toast-info {
+      background: #0d6efd;
+    }
 
-    .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
-    .toast-message { flex: 1; }
+    .toast-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .toast-message {
+      flex: 1;
+    }
     .toast-close {
       background: none;
       border: none;
@@ -69,13 +94,21 @@ import { ToastService } from '../../services';
       line-height: 1;
       opacity: 0.7;
     }
-    .toast-close:hover { opacity: 1; }
+    .toast-close:hover {
+      opacity: 1;
+    }
 
     @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
     }
-  `
+  `,
 })
 export class ToastComponent {
   toastService = inject(ToastService);

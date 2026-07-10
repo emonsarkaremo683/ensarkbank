@@ -10,13 +10,18 @@ import com.elitetech_inc.ensarkbank.human_resource_management.employee.dto.reque
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.dto.response.EmployeeResponse;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.entity.Employee;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 @Transactional
+@RequiredArgsConstructor
 public class EmployeeMapper {
+
+    private final PasswordEncoder encoder;
 
     public EmployeeResponse toResponse(Employee emp) {
 
@@ -61,9 +66,9 @@ public class EmployeeMapper {
         User user = new User();
         user.setEmail(er.getEmail());
         user.setRole(resolveRole(er));
-        user.setActive(true);
-        user.setPassword(er.getPassword());
-        user.setEmailVerified(true);
+        user.setActive(false);
+        user.setPassword(encoder.encode(er.getPassword()));
+        user.setEmailVerified(false);
 
         Address present = null;
         Address permanent = null;

@@ -18,5 +18,6 @@ public interface CardService {
     Optional<CardResponse> findCardsByCustomerId(Long customerId);
     CardResponse updateCardStatus(Long cardId, CardStatus cr);
     CardResponse updateCardType(Long cardId, CardType cr);
+    CardResponse updateCardPin(Long cardId, String pin);
     CardResponse enableInternationalTransaction(Long cardId, boolean isInternationalEnabled);
 }

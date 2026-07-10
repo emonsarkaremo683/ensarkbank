@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { ReportService, BranchService } from '../../services';
@@ -9,7 +9,8 @@ import { Branch, TrialBalanceResponse, ReportRequest } from '../../models';
   standalone: true,
   imports: [FormsModule, DecimalPipe, DatePipe],
   templateUrl: './trial-balance.html',
-  styleUrl: './trial-balance.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './trial-balance.scss',
 })
 export class TrialBalance implements OnInit {
   private reportService = inject(ReportService);
@@ -27,7 +28,7 @@ export class TrialBalance implements OnInit {
   ngOnInit() {
     this.branchService.getAll().subscribe({
       next: (data) => this.branches.set(data),
-      error: (err) => this.error.set(err.message)
+      error: (err) => this.error.set(err.message),
     });
   }
 
@@ -37,11 +38,17 @@ export class TrialBalance implements OnInit {
     const request: ReportRequest = {
       branchId: this.selectedBranchId(),
       fromDate: this.fromDate() || null,
-      toDate: this.toDate() || null
+      toDate: this.toDate() || null,
     };
     this.reportService.getTrialBalance(request).subscribe({
-      next: (data) => { this.report.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.report.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 }

@@ -21,6 +21,7 @@ import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
 import com.elitetech_inc.ensarkbank.util.BranchValidator;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +47,7 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
 
     private final BranchValidator branchValidator;
     private final RequestValidator requestValidator;
+    private final PasswordEncoder encoder;
 
     @Override
     public ATMTransactionResponse transaction(ATMTransactionRequest request) {
@@ -73,7 +75,7 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
                 if (card.getExpiryDate().before(new Date())){
                     throw new RuntimeException("Card is expired");
                 }
-                if(!card.getPinHash().equals(request.getPin())){
+                if(!card.getPinHash().equals(encoder.encode(request.getPin()))){
                     throw new RuntimeException("Card pin is Incorrect");
                 }
                 if(card.getStatus() != CardStatus.ACTIVE){

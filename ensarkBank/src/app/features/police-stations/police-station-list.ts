@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AddressService } from '../../services';
 import { PoliceStation, District } from '../../models';
@@ -8,7 +8,8 @@ import { PoliceStation, District } from '../../models';
   standalone: true,
   imports: [FormsModule],
   templateUrl: './police-station-list.html',
-  styleUrl: './police-station-list.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './police-station-list.scss',
 })
 export class PoliceStationList implements OnInit {
   private addressService = inject(AddressService);
@@ -25,18 +26,29 @@ export class PoliceStationList implements OnInit {
 
   loadData() {
     this.loading.set(true);
-    this.addressService.getAllPoliceStations().subscribe({ next: (data) => this.policeStations.set(data) });
+    this.addressService
+      .getAllPoliceStations()
+      .subscribe({ next: (data) => this.policeStations.set(data) });
     this.addressService.getAllDistricts().subscribe({
-      next: (data) => { this.districts.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.districts.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 
   addPS() {
     if (!this.newPS.name || !this.newPS.district?.id) return;
     this.addressService.createPoliceStation(this.newPS).subscribe({
-      next: () => { this.newPS = { name: '', district: { id: 0 } }; this.loadData(); },
-      error: (err) => this.error.set(err.message)
+      next: () => {
+        this.newPS = { name: '', district: { id: 0 } };
+        this.loadData();
+      },
+      error: (err) => this.error.set(err.message),
     });
   }
 
@@ -44,7 +56,7 @@ export class PoliceStationList implements OnInit {
     if (confirm('Delete this police station?')) {
       this.addressService.deletePoliceStation(id).subscribe({
         next: () => this.loadData(),
-        error: (err) => this.error.set(err.message)
+        error: (err) => this.error.set(err.message),
       });
     }
   }

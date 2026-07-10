@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AccountService, BeneficiaryService } from '../../services';
@@ -11,7 +11,8 @@ import { AccountRequest, BeneficiaryResponse, Branch, CustomerResponse } from '.
   standalone: true,
   imports: [FormsModule, RouterLink],
   templateUrl: './account-form.html',
-  styleUrl: './account-form.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './account-form.scss',
 })
 export class AccountForm implements OnInit {
   private accountService = inject(AccountService);
@@ -19,7 +20,6 @@ export class AccountForm implements OnInit {
   private customerService = inject(CustomerService);
   private router = inject(Router);
   private beneficiaryService = inject(BeneficiaryService);
-  
 
   account: AccountRequest = {
     accountType: 'SAVINGS',
@@ -32,7 +32,7 @@ export class AccountForm implements OnInit {
     n_photo: '',
     n_nid_front: '',
     n_nid_back: '',
-    accountHolders: []
+    accountHolders: [],
   };
 
   branches = signal<Branch[]>([]);
@@ -61,7 +61,7 @@ export class AccountForm implements OnInit {
       canWithdraw: true,
       canDeposit: true,
       canApproveTransaction: false,
-      customerId: 0
+      customerId: 0,
     });
   }
 
@@ -74,9 +74,15 @@ export class AccountForm implements OnInit {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       switch (field) {
-        case 'photo': this.photoFile = file; break;
-        case 'nidFront': this.nidFrontFile = file; break;
-        case 'nidBack': this.nidBackFile = file; break;
+        case 'photo':
+          this.photoFile = file;
+          break;
+        case 'nidFront':
+          this.nidFrontFile = file;
+          break;
+        case 'nidBack':
+          this.nidBackFile = file;
+          break;
       }
     }
   }
@@ -88,9 +94,17 @@ export class AccountForm implements OnInit {
     }
     this.loading.set(true);
     this.error.set('');
-    this.accountService.create(this.account, this.photoFile, this.nidFrontFile, this.nidBackFile).subscribe({
-      next: () => { this.loading.set(false); this.router.navigate(['/accounts']); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
-    });
+    this.accountService
+      .create(this.account, this.photoFile, this.nidFrontFile, this.nidBackFile)
+      .subscribe({
+        next: () => {
+          this.loading.set(false);
+          this.router.navigate(['/accounts']);
+        },
+        error: (err) => {
+          this.error.set(err.message);
+          this.loading.set(false);
+        },
+      });
   }
 }

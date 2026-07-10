@@ -10,6 +10,8 @@ import com.elitetech_inc.ensarkbank.customer_management.customer.dto.response.Cu
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.dto.request.KycRequest;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.KycDocuments;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +19,11 @@ import java.util.List;
 
 @Component
 @Transactional
+
+@RequiredArgsConstructor
 public class CustomerMapper {
+
+    private final PasswordEncoder encoder;
 
     //=========================================================
     // Entity -> Response
@@ -91,7 +97,7 @@ public class CustomerMapper {
 
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(encoder.encode(request.getPassword()));
         user.setRole(Role.CUSTOMER);
         user.setEmailVerified(false);
         user.setActive(false);

@@ -1,4 +1,11 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +17,8 @@ import { AccountResponse } from '../../models';
   standalone: true,
   imports: [RouterLink, DecimalPipe, FormsModule],
   templateUrl: './account-list.html',
-  styleUrl: './account-list.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './account-list.scss',
 })
 export class AccountList implements OnInit {
   private accountService = inject(AccountService);
@@ -27,15 +35,16 @@ export class AccountList implements OnInit {
     const status = this.filterStatus();
 
     if (term) {
-      list = list.filter(a =>
-        a.accountNumber.toLowerCase().includes(term) ||
-        a.accountType.toLowerCase().includes(term) ||
-        (a.branchName && a.branchName.toLowerCase().includes(term))
+      list = list.filter(
+        (a) =>
+          a.accountNumber.toLowerCase().includes(term) ||
+          a.accountType.toLowerCase().includes(term) ||
+          (a.branchName && a.branchName.toLowerCase().includes(term)),
       );
     }
 
     if (status !== 'ALL') {
-      list = list.filter(a => a.accountStatus === status);
+      list = list.filter((a) => a.accountStatus === status);
     }
 
     return list;
@@ -48,8 +57,14 @@ export class AccountList implements OnInit {
   loadAccounts() {
     this.loading.set(true);
     this.accountService.getAll().subscribe({
-      next: (data) => { this.accounts.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.accounts.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 

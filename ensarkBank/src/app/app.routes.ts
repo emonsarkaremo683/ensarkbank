@@ -1,4 +1,12 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './guards/auth.guard';
+import { Home } from './features/home/home';
+import { About } from './features/about/about';
+import { Services } from './features/services/services';
+import { Contact } from './features/contact/contact';
+import { Register } from './features/register/register';
+import { VerifyEmailSent } from './features/verify-email-sent/verify-email-sent';
+import { Login } from './features/login/login';
 import { Dashboard } from './features/dashboard/dashboard';
 import { AccountList } from './features/accounts/account-list';
 import { AccountForm } from './features/accounts/account-form';
@@ -38,182 +46,220 @@ import { BalanceSheet } from './features/reports/balance-sheet';
 export const routes: Routes = [
   {
     path: '',
-    component: Dashboard,
-    data: { title: 'Dashboard' }
+    component: Home,
   },
   {
-    path: 'accounts',
-    component: AccountList,
-    data: { title: 'Accounts' }
+    path: 'verify-email-sent',
+    component: VerifyEmailSent,
   },
   {
-    path: 'accounts/new',
-    component: AccountForm,
-    data: { title: 'New Account' }
+    path: 'login',
+    component: Login,
   },
   {
-    path: 'accounts/:id',
-    component: AccountDetail,
-    data: { title: 'Account Details' }
+    path: 'register',
+    component: Register,
   },
   {
-    path: 'beneficiaries',
-    component: BeneficiaryList,
-    data: { title: 'Beneficiaries' }
+    path: 'about',
+    component: About,
   },
   {
-    path: 'beneficiaries/new',
-    component: BeneficiaryForm,
-    data: { title: 'New Beneficiary' }
+    path: 'services',
+    component: Services,
   },
   {
-    path: 'branches',
-    component: BranchList,
-    data: { title: 'Branches' }
+    path: 'contact',
+    component: Contact,
   },
   {
-    path: 'branches/new',
-    component: BranchForm,
-    data: { title: 'New Branch' }
+    path: 'dashboard',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        component: Dashboard,
+        data: { title: 'Dashboard' },
+      },
+      {
+        path: 'accounts',
+        component: AccountList,
+        data: { title: 'Accounts' },
+      },
+      {
+        path: 'accounts/new',
+        component: AccountForm,
+        data: { title: 'New Account' },
+      },
+      {
+        path: 'accounts/:id',
+        component: AccountDetail,
+        data: { title: 'Account Details' },
+      },
+      {
+        path: 'beneficiaries',
+        component: BeneficiaryList,
+        data: { title: 'Beneficiaries' },
+      },
+      {
+        path: 'beneficiaries/new',
+        component: BeneficiaryForm,
+        data: { title: 'New Beneficiary' },
+      },
+      {
+        path: 'branches',
+        component: BranchList,
+        data: { title: 'Branches' },
+      },
+      {
+        path: 'branches/new',
+        component: BranchForm,
+        data: { title: 'New Branch' },
+      },
+      {
+        path: 'cards',
+        component: CardList,
+        data: { title: 'Cards' },
+      },
+      {
+        path: 'cards/new',
+        component: CardForm,
+        data: { title: 'New Card' },
+      },
+      {
+        path: 'customers',
+        component: CustomerList,
+        data: { title: 'Customers' },
+      },
+      {
+        path: 'customers/new',
+        component: CustomerForm,
+        data: { title: 'New Customer' },
+      },
+      {
+        path: 'customers/:id',
+        component: CustomerDetail,
+        data: { title: 'Customer Details' },
+      },
+      {
+        path: 'employees',
+        component: EmployeeList,
+        data: { title: 'Employees' },
+      },
+      {
+        path: 'employees/new',
+        component: EmployeeForm,
+        data: { title: 'New Employee' },
+      },
+      {
+        path: 'transactions',
+        component: TransactionList,
+        data: { title: 'Transactions' },
+      },
+      {
+        path: 'transactions/new',
+        component: TransactionForm,
+        data: { title: 'New Transaction' },
+      },
+      {
+        path: 'transactions/:id',
+        component: TransactionDetail,
+        data: { title: 'Transaction Details' },
+      },
+      {
+        path: 'districts',
+        component: DistrictList,
+        data: { title: 'Districts' },
+      },
+      {
+        path: 'divisions',
+        component: DivisionList,
+        data: { title: 'Divisions' },
+      },
+      {
+        path: 'police-stations',
+        component: PoliceStationList,
+        data: { title: 'Police Stations' },
+      },
+      {
+        path: 'loans',
+        component: LoanList,
+        data: { title: 'Loans' },
+      },
+      {
+        path: 'loans/new',
+        component: LoanForm,
+        data: { title: 'Apply for Loan' },
+      },
+      {
+        path: 'loans/:id',
+        component: LoanDetail,
+        data: { title: 'Loan Details' },
+      },
+      {
+        path: 'atms',
+        component: AtmList,
+        data: { title: 'ATMs' },
+      },
+      {
+        path: 'atms/new',
+        component: AtmForm,
+        data: { title: 'New ATM' },
+      },
+      {
+        path: 'atms/:id',
+        component: AtmForm,
+        data: { title: 'Edit ATM' },
+      },
+      {
+        path: 'atm-transactions',
+        component: AtmTransactionList,
+        data: { title: 'ATM Transactions' },
+      },
+      {
+        path: 'atm-transactions/new',
+        component: AtmTransactionForm,
+        data: { title: 'New ATM Transaction' },
+      },
+      {
+        path: 'atm-transactions/:id',
+        component: AtmTransactionDetail,
+        data: { title: 'ATM Transaction Receipt' },
+      },
+      {
+        path: 'cashier-transactions',
+        component: CashierTransactionList,
+        data: { title: 'Cashier Transactions' },
+      },
+      {
+        path: 'cashier-transactions/new',
+        component: CashierTransactionForm,
+        data: { title: 'New Cashier Transaction' },
+      },
+      {
+        path: 'cashier-transactions/:id',
+        component: CashierTransactionDetail,
+        data: { title: 'Cashier Transaction Details' },
+      },
+      {
+        path: 'reports/ledger',
+        component: Ledger,
+        data: { title: 'Ledger' },
+      },
+      {
+        path: 'reports/trial-balance',
+        component: TrialBalance,
+        data: { title: 'Trial Balance' },
+      },
+      {
+        path: 'reports/balance-sheet',
+        component: BalanceSheet,
+        data: { title: 'Balance Sheet' },
+      },
+    ],
   },
   {
-    path: 'cards',
-    component: CardList,
-    data: { title: 'Cards' }
+    path: '**',
+    redirectTo: '',
   },
-  {
-    path: 'cards/new',
-    component: CardForm,
-    data: { title: 'New Card' }
-  },
-  {
-    path: 'customers',
-    component: CustomerList,
-    data: { title: 'Customers' }
-  },
-  {
-    path: 'customers/new',
-    component: CustomerForm,
-    data: { title: 'New Customer' }
-  },
-  {
-    path: 'customers/:id',
-    component: CustomerDetail,
-    data: { title: 'Customer Details' }
-  },
-  {
-    path: 'employees',
-    component: EmployeeList,
-    data: { title: 'Employees' }
-  },
-  {
-    path: 'employees/new',
-    component: EmployeeForm,
-    data: { title: 'New Employee' }
-  },
-  {
-    path: 'transactions',
-    component: TransactionList,
-    data: { title: 'Transactions' }
-  },
-  {
-    path: 'transactions/new',
-    component: TransactionForm,
-    data: { title: 'New Transaction' }
-  },
-  {
-    path: 'transactions/:id',
-    component: TransactionDetail,
-    data: { title: 'Transaction Details' }
-  },
-  {
-    path: 'districts',
-    component: DistrictList,
-    data: { title: 'Districts' }
-  },
-  {
-    path: 'divisions',
-    component: DivisionList,
-    data: { title: 'Divisions' }
-  },
-  {
-    path: 'police-stations',
-    component: PoliceStationList,
-    data: { title: 'Police Stations' }
-  },
-  {
-    path: 'loans',
-    component: LoanList,
-    data: { title: 'Loans' }
-  },
-  {
-    path: 'loans/new',
-    component: LoanForm,
-    data: { title: 'Apply for Loan' }
-  },
-  {
-    path: 'loans/:id',
-    component: LoanDetail,
-    data: { title: 'Loan Details' }
-  },
-  {
-    path: 'atms',
-    component: AtmList,
-    data: { title: 'ATMs' }
-  },
-  {
-    path: 'atms/new',
-    component: AtmForm,
-    data: { title: 'New ATM' }
-  },
-  {
-    path: 'atms/:id',
-    component: AtmForm,
-    data: { title: 'Edit ATM' }
-  },
-  {
-    path: 'atm-transactions',
-    component: AtmTransactionList,
-    data: { title: 'ATM Transactions' }
-  },
-  {
-    path: 'atm-transactions/new',
-    component: AtmTransactionForm,
-    data: { title: 'New ATM Transaction' }
-  },
-  {
-    path: 'atm-transactions/:id',
-    component: AtmTransactionDetail,
-    data: { title: 'ATM Transaction Receipt' }
-  },
-  {
-    path: 'cashier-transactions',
-    component: CashierTransactionList,
-    data: { title: 'Cashier Transactions' }
-  },
-  {
-    path: 'cashier-transactions/new',
-    component: CashierTransactionForm,
-    data: { title: 'New Cashier Transaction' }
-  },
-  {
-    path: 'cashier-transactions/:id',
-    component: CashierTransactionDetail,
-    data: { title: 'Cashier Transaction Details' }
-  },
-  {
-    path: 'reports/ledger',
-    component: Ledger,
-    data: { title: 'Ledger' }
-  },
-  {
-    path: 'reports/trial-balance',
-    component: TrialBalance,
-    data: { title: 'Trial Balance' }
-  },
-  {
-    path: 'reports/balance-sheet',
-    component: BalanceSheet,
-    data: { title: 'Balance Sheet' }
-  }
 ];

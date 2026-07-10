@@ -6,10 +6,12 @@ import com.elitetech_inc.ensarkbank.account_management.account.dto.response.Acco
 import com.elitetech_inc.ensarkbank.account_management.account.service.AccountService;
 import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
+import com.elitetech_inc.ensarkbank.common.enums.Role;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.request.CustomerRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -27,7 +29,8 @@ public class AccountController {
     private final AccountService accountService;
     private final ObjectMapper objectMapper;
 
-    @PostMapping
+    @PreAuthorize("hasAnyRole(CUSTOMER, CASHIER)")
+    @PostMapping("create")
     public ResponseEntity<AccountResponse> addAccount(
             @RequestPart("data") String data,
 

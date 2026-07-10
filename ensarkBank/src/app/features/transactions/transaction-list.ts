@@ -1,4 +1,11 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +17,8 @@ import { AccountTransactionResponse } from '../../models';
   standalone: true,
   imports: [RouterLink, DecimalPipe, FormsModule],
   templateUrl: './transaction-list.html',
-  styleUrl: './transaction-list.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './transaction-list.scss',
 })
 export class TransactionList implements OnInit {
   private transactionService = inject(TransactionService);
@@ -26,15 +34,16 @@ export class TransactionList implements OnInit {
     const status = this.filterStatus();
 
     if (term) {
-      list = list.filter(t =>
-        t.transactionId?.toLowerCase().includes(term) ||
-        t.senderAccountNumber?.toLowerCase().includes(term) ||
-        t.receiverAccountNumber?.toLowerCase().includes(term)
+      list = list.filter(
+        (t) =>
+          t.transactionId?.toLowerCase().includes(term) ||
+          t.senderAccountNumber?.toLowerCase().includes(term) ||
+          t.receiverAccountNumber?.toLowerCase().includes(term),
       );
     }
 
     if (status !== 'ALL') {
-      list = list.filter(t => t.response.status === status);
+      list = list.filter((t) => t.response.status === status);
     }
 
     return list;
@@ -47,8 +56,14 @@ export class TransactionList implements OnInit {
   loadTransactions() {
     this.loading.set(true);
     this.transactionService.getAll().subscribe({
-      next: (data) => { this.transactions.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.transactions.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 

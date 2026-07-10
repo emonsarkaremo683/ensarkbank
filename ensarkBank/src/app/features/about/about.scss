@@ -1,0 +1,41 @@
+.about-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.about-text {
+  h2 { font-size: 28px; color: #333; margin: 0 0 20px; }
+  p {
+    color: #666;
+    line-height: 1.7;
+    margin-bottom: 16px;
+    font-size: 15px;
+  }
+}
+
+.about-values {
+  h2 { font-size: 28px; color: #333; margin: 0 0 20px; }
+}
+
+.value-card {
+  background: #f8f9ff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+
+  .value-icon { font-size: 28px; display: block; margin-bottom: 8px; }
+  h3 { font-size: 16px; color: #333; margin: 0 0 4px; }
+  p { font-size: 13px; color: #888; margin: 0; }
+}
+
+@media (max-width: 768px) {
+  .about-grid { grid-template-columns: 1fr; }
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AtmService, BranchService } from '../../services';
@@ -9,7 +9,8 @@ import { ATMRequest, Branch, ATMStatus } from '../../models';
   standalone: true,
   imports: [FormsModule, RouterLink],
   templateUrl: './atm-form.html',
-  styleUrl: './atm-form.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './atm-form.scss',
 })
 export class AtmForm implements OnInit {
   private atmService = inject(AtmService);
@@ -22,7 +23,7 @@ export class AtmForm implements OnInit {
     balance: 0,
     limit: 0,
     address: '',
-    branchId: 0
+    branchId: 0,
   };
 
   branches = signal<Branch[]>([]);
@@ -36,7 +37,7 @@ export class AtmForm implements OnInit {
   ngOnInit() {
     this.branchService.getAll().subscribe({
       next: (data) => this.branches.set(data),
-      error: () => {}
+      error: () => {},
     });
 
     const id = this.route.snapshot.paramMap.get('id');
@@ -51,7 +52,7 @@ export class AtmForm implements OnInit {
           this.atm.branchId = 0;
           this.atm.balance = data.availableBalance;
         },
-        error: (err) => this.error.set(err.message)
+        error: (err) => this.error.set(err.message),
       });
     }
   }
@@ -63,8 +64,14 @@ export class AtmForm implements OnInit {
       ? this.atmService.update(this.atmId()!, this.atm)
       : this.atmService.create(this.atm);
     obs.subscribe({
-      next: () => { this.loading.set(false); this.router.navigate(['/atms']); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/atms']);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CardService } from '../../services';
@@ -10,7 +10,8 @@ import { CardRequest, AccountResponse } from '../../models';
   standalone: true,
   imports: [FormsModule, RouterLink],
   templateUrl: './card-form.html',
-  styleUrl: './card-form.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './card-form.scss',
 })
 export class CardForm implements OnInit {
   private cardService = inject(CardService);
@@ -23,7 +24,7 @@ export class CardForm implements OnInit {
     cardType: 'DEBIT',
     pin: '',
     dailyLimit: 50000,
-    monthlyLimit: 500000
+    monthlyLimit: 500000,
   };
 
   accounts = signal<AccountResponse[]>([]);
@@ -50,8 +51,14 @@ export class CardForm implements OnInit {
 
     console.log('Card payload:', JSON.stringify(this.card));
     this.cardService.create(this.card).subscribe({
-      next: () => { this.loading.set(false); this.router.navigate(['/cards']); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/cards']);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 }

@@ -21,8 +21,8 @@ export class EmployeeService {
     );
   }
 
-  getByBranchId(branchId: number): Observable<EmployeeResponse> {
-    return this.http.get<EmployeeResponse>(`${this.url}branch/${branchId}`).pipe(
+  getByBranchId(branchId: number): Observable<EmployeeResponse[]> {
+    return this.http.get<EmployeeResponse[]>(`${this.url}branch/${branchId}`).pipe(
       catchError(this.handleError)
     );
   }

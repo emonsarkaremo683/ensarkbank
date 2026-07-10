@@ -74,7 +74,7 @@
               @for (j of tx.transactionResponse.journals; track j.accountNumber) {
                 <tr>
                   <td class="mono">{{ j.accountNumber }}</td>
-                  <td>{{ j.accountName }}</td>
+                  <td>{{ j.particulars || j.accountNumber || '-' }}</td>
                   <td>
                     <span class="badge" [class.badge-red]="j.entryType === 'DEBIT'" [class.badge-green]="j.entryType === 'CREDIT'">
                       {{ j.entryType }}

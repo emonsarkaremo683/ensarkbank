@@ -1,4 +1,11 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +17,8 @@ import { LoanApplicationResponse } from '../../models';
   standalone: true,
   imports: [RouterLink, DecimalPipe, DatePipe, FormsModule],
   templateUrl: './loan-list.html',
-  styleUrl: './loan-list.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './loan-list.scss',
 })
 export class LoanList implements OnInit {
   private loanService = inject(LoanService);
@@ -22,7 +30,7 @@ export class LoanList implements OnInit {
   filteredLoans = computed(() => {
     const status = this.filterStatus();
     if (status === 'ALL') return this.loans();
-    return this.loans().filter(l => l.status === status);
+    return this.loans().filter((l) => l.status === status);
   });
 
   ngOnInit() {
@@ -32,22 +40,35 @@ export class LoanList implements OnInit {
   loadLoans() {
     this.loading.set(true);
     this.loanService.getAll().subscribe({
-      next: (data) => { this.loans.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.loans.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'PENDING': return 'badge-yellow';
-      case 'APPROVED': return 'badge-blue';
-      case 'REJECTED': return 'badge-red';
+      case 'PENDING':
+        return 'badge-yellow';
+      case 'APPROVED':
+        return 'badge-blue';
+      case 'REJECTED':
+        return 'badge-red';
       case 'DISBURSED':
-      case 'ACTIVE': return 'badge-green';
-      case 'CLOSED': return 'badge-light';
+      case 'ACTIVE':
+        return 'badge-green';
+      case 'CLOSED':
+        return 'badge-light';
       case 'OVERDUE':
-      case 'DEFAULTED': return 'badge-red';
-      default: return 'badge-light';
+      case 'DEFAULTED':
+        return 'badge-red';
+      default:
+        return 'badge-light';
     }
   }
 }

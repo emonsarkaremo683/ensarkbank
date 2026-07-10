@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BranchService } from '../../services';
@@ -10,7 +10,8 @@ import { Branch, PoliceStation } from '../../models';
   standalone: true,
   imports: [FormsModule, RouterLink],
   templateUrl: './branch-form.html',
-  styleUrl: './branch-form.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './branch-form.scss',
 })
 export class BranchForm implements OnInit {
   private branchService = inject(BranchService);
@@ -25,7 +26,7 @@ export class BranchForm implements OnInit {
     phoneNumber: '',
     type: 'BRANCH',
     status: 'ACTIVE',
-    policeStation: undefined
+    policeStation: undefined,
   };
 
   policeStations = signal<PoliceStation[]>([]);
@@ -41,19 +42,19 @@ export class BranchForm implements OnInit {
   ngOnInit() {
     this.addressService.getAllPoliceStations().subscribe({
       next: (data) => this.policeStations.set(data),
-      error: () => {}
+      error: () => {},
     });
     this.branchService.getAll().subscribe({
       next: (data) => this.branches.set(data),
-      error: () => {}
+      error: () => {},
     });
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEdit.set(true);
       this.branchId.set(+id);
       this.branchService.getById(+id).subscribe({
-        next: (data) => this.branch = data,
-        error: (err) => this.error.set(err.message)
+        next: (data) => (this.branch = data),
+        error: (err) => this.error.set(err.message),
       });
     }
   }
@@ -65,8 +66,14 @@ export class BranchForm implements OnInit {
       ? this.branchService.update(this.branchId()!, this.branch)
       : this.branchService.create(this.branch);
     obs.subscribe({
-      next: () => { this.loading.set(false); this.router.navigate(['/branches']); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/branches']);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 }

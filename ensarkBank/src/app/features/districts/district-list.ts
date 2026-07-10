@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { AddressService } from '../../services';
@@ -9,7 +9,8 @@ import { District, Division, PoliceStation } from '../../models';
   standalone: true,
   imports: [FormsModule],
   templateUrl: './district-list.html',
-  styleUrls: ['./district-list.scss']
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrls: ['./district-list.scss'],
 })
 export class DistrictList implements OnInit {
   private addressService = inject(AddressService);
@@ -30,7 +31,7 @@ export class DistrictList implements OnInit {
     forkJoin({
       districts: this.addressService.getAllDistricts(),
       divisions: this.addressService.getAllDivisions(),
-      policeStations: this.addressService.getAllPoliceStations()
+      policeStations: this.addressService.getAllPoliceStations(),
     }).subscribe({
       next: ({ districts, divisions, policeStations }) => {
         this.districts.set(districts);
@@ -38,15 +39,21 @@ export class DistrictList implements OnInit {
         this.policeStations.set(policeStations);
         this.loading.set(false);
       },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 
   addDistrict() {
     if (!this.newDistrict.name || !this.newDistrict.division?.id) return;
     this.addressService.createDistrict(this.newDistrict).subscribe({
-      next: () => { this.newDistrict = { name: '', division: { id: 0 } }; this.loadData(); },
-      error: (err) => this.error.set(err.message)
+      next: () => {
+        this.newDistrict = { name: '', division: { id: 0 } };
+        this.loadData();
+      },
+      error: (err) => this.error.set(err.message),
     });
   }
 
@@ -54,13 +61,13 @@ export class DistrictList implements OnInit {
     if (confirm('Delete this district?')) {
       this.addressService.deleteDistrict(id).subscribe({
         next: () => this.loadData(),
-        error: (err) => this.error.set(err.message)
+        error: (err) => this.error.set(err.message),
       });
     }
   }
 
   getPoliceStationsByDistrictId(districtId?: number) {
     if (!districtId) return [];
-    return this.policeStations().filter(ps => ps.district?.id === districtId);
+    return this.policeStations().filter((ps) => ps.district?.id === districtId);
   }
 }

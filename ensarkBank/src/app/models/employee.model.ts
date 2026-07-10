@@ -18,7 +18,7 @@ export interface EmployeeResponse {
   user_id: number;
   email: string;
   role: Role;
-  isEmailVerified: boolean;
+  emailVerified: boolean;
   active: boolean;
   id: number;
   name: string;

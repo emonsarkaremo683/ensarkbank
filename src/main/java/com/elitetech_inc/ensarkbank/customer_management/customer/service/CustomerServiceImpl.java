@@ -16,8 +16,11 @@ import com.elitetech_inc.ensarkbank.customer_management.customer.repository.Cust
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.Kyc;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.KycDocuments;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.repository.KycRepository;
+import com.elitetech_inc.ensarkbank.auth_management.auth.security.EmailConfig;
+import com.elitetech_inc.ensarkbank.auth_management.auth.security.JwtUtil;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +43,8 @@ public class CustomerServiceImpl implements CustomerService {
     private final Utils utils;
     private final RequestValidator requestValidator;
     private final AddressRepository addressRepository;
+    private final EmailConfig emailConfig;
+    private final JwtUtil jwtUtil;
 
 
     @Override
@@ -113,7 +118,16 @@ public class CustomerServiceImpl implements CustomerService {
         Kyc savedKyc = kycRepository.save(kyc);
         savedCustomer.setKyc(savedKyc);
 
-        // ── 5. Response ───────────────────────────────────────
+        // ── 5. Send verification email ────────────────────────
+        try {
+            String token = jwtUtil.generateVerificationToken(u.getEmail());
+            emailConfig.sendVerificationEmail(u.getEmail(), cr.getName(), token);
+        } catch (MessagingException e) {
+            // Log but don't fail — email send should not block registration
+            System.err.println("Failed to send verification email: " + e.getMessage());
+        }
+
+        // ── 6. Response ───────────────────────────────────────
         return customerMapper.toResponse(savedCustomer);
     }
 

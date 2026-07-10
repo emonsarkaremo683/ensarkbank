@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { CashierTransactionService } from '../../services';
@@ -9,7 +9,8 @@ import { CashierTransactionResponse } from '../../models';
   standalone: true,
   imports: [RouterLink, DecimalPipe],
   templateUrl: './cashier-transaction-detail.html',
-  styleUrl: './cashier-transaction-detail.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './cashier-transaction-detail.scss',
 })
 export class CashierTransactionDetail implements OnInit {
   private cashierTxService = inject(CashierTransactionService);
@@ -29,27 +30,40 @@ export class CashierTransactionDetail implements OnInit {
   loadTransaction(id: number) {
     this.loading.set(true);
     this.cashierTxService.getById(id).subscribe({
-      next: (data) => { this.transaction.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.transaction.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'SUCCESS': return 'badge-green';
-      case 'FAILED': return 'badge-red';
-      case 'PENDING': return 'badge-yellow';
-      case 'CANCELLED': return 'badge-red';
-      case 'REVERSED': return 'badge-yellow';
-      default: return 'badge-light';
+      case 'SUCCESS':
+        return 'badge-green';
+      case 'FAILED':
+        return 'badge-red';
+      case 'PENDING':
+        return 'badge-yellow';
+      case 'CANCELLED':
+        return 'badge-red';
+      case 'REVERSED':
+        return 'badge-yellow';
+      default:
+        return 'badge-light';
     }
   }
 
   getAccountNumber(tx: CashierTransactionResponse): string {
-    if (tx.accountTransaction?.senderAccountNumber) return tx.accountTransaction.senderAccountNumber;
+    if (tx.accountTransaction?.senderAccountNumber)
+      return tx.accountTransaction.senderAccountNumber;
     if (!tx.journals?.length) return '-';
     const entryType = tx.transaction?.transactionType === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
-    const journal = tx.journals.find(j => j.entryType === entryType);
+    const journal = tx.journals.find((j) => j.entryType === entryType);
     return journal?.accountNumber || tx.journals[0]?.accountNumber || '-';
   }
 
@@ -57,7 +71,7 @@ export class CashierTransactionDetail implements OnInit {
     if (tx.accountTransaction?.senderName) return tx.accountTransaction.senderName;
     if (!tx.journals?.length) return '-';
     const entryType = tx.transaction?.transactionType === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
-    const journal = tx.journals.find(j => j.entryType === entryType);
-    return journal?.accountName || tx.journals[0]?.accountName || '-';
+    const journal = tx.journals.find((j) => j.entryType === entryType);
+    return journal?.particulars || tx.journals[0]?.particulars || journal?.accountNumber || '-';
   }
 }

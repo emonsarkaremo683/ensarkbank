@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { TransactionService } from '../../services';
@@ -9,7 +9,8 @@ import { AccountTransactionResponse } from '../../models';
   standalone: true,
   imports: [RouterLink, DecimalPipe],
   templateUrl: './transaction-detail.html',
-  styleUrl: './transaction-detail.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './transaction-detail.scss',
 })
 export class TransactionDetail implements OnInit {
   private transactionService = inject(TransactionService);
@@ -29,19 +30,31 @@ export class TransactionDetail implements OnInit {
   loadTransaction(id: number) {
     this.loading.set(true);
     this.transactionService.getById(id).subscribe({
-      next: (data) => { this.transaction.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.transaction.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'SUCCESS': return 'badge-green';
-      case 'FAILED': return 'badge-red';
-      case 'PENDING': return 'badge-yellow';
-      case 'CANCELLED': return 'badge-red';
-      case 'REVERSED': return 'badge-yellow';
-      default: return 'badge-light';
+      case 'SUCCESS':
+        return 'badge-green';
+      case 'FAILED':
+        return 'badge-red';
+      case 'PENDING':
+        return 'badge-yellow';
+      case 'CANCELLED':
+        return 'badge-red';
+      case 'REVERSED':
+        return 'badge-yellow';
+      default:
+        return 'badge-light';
     }
   }
 }

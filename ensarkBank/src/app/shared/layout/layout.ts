@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
@@ -6,7 +6,8 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './layout.html',
-  styleUrl: './layout.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './layout.scss',
 })
 export class Layout {
   sidebarCollapsed = signal(false);
@@ -27,10 +28,10 @@ export class Layout {
   ];
 
   toggleSidebar() {
-    this.sidebarCollapsed.update(v => !v);
+    this.sidebarCollapsed.update((v) => !v);
   }
 
   toggleMobileMenu() {
-    this.mobileMenuOpen.update(v => !v);
+    this.mobileMenuOpen.update((v) => !v);
   }
 }

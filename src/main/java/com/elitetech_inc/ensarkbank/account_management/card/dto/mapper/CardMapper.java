@@ -11,6 +11,7 @@ import com.elitetech_inc.ensarkbank.util.CardGenerator;
 import com.elitetech_inc.ensarkbank.util.Validator;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -25,6 +26,7 @@ public class CardMapper {
     private final AccountRepository accountRepository;
     private final CardGenerator cardGenerator;
     private final Validator validator;
+    private final PasswordEncoder encoder;
 
 
     public Card toCard(CardRequest cr){
@@ -40,7 +42,7 @@ public class CardMapper {
         card.setCardType(cr.getCardType());
         card.setStatus(CardStatus.PENDING);
         card.setCvv(cardGenerator.getCvv());
-        card.setPinHash(cr.getPin());
+        card.setPinHash(encoder.encode(cr.getPin()));
         card.setCardNumber(cardGenerator.cardGenerator(cr.getCardNetwork(), cr.getCardType(), account.getAccountNumber()));
         card.setExpiryDate(Date.from(LocalDate.now().plusYears(5).atStartOfDay(ZoneId.systemDefault()).toInstant()));
         card.setDailyLimit(cr.getDailyLimit());

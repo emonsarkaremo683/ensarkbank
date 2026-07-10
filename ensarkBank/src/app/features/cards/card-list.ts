@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe, CommonModule } from '@angular/common';
 import { CardService } from '../../services';
@@ -9,7 +9,8 @@ import { CardResponse } from '../../models';
   standalone: true,
   imports: [RouterLink, DatePipe, CommonModule],
   templateUrl: './card-list.html',
-  styleUrls: ['./card-list.scss']
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrls: ['./card-list.scss'],
 })
 export class CardList implements OnInit {
   private cardService = inject(CardService);
@@ -24,8 +25,14 @@ export class CardList implements OnInit {
   loadCards() {
     this.loading.set(true);
     this.cardService.getAll().subscribe({
-      next: (data) => { this.cards.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.cards.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 

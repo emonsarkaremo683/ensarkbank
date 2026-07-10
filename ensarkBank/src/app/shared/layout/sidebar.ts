@@ -1,7 +1,17 @@
-import { Component, signal, HostBinding, computed, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  Component,
+  signal,
+  HostBinding,
+  computed,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { BranchType } from '../../models';
 import { isModuleAllowedForBranch } from '../branch-access';
+import { AuthService } from '../../services/auth.service';
+import { isModuleAllowedForRole } from '../role-access';
+import { ToastService } from '../../services/toast.service';
 
 interface NavItem {
   label: string;
@@ -14,13 +24,21 @@ interface NavItem {
   standalone: true,
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './sidebar.html',
-  styleUrl: './sidebar.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './sidebar.scss',
 })
 export class Sidebar {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private toast = inject(ToastService);
+
   isOpen = signal(true);
 
-  /** Branch context for the logged-in outlet. null = unrestricted (no auth in this app). */
   currentBranchType = signal<BranchType | null>(null);
+
+  user = this.authService.user;
+  role = this.authService.role;
+  userName = this.authService.userName;
 
   @HostBinding('class.collapsed')
   get hostCollapsed() {
@@ -28,7 +46,7 @@ export class Sidebar {
   }
 
   navItems: NavItem[] = [
-    { label: 'Dashboard', path: '/', icon: '📊' },
+    { label: 'Dashboard', path: '/dashboard', icon: '📊' },
     { label: 'Accounts', path: '/accounts', icon: '💳' },
     { label: 'Beneficiaries', path: '/beneficiaries', icon: '👥' },
     { label: 'Branches', path: '/branches', icon: '🏢' },
@@ -45,14 +63,25 @@ export class Sidebar {
     { label: 'Loans', path: '/loans', icon: '📋' },
     { label: 'Ledger', path: '/reports/ledger', icon: '📒' },
     { label: 'Trial Balance', path: '/reports/trial-balance', icon: '⚖️' },
-    { label: 'Balance Sheet', path: '/reports/balance-sheet', icon: '📊' }
+    { label: 'Balance Sheet', path: '/reports/balance-sheet', icon: '📊' },
   ];
 
-  visibleNavItems = computed(() =>
-    this.navItems.filter(item => isModuleAllowedForBranch(this.currentBranchType(), item.path))
-  );
+  visibleNavItems = computed(() => {
+    const role = this.role();
+    return this.navItems.filter(
+      (item) =>
+        isModuleAllowedForBranch(this.currentBranchType(), item.path) &&
+        isModuleAllowedForRole(role, item.path),
+    );
+  });
 
   toggleSidebar() {
     this.isOpen.set(!this.isOpen());
+  }
+
+  logout() {
+    this.authService.logout();
+    this.toast.info('You have been logged out');
+    this.router.navigateByUrl('/login');
   }
 }

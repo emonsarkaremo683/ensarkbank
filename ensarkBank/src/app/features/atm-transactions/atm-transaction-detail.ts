@@ -1,19 +1,16 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { AtmTransactionService } from '../../services';
-import {
-  ATMTransactionResponse,
-  getTransactionStatusClass,
-  getTxTypeColor
-} from '../../models';
+import { ATMTransactionResponse, getTransactionStatusClass, getTxTypeColor } from '../../models';
 
 @Component({
   selector: 'app-atm-transaction-detail',
   standalone: true,
   imports: [RouterLink, DecimalPipe],
   templateUrl: './atm-transaction-detail.html',
-  styleUrl: './atm-transaction-detail.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './atm-transaction-detail.scss',
 })
 export class AtmTransactionDetail implements OnInit {
   private atmTxService = inject(AtmTransactionService);
@@ -30,8 +27,14 @@ export class AtmTransactionDetail implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
     this.atmTxService.getById(+id).subscribe({
-      next: (data) => { this.transaction.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.transaction.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 }

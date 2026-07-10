@@ -53,4 +53,8 @@ public class CardController {
         return ResponseEntity.ok(cardService.enableInternationalTransaction(id, enabled));
     }
 
+    @PatchMapping("{id}/change-pin")
+    public ResponseEntity<CardResponse> updateCardPin(@PathVariable Long id, @RequestParam String pin) {
+        return ResponseEntity.ok(cardService.updateCardPin(id, pin));
+    }
 }

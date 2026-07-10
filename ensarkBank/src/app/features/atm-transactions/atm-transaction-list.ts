@@ -1,15 +1,21 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { AtmTransactionService, AtmService } from '../../services';
-import { ATMTransactionResponse, getTransactionStatusClass, getTxTypeColor, ATMResponse } from '../../models';
+import {
+  ATMTransactionResponse,
+  getTransactionStatusClass,
+  getTxTypeColor,
+  ATMResponse,
+} from '../../models';
 
 @Component({
   selector: 'app-atm-transaction-list',
   standalone: true,
   imports: [RouterLink, DecimalPipe],
   templateUrl: './atm-transaction-list.html',
-  styleUrl: './atm-transaction-list.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './atm-transaction-list.scss',
 })
 export class AtmTransactionList implements OnInit {
   private atmTxService = inject(AtmTransactionService);
@@ -27,7 +33,7 @@ export class AtmTransactionList implements OnInit {
   ngOnInit() {
     this.atmService.getAll().subscribe({
       next: (data) => this.atms.set(data),
-      error: () => {}
+      error: () => {},
     });
     this.loadAll();
   }
@@ -36,8 +42,14 @@ export class AtmTransactionList implements OnInit {
     this.loading.set(true);
     this.error.set('');
     this.atmTxService.getAll().subscribe({
-      next: (data) => { this.transactions.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.transactions.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 
@@ -49,8 +61,14 @@ export class AtmTransactionList implements OnInit {
     }
     this.loading.set(true);
     this.atmTxService.getByAtmId(atmId).subscribe({
-      next: (data) => { this.transactions.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data) => {
+        this.transactions.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 }

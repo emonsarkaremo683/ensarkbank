@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { CustomerService, AccountService, ToastService } from '../../services';
@@ -9,7 +9,8 @@ import { CustomerResponse, AccountResponse } from '../../models';
   standalone: true,
   imports: [RouterLink, DatePipe, DecimalPipe],
   templateUrl: './customer-detail.html',
-  styleUrl: './customer-detail.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './customer-detail.scss',
 })
 export class CustomerDetail implements OnInit {
   private customerService = inject(CustomerService);
@@ -39,16 +40,23 @@ export class CustomerDetail implements OnInit {
         console.log(data);
         this.loadAccounts(id);
       },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 
   loadAccounts(customerId: number) {
     this.customerService.getAccountsByCustomerId(customerId).subscribe({
-      next: (data) => { this.accounts.set(data);
-   
-        this.loading.set(false); },
-      error: () => { this.loading.set(false); }
+      next: (data) => {
+        this.accounts.set(data);
+
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      },
     });
   }
 
@@ -64,18 +72,24 @@ export class CustomerDetail implements OnInit {
       error: (err) => {
         this.error.set(err.message);
         this.toast.error(err.message);
-      }
+      },
     });
   }
 
   getKycStatusClass(status: string): string {
     switch (status) {
-      case 'VERIFIED': return 'badge-green';
-      case 'PENDING': return 'badge-yellow';
-      case 'UNDER_REVIEW': return 'badge-blue';
-      case 'REJECTED': return 'badge-red';
-      case 'EXPIRED': return 'badge-light';
-      default: return 'badge-light';
+      case 'VERIFIED':
+        return 'badge-green';
+      case 'PENDING':
+        return 'badge-yellow';
+      case 'UNDER_REVIEW':
+        return 'badge-blue';
+      case 'REJECTED':
+        return 'badge-red';
+      case 'EXPIRED':
+        return 'badge-light';
+      default:
+        return 'badge-light';
     }
   }
 

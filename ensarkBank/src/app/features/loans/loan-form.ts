@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
@@ -11,7 +11,8 @@ import { LoanApplicationRequest, AccountResponse } from '../../models';
   standalone: true,
   imports: [FormsModule, RouterLink, DecimalPipe],
   templateUrl: './loan-form.html',
-  styleUrl: './loan-form.scss'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './loan-form.scss',
 })
 export class LoanForm implements OnInit {
   private loanService = inject(LoanService);
@@ -22,7 +23,7 @@ export class LoanForm implements OnInit {
     accountId: 0,
     principalAmount: 0,
     annualInterestRate: 0,
-    tenureMonths: 0
+    tenureMonths: 0,
   };
 
   accounts = signal<AccountResponse[]>([]);
@@ -55,8 +56,14 @@ export class LoanForm implements OnInit {
     this.loading.set(true);
     this.error.set('');
     this.loanService.apply(this.loan).subscribe({
-      next: () => { this.loading.set(false); this.router.navigate(['/loans']); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/loans']);
+      },
+      error: (err) => {
+        this.error.set(err.message);
+        this.loading.set(false);
+      },
     });
   }
 }
