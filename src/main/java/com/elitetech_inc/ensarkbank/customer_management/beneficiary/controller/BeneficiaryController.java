@@ -2,10 +2,10 @@ package com.elitetech_inc.ensarkbank.customer_management.beneficiary.controller;
 
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.dto.request.BeneficiaryRequest;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.dto.response.BeneficiaryResponse;
-import com.elitetech_inc.ensarkbank.customer_management.beneficiary.entity.Beneficiary;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.service.BeneficiaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +14,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/beneficiary/")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole(CUSTOMER)")
 public class BeneficiaryController {
     private final BeneficiaryService beneficiaryService;
 
@@ -35,5 +36,11 @@ public class BeneficiaryController {
     @GetMapping("customer/{id}")
     public ResponseEntity<List<BeneficiaryResponse>> findByCustomerId(@PathVariable Long id){
         return ResponseEntity.ok(beneficiaryService.findByCustomerId(id));
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteById(@PathVariable Long id){
+        beneficiaryService.delete(id);
+        return ResponseEntity.ok("Successfully deleted beneficiary");
     }
 }

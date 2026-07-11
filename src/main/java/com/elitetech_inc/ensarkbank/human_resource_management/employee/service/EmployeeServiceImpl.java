@@ -38,7 +38,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         // set profile pic
         if (profile != null && !profile.isEmpty()) {
-            employee.setProfilePhoto(utils.uploadFile(profile, "customer", emp.getName()));
+            employee.setProfilePhoto(utils.uploadFile(profile, "employee", emp.getName()));
         }
 
         // find branch and save

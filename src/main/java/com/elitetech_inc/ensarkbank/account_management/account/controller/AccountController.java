@@ -29,7 +29,7 @@ public class AccountController {
     private final AccountService accountService;
     private final ObjectMapper objectMapper;
 
-    @PreAuthorize("hasAnyRole(CUSTOMER, CASHIER)")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'CASHIER')")
     @PostMapping("create")
     public ResponseEntity<AccountResponse> addAccount(
             @RequestPart("data") String data,
@@ -48,11 +48,13 @@ public class AccountController {
         return new ResponseEntity<>(accountService.createAccount(dto, nominees), HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE')")
     @GetMapping("all/")
     public ResponseEntity<List<AccountResponse>> getAllAccounts() {
         return new ResponseEntity<>(accountService.getAccounts(), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("{id}")
     public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long id) {
         return accountService.getAccount(id)
@@ -60,11 +62,13 @@ public class AccountController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
     @PatchMapping("{id}/status/{status}")
     public ResponseEntity<AccountResponse> setAccountStatus(@PathVariable Long id, @PathVariable AccountStatus status) {
         return ResponseEntity.ok(accountService.updateAccountStatus(id, status));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
     @GetMapping("account-number/{accountNumber}")
     public ResponseEntity<AccountResponse> getAccountByAccountNumber(@PathVariable String accountNumber) {
         return accountService.getAccountByAccountNumber(accountNumber)
@@ -72,6 +76,7 @@ public class AccountController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR')")
     @GetMapping("branch/{branchId}")
     public ResponseEntity<AccountResponse> getAccountsByBranchId(@PathVariable Long branchId) {
         return accountService.getAccountsByBranchId(branchId)
@@ -79,10 +84,10 @@ public class AccountController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
     @GetMapping("customer/{customerId}")
     public ResponseEntity<List<AccountResponse>> getAccountsByCustomerId(@PathVariable Long customerId) {
         return ResponseEntity.ok(accountService.getAccountsByCustomerId(customerId));
     }
-
 
 }

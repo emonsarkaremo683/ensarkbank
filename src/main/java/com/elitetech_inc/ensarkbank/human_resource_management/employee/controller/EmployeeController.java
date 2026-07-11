@@ -7,6 +7,7 @@ import com.elitetech_inc.ensarkbank.human_resource_management.employee.service.E
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -22,6 +23,7 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final ObjectMapper objectMapper;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<EmployeeResponse> createEmployee(
             @RequestPart("data") String data,
@@ -32,16 +34,19 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeService.save(dto, profilePicture), HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER')")
     @GetMapping
     public ResponseEntity<List<EmployeeResponse>> getAllEmployee(){
         return new ResponseEntity<>(employeeService.findAll(), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER')")
     @GetMapping("{id}")
     public ResponseEntity<Optional<EmployeeResponse>> getEmployee(@PathVariable Long id){
         return new ResponseEntity<>(employeeService.findById(id), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER')")
     @GetMapping("branch/{branchId}")
     public ResponseEntity<List<EmployeeResponse>> getAllEmployee(@PathVariable Long branchId){
         return new ResponseEntity<>(employeeService.findByBranchId(branchId), HttpStatus.OK);

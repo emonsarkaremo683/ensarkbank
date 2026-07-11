@@ -7,6 +7,7 @@ import com.elitetech_inc.ensarkbank.accounting_system.report.dto.response.TrialB
 import com.elitetech_inc.ensarkbank.accounting_system.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class ReportController {
 
     private final ReportService reportService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @PostMapping("ledger/{branchId}/{accountNumber}")
     public ResponseEntity<LedgerResponse> ledger(@PathVariable Long branchId,
                                                  @PathVariable String accountNumber,
@@ -26,16 +28,19 @@ public class ReportController {
                 reportService.getLedger(branchId, accountNumber, normalize(request)));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @PostMapping("ledger")
     public ResponseEntity<List<LedgerResponse>> ledgers(@RequestBody(required = false) ReportRequest request) {
         return ResponseEntity.ok(reportService.getLedgers(normalize(request)));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'AUDITOR')")
     @PostMapping("trial-balance")
     public ResponseEntity<TrialBalanceResponse> trialBalance(@RequestBody(required = false) ReportRequest request) {
         return ResponseEntity.ok(reportService.getTrialBalance(normalize(request)));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'AUDITOR')")
     @PostMapping("balance-sheet")
     public ResponseEntity<BalanceSheetResponse> balanceSheet(@RequestBody(required = false) ReportRequest request) {
         return ResponseEntity.ok(reportService.getBalanceSheet(normalize(request)));

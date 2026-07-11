@@ -66,7 +66,6 @@ public class CardServiceImpl implements CardService{
         Card card = cardRepository.findById(cardId).orElseThrow(()-> new RuntimeException("not found"));
         validator.checkCardStatus(card.getCardNumber());
         card.setCardType(cr);
-        card.setStatus(CardStatus.PENDING);
         return cardMapper.toCardResponse(cardRepository.save(card));
     }
 
@@ -83,7 +82,6 @@ public class CardServiceImpl implements CardService{
         Card card = cardRepository.findById(cardId).orElseThrow(()-> new RuntimeException("not found"));
         validator.checkCardStatus(card.getCardNumber());
         card.setInternationalEnabled(isInternationalEnabled);
-        card.setStatus(CardStatus.PENDING);
         return cardMapper.toCardResponse(cardRepository.save(card));
 
     }

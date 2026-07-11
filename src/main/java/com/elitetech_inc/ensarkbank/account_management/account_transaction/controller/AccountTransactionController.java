@@ -1,11 +1,14 @@
 package com.elitetech_inc.ensarkbank.account_management.account_transaction.controller;
 
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.request.AccountTransactionRequest;
+import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.request.OtpVerifyRequest;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response.AccountTransactionResponse;
+import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response.OtpInitiateResponse;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.service.AccountTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,16 +21,31 @@ public class AccountTransactionController {
 
     private final AccountTransactionService accountTransactionService;
 
+    @PreAuthorize("hasAnyRole('CASHIER', 'CUSTOMER')")
     @PostMapping
     public ResponseEntity<AccountTransactionResponse> save(@RequestBody AccountTransactionRequest atr){
         return new ResponseEntity<>(accountTransactionService.save(atr), HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @PostMapping("online/initiate")
+    public ResponseEntity<OtpInitiateResponse> initiateOnlineTransaction(@RequestBody AccountTransactionRequest atr){
+        return new ResponseEntity<>(accountTransactionService.initiateOnlineTransaction(atr), HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @PostMapping("online/verify")
+    public ResponseEntity<AccountTransactionResponse> verifyOnlineTransaction(@RequestBody OtpVerifyRequest req){
+        return new ResponseEntity<>(accountTransactionService.verifyOnlineTransaction(req), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @GetMapping("all/")
     public ResponseEntity<List<AccountTransactionResponse>> getAll(){
         return new ResponseEntity<>(accountTransactionService.findAll(), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
     @GetMapping("{id}")
     public ResponseEntity<AccountTransactionResponse> getById(@PathVariable Long id){
         return accountTransactionService.findById(id)
@@ -35,6 +53,7 @@ public class AccountTransactionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
     @GetMapping("accountNumber/{accountNumber}")
     public ResponseEntity<List<AccountTransactionResponse>> findByAccountNumber(@PathVariable String accountNumber){
         return new ResponseEntity<>(
@@ -43,6 +62,7 @@ public class AccountTransactionController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
     @GetMapping("account/{accountId}")
     public ResponseEntity<List<AccountTransactionResponse>> findByAccountId(@PathVariable Long accountId){
         return new ResponseEntity<>(accountTransactionService.findByAccountId(accountId), HttpStatus.OK);

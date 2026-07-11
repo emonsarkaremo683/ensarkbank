@@ -8,12 +8,14 @@ import com.elitetech_inc.ensarkbank.common.address.policestation.service.PoliceS
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/policestation/")
+@PreAuthorize("hasAnyRole(ADMIN, SUPER_ADMIN)")
 public class PoliceStationController {
 
     @Autowired
@@ -33,10 +35,12 @@ public class PoliceStationController {
       return new ResponseEntity<>(ps, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAllRoles()")
     @GetMapping("")
     public List<PoliceStation> getAll(){
         return policeStationService.getAll();
     }
+
 
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id){
@@ -45,6 +49,7 @@ public class PoliceStationController {
         return new ResponseEntity<>("Data deleted" ,HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAllRoles()")
     @GetMapping("{id}")
     public ResponseEntity<PoliceStation> getById(@PathVariable Long id){
         PoliceStation ps = policeStationService.findById(id).orElseThrow(

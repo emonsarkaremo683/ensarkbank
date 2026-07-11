@@ -1,29 +1,45 @@
 package com.elitetech_inc.ensarkbank.account_management.account_transaction.service;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
+import com.elitetech_inc.ensarkbank.common.email.TransactionEmailService;
 import com.elitetech_inc.ensarkbank.accounting_system.journal.entity.JoinHelper;
 import com.elitetech_inc.ensarkbank.accounting_system.journal.repository.JoinHelperRepository;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
 import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
+import com.elitetech_inc.ensarkbank.common.enums.HolderType;
+import com.elitetech_inc.ensarkbank.common.enums.OtpStatus;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.entity.Beneficiary;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.repository.BeneficiaryRepository;
+import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.util.Validator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.mapper.AccountTransactionMapper;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.request.AccountTransactionRequest;
+import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.request.OtpVerifyRequest;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response.AccountTransactionResponse;
+import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response.OtpInitiateResponse;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.entity.AccountTransaction;
+import com.elitetech_inc.ensarkbank.account_management.account_transaction.entity.TransactionOtp;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.repository.AccountTransactionRepository;
+import com.elitetech_inc.ensarkbank.account_management.account_transaction.repository.TransactionOtpRepository;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.service.TransactionService;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
@@ -32,10 +48,18 @@ import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountTransactionServiceImpl implements AccountTransactionService {
+
+    private static final int OTP_LENGTH = 6;
+    private static final int MAX_ATTEMPTS = 3;
+    private static final int OTP_EXPIRY_MINUTES = 5;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final AccountTransactionRepository accountTransactionRepository;
     private final AccountTransactionMapper accountTransactionMapper;
@@ -47,6 +71,15 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     private final JoinHelperRepository joinHelperRepository;
     private final RequestValidator requestValidator;
     private final Validator validator;
+    private final TransactionOtpRepository transactionOtpRepository;
+    private final TransactionEmailService transactionEmailService;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    private AccountTransactionService getSelf() {
+        return applicationContext.getBean(AccountTransactionService.class);
+    }
 
     @Override
     @Transactional
@@ -164,6 +197,170 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
                 .stream()
                 .map(at -> accountTransactionMapper.toResponse(at, accountNumber))
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public OtpInitiateResponse initiateOnlineTransaction(AccountTransactionRequest atr) {
+        requestValidator.validateAccountTransaction(atr);
+        if (atr == null || atr.getRequest() == null) {
+            throw new IllegalArgumentException("Account transaction request is required");
+        }
+
+        Account sender = accountRepository.findById(atr.getSenderId())
+                .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+
+        validator.checkAccountStatus(sender.getAccountNumber());
+
+        BigDecimal amount = atr.getRequest().getAmount();
+        if (sender.getAvailableBalance() == null || sender.getAvailableBalance().compareTo(amount) < 0) {
+            throw new IllegalArgumentException("Insufficient balance");
+        }
+
+        Optional<TransactionOtp> activeOtp = transactionOtpRepository.findActivePendingOtp(sender.getAccountNumber());
+        if (activeOtp.isPresent()) {
+            throw new IllegalStateException("A verification code is already active for this account. Please wait for it to expire or use the existing code.");
+        }
+
+        String customerEmail = resolveCustomerEmail(sender);
+        if (customerEmail == null || customerEmail.isBlank()) {
+            throw new IllegalArgumentException("No registered email found for this account");
+        }
+
+        String otpCode = generateOtpCode();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiresAt = now.plusMinutes(OTP_EXPIRY_MINUTES);
+
+        String payload;
+        try {
+            payload = OBJECT_MAPPER.writeValueAsString(atr);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize transaction request", e);
+        }
+
+        TransactionOtp transactionOtp = new TransactionOtp();
+        transactionOtp.setOtpCode(otpCode);
+        transactionOtp.setCustomerEmail(customerEmail);
+        transactionOtp.setAccountNumber(sender.getAccountNumber());
+        transactionOtp.setPendingTransactionPayload(payload);
+        transactionOtp.setStatus(OtpStatus.PENDING);
+        transactionOtp.setAttemptCount(0);
+        transactionOtp.setExpiresAt(expiresAt);
+
+        transactionOtpRepository.save(transactionOtp);
+
+        String transactionType = atr.getRequest().getTransactionType() != null
+                ? atr.getRequest().getTransactionType().name()
+                : "TRANSFER";
+
+        transactionEmailService.sendOtpEmail(customerEmail, otpCode, amount, transactionType);
+
+        return OtpInitiateResponse.builder()
+                .otpReferenceId(transactionOtp.getId())
+                .maskedEmail(maskEmail(customerEmail))
+                .expiresAt(expiresAt)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public AccountTransactionResponse verifyOnlineTransaction(OtpVerifyRequest req) {
+        if (req.getOtpReferenceId() == null || req.getOtpCode() == null) {
+            throw new IllegalArgumentException("OTP reference ID and code are required");
+        }
+
+        TransactionOtp transactionOtp = transactionOtpRepository.findById(req.getOtpReferenceId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired verification code"));
+
+        if (transactionOtp.getStatus() != OtpStatus.PENDING) {
+            throw new IllegalArgumentException("Invalid or expired verification code");
+        }
+
+        if (transactionOtp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            transactionOtp.setStatus(OtpStatus.EXPIRED);
+            transactionOtpRepository.save(transactionOtp);
+            throw new IllegalArgumentException("Invalid or expired verification code");
+        }
+
+        if (transactionOtp.getAttemptCount() >= MAX_ATTEMPTS) {
+            transactionOtp.setStatus(OtpStatus.FAILED);
+            transactionOtpRepository.save(transactionOtp);
+            throw new IllegalArgumentException("Invalid or expired verification code");
+        }
+
+        if (!transactionOtp.getOtpCode().equals(req.getOtpCode())) {
+            int newCount = transactionOtp.getAttemptCount() + 1;
+            transactionOtp.setAttemptCount(newCount);
+            if (newCount >= MAX_ATTEMPTS) {
+                transactionOtp.setStatus(OtpStatus.FAILED);
+            }
+            transactionOtpRepository.save(transactionOtp);
+            int remaining = MAX_ATTEMPTS - newCount;
+            throw new IllegalArgumentException("Incorrect verification code. " + remaining + " attempt(s) remaining.");
+        }
+
+        getSelf().markOtpVerified(transactionOtp.getId());
+
+        AccountTransactionRequest atr;
+        try {
+            atr = OBJECT_MAPPER.readValue(transactionOtp.getPendingTransactionPayload(), AccountTransactionRequest.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to deserialize pending transaction payload", e);
+        }
+
+        AccountTransactionResponse response;
+        try {
+            response = getSelf().save(atr);
+        } catch (Exception e) {
+            log.error("Transaction execution failed after OTP verification for account: {}", transactionOtp.getAccountNumber(), e);
+            throw e;
+        }
+
+        String email = transactionOtp.getCustomerEmail();
+        transactionEmailService.sendTransactionSuccessEmail(email, response);
+
+        return response;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void markOtpVerified(Long otpId) {
+        TransactionOtp otp = transactionOtpRepository.findById(otpId)
+                .orElseThrow(() -> new IllegalArgumentException("OTP record not found"));
+        otp.setStatus(OtpStatus.VERIFIED);
+        transactionOtpRepository.save(otp);
+    }
+
+    private String resolveCustomerEmail(Account account) {
+        if (account.getHolders() == null || account.getHolders().isEmpty()) {
+            return null;
+        }
+        AccountHolder primaryHolder = account.getHolders().stream()
+                .filter(h -> h.getHolderType() == HolderType.PRIMARY)
+                .findFirst()
+                .orElse(account.getHolders().getFirst());
+        Customer customer = primaryHolder.getCustomer();
+        if (customer == null || customer.getUser() == null) {
+            return null;
+        }
+        return customer.getUser().getEmail();
+    }
+
+    private String generateOtpCode() {
+        int upperBound = (int) Math.pow(10, OTP_LENGTH);
+        int otp = SECURE_RANDOM.nextInt(upperBound);
+        return String.format("%0" + OTP_LENGTH + "d", otp);
+    }
+
+    private String maskEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            return "***";
+        }
+        int atIndex = email.indexOf('@');
+        if (atIndex <= 1) {
+            return "*" + email.substring(atIndex);
+        }
+        return email.charAt(0) + "*".repeat(atIndex - 1) + email.substring(atIndex);
     }
 
     private boolean checkAccountNumber(String accountNumber) {

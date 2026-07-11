@@ -7,12 +7,14 @@ import com.elitetech_inc.ensarkbank.common.address.division.service.DivisionServ
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/division/")
+@PreAuthorize("hasAnyRole(ADMIN, SUPER_ADMIN)")
 public class DivisionController {
 
     @Autowired
@@ -26,11 +28,13 @@ public class DivisionController {
         return new ResponseEntity<>(divisionService.save(division), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAllRoles()")
     @GetMapping
     public ResponseEntity<List<Division>> findAll(){
         return new ResponseEntity<>(divisionService.findAll(), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAllRoles()")
     @GetMapping("{id}")
     public ResponseEntity<Division> findById(@PathVariable Long id){
         Division d = divisionService.findByDivisionId(id).orElseThrow(

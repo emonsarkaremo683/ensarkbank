@@ -68,4 +68,9 @@ public class BeneficiaryServiceImpl implements BeneficiaryService{
                 .stream().map(beneficiaryMapper::toResponse)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void delete(Long id) {
+        beneficiaryRepository.deleteById(id);
+    }
 }

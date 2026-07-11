@@ -6,7 +6,9 @@ import com.elitetech_inc.ensarkbank.common.address.policestation.entity.PoliceSt
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface PoliceStationRepository extends JpaRepository<PoliceStation, Long> {
-
+    Optional<PoliceStation> findByName(String name);
 }
