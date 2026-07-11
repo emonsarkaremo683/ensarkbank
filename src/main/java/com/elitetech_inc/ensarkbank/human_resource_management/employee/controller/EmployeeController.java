@@ -23,7 +23,7 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final ObjectMapper objectMapper;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @PostMapping
     public ResponseEntity<EmployeeResponse> createEmployee(
             @RequestPart("data") String data,
@@ -34,22 +34,34 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeService.save(dto, profilePicture), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER')")
     @GetMapping
     public ResponseEntity<List<EmployeeResponse>> getAllEmployee(){
         return new ResponseEntity<>(employeeService.findAll(), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER')")
     @GetMapping("{id}")
     public ResponseEntity<Optional<EmployeeResponse>> getEmployee(@PathVariable Long id){
         return new ResponseEntity<>(employeeService.findById(id), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER')")
     @GetMapping("branch/{branchId}")
     public ResponseEntity<List<EmployeeResponse>> getAllEmployee(@PathVariable Long branchId){
         return new ResponseEntity<>(employeeService.findByBranchId(branchId), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+    @PutMapping("{id}")
+    public ResponseEntity<EmployeeResponse> updateEmployee(
+            @PathVariable Long id,
+            @RequestPart("data") String data,
+            @RequestPart(value = "profile", required = false) MultipartFile profilePicture) {
+
+        EmployeeRequest dto = objectMapper.readValue(data, EmployeeRequest.class);
+
+        return new ResponseEntity<>(employeeService.update(id, dto, profilePicture), HttpStatus.OK);
     }
 
 }

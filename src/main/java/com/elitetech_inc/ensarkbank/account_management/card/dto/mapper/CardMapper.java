@@ -35,7 +35,7 @@ public class CardMapper {
                 .orElseThrow(() -> new RuntimeException("Account"+ cr.getAccountId()));
 
         validator.checkAccountStatus(account.getAccountNumber());
-
+        validator.checkAccountType(account.getAccountNumber());
         Card card = new Card();
         card.setAccount(account);
         card.setCardNetwork(cr.getCardNetwork());

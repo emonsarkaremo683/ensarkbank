@@ -16,6 +16,7 @@ public interface EmployeeService {
     List<EmployeeResponse> findAll();
     Optional<EmployeeResponse> findById(Long id);
     List<EmployeeResponse> findByBranchId(Long branchId);
+    EmployeeResponse update(Long id, EmployeeRequest emp, MultipartFile file);
 
 
 }

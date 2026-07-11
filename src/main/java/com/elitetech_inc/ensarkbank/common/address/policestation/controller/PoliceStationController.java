@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/policestation/")
-@PreAuthorize("hasAnyRole(ADMIN, SUPER_ADMIN)")
 public class PoliceStationController {
 
     @Autowired
@@ -24,6 +23,7 @@ public class PoliceStationController {
     @Autowired
     private DistrictRepository districtRepository;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PostMapping("")
     public ResponseEntity<PoliceStation> save(@RequestBody PoliceStation policeStation) {
         District district = districtRepository.findById(policeStation.getDistrict().getId())
@@ -35,13 +35,18 @@ public class PoliceStationController {
       return new ResponseEntity<>(ps, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAllRoles()")
     @GetMapping("")
     public List<PoliceStation> getAll(){
         return policeStationService.getAll();
     }
 
+    @GetMapping("district/{districtId}")
+    public ResponseEntity<List<PoliceStation>> getByDistrictId(@PathVariable Long districtId){
+        return new ResponseEntity<>(policeStationService.findByDistrictId(districtId), HttpStatus.OK);
+    }
 
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id){
 
@@ -49,7 +54,6 @@ public class PoliceStationController {
         return new ResponseEntity<>("Data deleted" ,HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAllRoles()")
     @GetMapping("{id}")
     public ResponseEntity<PoliceStation> getById(@PathVariable Long id){
         PoliceStation ps = policeStationService.findById(id).orElseThrow(
@@ -58,6 +62,7 @@ public class PoliceStationController {
         return new ResponseEntity<>(ps, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PostMapping("{id}")
     public ResponseEntity<PoliceStation> update(@PathVariable Long id, @RequestBody PoliceStation policeStation) {
         policeStation.setId(id);

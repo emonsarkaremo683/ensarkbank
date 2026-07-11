@@ -8,11 +8,14 @@ import com.elitetech_inc.ensarkbank.auth_management.auth.security.EmailConfig;
 import com.elitetech_inc.ensarkbank.auth_management.auth.security.JwtUtil;
 import com.elitetech_inc.ensarkbank.auth_management.user.entity.User;
 import com.elitetech_inc.ensarkbank.auth_management.user.repository.UserRepository;
+import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
 import com.elitetech_inc.ensarkbank.common.enums.Role;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.mapper.CustomerMapper;
+import com.elitetech_inc.ensarkbank.customer_management.customer.dto.request.CustomerRequest;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.response.CustomerResponse;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
+import com.elitetech_inc.ensarkbank.customer_management.customer.service.CustomerService;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.dto.mapper.EmployeeMapper;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.dto.response.EmployeeResponse;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.entity.Employee;
@@ -21,10 +24,14 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +46,7 @@ public class AuthService {
     private final EmployeeRepository staffRepository;
     private final EmailConfig emailService;
     private final PasswordEncoder encoder;
+    private final CustomerService customerService;
 
 
     /**
@@ -68,7 +76,7 @@ public class AuthService {
                     )
             );
         } catch (AuthenticationException e) {
-            throw new RuntimeException("Invalid email or password");
+            throw new BadCredentialsException("Invalid email or password");
         }
 
         return userRepository.findByEmail(lr.getEmail()).orElseThrow();
@@ -132,6 +140,7 @@ public class AuthService {
         }
 
         user.setActive(true);
+        user.setEmailVerified(true);
         userRepository.save(user);
     }
 
@@ -171,6 +180,25 @@ public class AuthService {
         userRepository.save(user);
     }
 
+
+    // ── Register new customer ────────────────────────────────
+    public LoginResponse<CustomerResponse> register(CustomerRequest dto,
+                                                    MultipartFile profile,
+                                                    Map<DocumentType, MultipartFile> documents) {
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        CustomerResponse crs = customerService.saveData(dto, profile, documents);
+
+        String token = jwtUtil.generateToken(dto.getEmail(), Role.CUSTOMER);
+
+        return LoginResponse.<CustomerResponse>builder()
+                .token(token)
+                .tokenType("Bearer")
+                .user(crs)
+                .build();
+    }
 
     private String getName(User user) {
         if(user.getRole() == Role.CUSTOMER) {

@@ -2,11 +2,14 @@ package com.elitetech_inc.ensarkbank.util;
 
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepository;
+import com.elitetech_inc.ensarkbank.common.enums.AccountType;
 import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -63,6 +66,20 @@ public class Validator {
     public boolean checkAccountExists(String accountNumber){
         return accountRepository.existsByAccountNumber(accountNumber);
     }
+
+    private static final Set<AccountType> VAULT_TYPES = Set.of(
+            AccountType.BRANCH_VAULT,
+            AccountType.AGENT_BANK_VAULT,
+            AccountType.ATM_VAULT,
+            AccountType.INTER_BANK_VAULT
+    );
+
+    public void checkAccountType(String accountNumber) {
+        accountRepository.findAccountByAccountNumber(accountNumber)
+                .filter(acc -> !VAULT_TYPES.contains(acc.getAccountType()))
+                .orElseThrow(()-> new RuntimeException((" Invalid Account")));
+    }
+
 
 
 

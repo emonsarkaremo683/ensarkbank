@@ -14,7 +14,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/beneficiary/")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole(CUSTOMER)")
+@PreAuthorize("hasRole('CUSTOMER')")
 public class BeneficiaryController {
     private final BeneficiaryService beneficiaryService;
 

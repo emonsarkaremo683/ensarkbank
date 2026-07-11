@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/district/")
-@PreAuthorize("hasAnyRole(ADMIN, SUPER_ADMIN)")
 public class DistrictController {
 
     @Autowired
@@ -23,6 +22,7 @@ public class DistrictController {
     @Autowired
     private DivisionService divisionService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PostMapping
     public ResponseEntity<District> save(@RequestBody District d) {
         Division division = divisionService.findByDivisionId(d.getDivision().getId())
@@ -32,26 +32,28 @@ public class DistrictController {
         return new ResponseEntity<>(districtService.save(d), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAllRoles()")
-    @GetMapping
+
+    @GetMapping("all")
     public ResponseEntity<List<District>> findAll() {
         return new ResponseEntity<>(districtService.findAll(), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PutMapping("{id}")
     public ResponseEntity<District> update(@PathVariable Long id, @RequestBody District d) {
         d.setId(id);
         return new ResponseEntity<>(districtService.save(d), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAllRoles()")
+
     @GetMapping("/division/{id}")
     public ResponseEntity<List<District>> findById(@PathVariable Long id){
         List<District> d = districtService.findByDivisionId(id).stream().toList();
         return new ResponseEntity<>(d, HttpStatus.OK);
     }
 
-    @DeleteMapping("{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @DeleteMapping("{id}/delete")
     public ResponseEntity<String> delete(@PathVariable Long id){
         districtService.delete(id);
         return  new ResponseEntity<>("Data deleted", HttpStatus.OK);

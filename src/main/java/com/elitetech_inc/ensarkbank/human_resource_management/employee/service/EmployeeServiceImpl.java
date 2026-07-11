@@ -12,6 +12,7 @@ import com.elitetech_inc.ensarkbank.human_resource_management.employee.repositor
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final UserRepository userRepository;
     private final Utils utils;
     private final RequestValidator requestValidator;
+    private final PasswordEncoder encoder;
 
     @Override
     public EmployeeResponse save(EmployeeRequest emp,  MultipartFile profile) {
@@ -72,5 +74,36 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<EmployeeResponse> findByBranchId(Long branchId) {
         return employeeRepository.findEmployeeByBranchId(branchId).stream().map(employeeMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public EmployeeResponse update(Long id, EmployeeRequest emp, MultipartFile profile) {
+        Employee existing = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+
+        existing.setName(emp.getName());
+        existing.setEmail(emp.getEmail());
+        existing.setGender(emp.getGender());
+        existing.setDesignation(emp.getDesignation());
+        existing.setDob(emp.getDob());
+        existing.setPhoneNumber(emp.getPhone());
+
+        if (profile != null && !profile.isEmpty()) {
+            existing.setProfilePhoto(utils.uploadFile(profile, "employee", emp.getName()));
+        }
+
+        Branch branch = branchRepository.findById(emp.getBranchId())
+                .orElseThrow(() -> new RuntimeException("Branch not found"));
+        existing.setBranch(branch);
+
+        User user = existing.getUser();
+        user.setEmail(emp.getEmail());
+        if (emp.getPassword() != null && !emp.getPassword().isBlank()) {
+            user.setPassword(encoder.encode(emp.getPassword()));
+        }
+        user.setRole(emp.getRole());
+        userRepository.save(user);
+
+        return employeeMapper.toResponse(employeeRepository.save(existing));
     }
 }

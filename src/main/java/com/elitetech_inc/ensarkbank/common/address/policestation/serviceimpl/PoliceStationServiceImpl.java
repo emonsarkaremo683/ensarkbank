@@ -42,7 +42,11 @@ public class PoliceStationServiceImpl implements PoliceStationService {
     @Override
     public void delete(Long id) {
         policeStationRepository.deleteById(id);
+    }
 
+    @Override
+    public List<PoliceStation> findByDistrictId(Long districtId) {
+        return policeStationRepository.findByDistrictId(districtId);
     }
 
 }

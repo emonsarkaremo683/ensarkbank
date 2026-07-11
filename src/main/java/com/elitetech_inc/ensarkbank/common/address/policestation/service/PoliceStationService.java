@@ -17,6 +17,7 @@ public interface PoliceStationService {
     public List<PoliceStation> getAll() ;
     public void delete(Long id);
     public Optional<PoliceStation> findById(Long id);
+    public List<PoliceStation> findByDistrictId(Long districtId);
 
 
 

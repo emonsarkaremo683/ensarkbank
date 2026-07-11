@@ -1,0 +1,270 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Transactions</h1>
+      <p class="page-subtitle">Process and manage bank transactions</p>
+    </div>
+    <button class="btn btn-primary" (click)="newTransaction()">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+      New Transaction
+    </button>
+  </div>
+
+  <div class="stats-grid">
+    <app-stats-card title="Total Transactions" [value]="totalTransactions()" icon="&#128200;" color="#c9a84c"></app-stats-card>
+    <app-stats-card title="Successful" [value]="successCount()" icon="&#9989;" color="#22c55e"></app-stats-card>
+    <app-stats-card title="Total Amount" [value]="formatCurrency(totalAmount())" icon="&#128176;" color="#3b82f6"></app-stats-card>
+    <app-stats-card title="Pending" [value]="pendingCount()" icon="&#9203;" color="#f59e0b"></app-stats-card>
+  </div>
+
+  @if (step() === 'form') {
+    <div class="transaction-form-card">
+      <div class="form-card-header">
+        <h2>New Transaction</h2>
+        <span class="step-badge">Step 1 of 2</span>
+      </div>
+      <div class="form-card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Transaction Type *</label>
+            <select [(ngModel)]="form.transactionType" class="form-control">
+              <option value="">Select Type</option>
+              @for (type of transactionTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Channel</label>
+            <select [(ngModel)]="form.channel" class="form-control">
+              <option value="">Select Channel</option>
+              @for (ch of transactionChannels; track ch) {
+                <option [value]="ch">{{ ch.replace('_', ' ') }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sender Account *</label>
+            <select [(ngModel)]="form.senderAccountNumber" class="form-control">
+              <option value="">Select Sender</option>
+              @for (acc of accounts(); track acc.id) {
+                <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.accountType }} ({{ formatCurrency(acc.balance) }})</option>
+              }
+            </select>
+          </div>
+          @if (form.transactionType === 'TRANSFER') {
+            <div class="form-group">
+              <label>Receiver Account *</label>
+              <select [(ngModel)]="form.receiverAccountNumber" class="form-control">
+                <option value="">Select Receiver</option>
+                @for (acc of accounts(); track acc.id) {
+                  <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.accountType }}</option>
+                }
+              </select>
+            </div>
+          }
+          <div class="form-group">
+            <label>Amount *</label>
+            <input type="number" [(ngModel)]="form.amount" class="form-control" min="0.01" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group full-width">
+            <label>Remarks</label>
+            <input type="text" [(ngModel)]="form.remarks" class="form-control" placeholder="Transaction remarks (optional)">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-lg" (click)="initiateTransaction()" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner"></span> Processing...
+            } @else {
+              <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"/></svg>
+              Initiate Transaction
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (step() === 'otp') {
+    <div class="otp-card">
+      <div class="otp-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M12 8v4M12 16h.01"/>
+        </svg>
+      </div>
+      <h2>Verify OTP</h2>
+      <p class="otp-subtitle">Enter the OTP sent to <strong>{{ otpData()?.maskedEmail }}</strong></p>
+      <p class="otp-expire">Expires at {{ otpData()?.expiresAt | date:'mediumTime' }}</p>
+      <div class="otp-input-wrapper">
+        <input
+          type="text"
+          [(ngModel)]="otpCode"
+          class="otp-input"
+          placeholder="Enter OTP"
+          maxlength="6"
+          autocomplete="one-time-code"
+        />
+      </div>
+      <div class="otp-actions">
+        <button class="btn btn-secondary" (click)="cancelOtp()">Cancel</button>
+        <button class="btn btn-primary" (click)="verifyOtp()" [disabled]="submitting() || !otpCode">
+          @if (submitting()) {
+            <span class="spinner"></span> Verifying...
+          } @else {
+            Verify & Complete
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (step() === 'result') {
+    <div class="result-card" [class.success]="transactionResult()?.status === 'SUCCESS'" [class.failed]="transactionResult()?.status !== 'SUCCESS'">
+      <div class="result-icon">
+        @if (transactionResult()?.status === 'SUCCESS') {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        }
+      </div>
+      <h2>{{ transactionResult()?.status === 'SUCCESS' ? 'Transaction Successful' : 'Transaction Failed' }}</h2>
+      @if (transactionResult()) {
+        <div class="result-details">
+          <div class="result-row">
+            <span>Transaction ID</span>
+            <span class="highlight">{{ transactionResult()!.transactionId }}</span>
+          </div>
+          <div class="result-row">
+            <span>Amount</span>
+            <span class="amount">{{ formatCurrency(transactionResult()!.amount) }}</span>
+          </div>
+          <div class="result-row">
+            <span>Sender</span>
+            <span>{{ transactionResult()!.senderAccountNumber }}</span>
+          </div>
+          <div class="result-row">
+            <span>Receiver</span>
+            <span>{{ transactionResult()!.receiverAccountNumber || '-' }}</span>
+          </div>
+          <div class="result-row">
+            <span>Type</span>
+            <span>{{ transactionResult()!.type }}</span>
+          </div>
+          <div class="result-row">
+            <span>Status</span>
+            <span class="badge" [class]="getStatusClass(transactionResult()!.status)">{{ transactionResult()!.status }}</span>
+          </div>
+        </div>
+      }
+      <button class="btn btn-primary" (click)="newTransaction()">New Transaction</button>
+    </div>
+  }
+
+  <div class="section-divider"></div>
+
+  <h2 class="section-heading">Transaction History</h2>
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Type</label>
+      <select [(ngModel)]="filters.type" class="form-control-sm">
+        <option value="">All Types</option>
+        @for (type of transactionTypes; track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select [(ngModel)]="filters.status" class="form-control-sm">
+        <option value="">All Status</option>
+        @for (status of ['SUCCESS', 'FAILED', 'PENDING', 'CANCELLED', 'REVERSED']; track status) {
+          <option [value]="status">{{ status }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>From</label>
+      <input type="date" [(ngModel)]="filters.dateFrom" class="form-control-sm">
+    </div>
+    <div class="filter-group">
+      <label>To</label>
+      <input type="date" [(ngModel)]="filters.dateTo" class="form-control-sm">
+    </div>
+  </div>
+
+  @if (loading()) {
+    <app-loading message="Loading transactions..."></app-loading>
+  } @else {
+    <app-data-table
+      [columns]="columns"
+      [data]="filteredTransactions()"
+      [searchable]="true"
+      [pageSize]="10"
+      emptyMessage="No transactions found"
+      (rowClick)="viewDetail($event)"
+    ></app-data-table>
+  }
+
+  @if (showDetailModal() && selectedTransaction()) {
+    <div class="modal-overlay" (click)="closeDetail()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Transaction Details</h2>
+          <button class="modal-close" (click)="closeDetail()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Transaction ID</span>
+              <span class="detail-value highlight">{{ selectedTransaction()!.transactionId }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Type</span>
+              <span class="detail-value">{{ selectedTransaction()!.type }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Amount</span>
+              <span class="detail-value balance">{{ formatCurrency(selectedTransaction()!.amount) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Status</span>
+              <span class="badge" [class]="getStatusClass(selectedTransaction()!.status)">{{ selectedTransaction()!.status }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Sender</span>
+              <span class="detail-value">{{ selectedTransaction()!.senderAccountNumber }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Receiver</span>
+              <span class="detail-value">{{ selectedTransaction()!.receiverAccountNumber || '-' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Channel</span>
+              <span class="detail-value">{{ selectedTransaction()!.channel }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Date</span>
+              <span class="detail-value">{{ selectedTransaction()!.createdAt | date:'medium' }}</span>
+            </div>
+            @if (selectedTransaction()!.remarks) {
+              <div class="detail-item full-width">
+                <span class="detail-label">Remarks</span>
+                <span class="detail-value">{{ selectedTransaction()!.remarks }}</span>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeDetail()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

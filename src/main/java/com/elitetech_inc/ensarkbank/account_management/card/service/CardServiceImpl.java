@@ -8,6 +8,7 @@ import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepos
 import com.elitetech_inc.ensarkbank.common.enums.CardStatus;
 import com.elitetech_inc.ensarkbank.common.enums.CardType;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
+import com.elitetech_inc.ensarkbank.util.Utils;
 import com.elitetech_inc.ensarkbank.util.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +27,7 @@ public class CardServiceImpl implements CardService{
     private final RequestValidator requestValidator;
     private final Validator validator;
     private final PasswordEncoder encoder;
+
 
     @Override
     public CardResponse createCard(CardRequest cr) {

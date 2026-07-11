@@ -1,0 +1,421 @@
+<div class="register-page">
+  <div class="register-left">
+    <div class="brand-content">
+      <div class="brand-logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">EnsarBank</span>
+      </div>
+      <h1>Open Your<br><span class="gold">Account Today</span></h1>
+      <p>Join over 2 million customers. Experience secure, modern banking designed for you.</p>
+    </div>
+    <div class="brand-bg">
+      <div class="brand-grid"></div>
+      <div class="brand-glow"></div>
+    </div>
+  </div>
+
+  <div class="register-right">
+    <div class="register-form-container">
+      <div class="form-header">
+        <h2>Create Account</h2>
+        <p>Complete the steps below to open your account</p>
+      </div>
+
+      <div class="stepper">
+        @for (step of steps; track step.label; let i = $index) {
+          <div class="step" [class.active]="currentStep() === i + 1" [class.completed]="currentStep() > i + 1">
+            <div class="step-indicator">
+              @if (currentStep() > i + 1) {
+                <span class="check">✓</span>
+              } @else {
+                <span>{{ i + 1 }}</span>
+              }
+            </div>
+            <span class="step-label">{{ step.label }}</span>
+          </div>
+          @if (i < steps.length - 1) {
+            <div class="step-line" [class.completed]="currentStep() > i + 1"></div>
+          }
+        }
+      </div>
+
+      <div class="form-body">
+        @if (currentStep() === 1) {
+          <form [formGroup]="personalForm" class="step-form">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" formControlName="name" placeholder="John Doe" />
+              @if (personalForm.get('name')?.touched && personalForm.get('name')?.errors) {
+                <div class="field-error">Name is required (min 2 characters)</div>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email Address *</label>
+                <input type="email" formControlName="email" placeholder="you@example.com" />
+                @if (personalForm.get('email')?.touched && personalForm.get('email')?.errors) {
+                  <div class="field-error">Valid email is required</div>
+                }
+              </div>
+              <div class="form-group">
+                <label>Phone Number *</label>
+                <input type="tel" formControlName="phone" placeholder="01XXXXXXXXX" />
+                @if (personalForm.get('phone')?.touched && personalForm.get('phone')?.errors) {
+                  <div class="field-error">Valid Bangladeshi number required</div>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Gender *</label>
+                <select formControlName="gender">
+                  <option value="">Select Gender</option>
+                  @for (g of genderOptions; track g) {
+                    <option [value]="g">{{ g }}</option>
+                  }
+                </select>
+                @if (personalForm.get('gender')?.touched && personalForm.get('gender')?.invalid) {
+                  <div class="field-error">Gender is required</div>
+                }
+              </div>
+              <div class="form-group">
+                <label>Date of Birth *</label>
+                <input type="date" formControlName="dob" />
+                @if (personalForm.get('dob')?.touched && personalForm.get('dob')?.invalid) {
+                  <div class="field-error">Date of birth is required</div>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Occupation</label>
+              <select formControlName="occupation">
+                <option value="">Select Occupation</option>
+                @for (occ of occupationOptions; track occ) {
+                  <option [value]="occ">{{ getOccupationLabel(occ) }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Profile Picture</label>
+              <div class="file-upload-area" (click)="profileInput.click()">
+                @if (profilePreview()) {
+                  <img [src]="profilePreview()" class="profile-preview" alt="Profile" />
+                } @else {
+                  <div class="file-placeholder">
+                    <span class="file-icon">📷</span>
+                    <span>Click to upload profile picture</span>
+                  </div>
+                }
+              </div>
+              <input #profileInput type="file" accept="image/*" (change)="onProfileSelected($event)" hidden />
+              @if (selectedProfileFile()) {
+                <div class="file-info">
+                  <span>{{ selectedProfileFile()!.name }}</span>
+                  <button type="button" class="remove-file" (click)="removeFile('profile')">✕</button>
+                </div>
+              }
+            </div>
+          </form>
+        }
+
+        @if (currentStep() === 2) {
+          <div class="step-form">
+            <!-- Permanent Address -->
+            <div class="address-section">
+              <div class="address-header">
+                <h3>Permanent Address</h3>
+                <span class="address-badge permanent">PERMANENT</span>
+              </div>
+              <form [formGroup]="permanentAddressForm" class="address-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Division *</label>
+                    <select formControlName="divisionId" (change)="onPermanentDivisionChange(+$any($event.target).value)">
+                      <option value="">Select Division</option>
+                      @for (div of divisions; track div.id) {
+                        <option [value]="div.id">{{ div.name }}</option>
+                      }
+                    </select>
+                    @if (permanentAddressForm.get('divisionId')?.touched && permanentAddressForm.get('divisionId')?.invalid) {
+                      <div class="field-error">Division is required</div>
+                    }
+                  </div>
+                  <div class="form-group">
+                    <label>District *</label>
+                    <select formControlName="districtId" (change)="onPermanentDistrictChange(+$any($event.target).value)">
+                      <option value="">Select District</option>
+                      @for (dist of permanentDistricts; track dist.id) {
+                        <option [value]="dist.id">{{ dist.name }}</option>
+                      }
+                    </select>
+                    @if (permanentAddressForm.get('districtId')?.touched && permanentAddressForm.get('districtId')?.invalid) {
+                      <div class="field-error">District is required</div>
+                    }
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Police Station *</label>
+                    <select formControlName="policeStationId">
+                      <option value="">Select Police Station</option>
+                      @for (ps of permanentPoliceStations; track ps.id) {
+                        <option [value]="ps.id">{{ ps.name }}</option>
+                      }
+                    </select>
+                    @if (permanentAddressForm.get('policeStationId')?.touched && permanentAddressForm.get('policeStationId')?.invalid) {
+                      <div class="field-error">Police station is required</div>
+                    }
+                  </div>
+                  <div class="form-group">
+                    <label>Postal Code</label>
+                    <input type="text" formControlName="postalCode" placeholder="1000" />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Holding No</label>
+                    <input type="text" formControlName="holdingNo" placeholder="12/A" />
+                  </div>
+                  <div class="form-group">
+                    <label>Area / Road</label>
+                    <input type="text" formControlName="area" placeholder="Dhanmondi, Road 27" />
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Same as Permanent Toggle -->
+            <div class="same-address-toggle">
+              <label class="toggle-label">
+                <input type="checkbox" [checked]="sameAsPermanent()" (change)="toggleSameAsPermanent()" />
+                <span class="toggle-text">Present address same as permanent</span>
+              </label>
+            </div>
+
+            <!-- Present Address -->
+            @if (!sameAsPermanent()) {
+              <div class="address-section">
+                <div class="address-header">
+                  <h3>Present Address</h3>
+                  <span class="address-badge present">PRESENT</span>
+                </div>
+                <form [formGroup]="presentAddressForm" class="address-form">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Division *</label>
+                      <select formControlName="divisionId" (change)="onPresentDivisionChange(+$any($event.target).value)">
+                        <option value="">Select Division</option>
+                        @for (div of divisions; track div.id) {
+                          <option [value]="div.id">{{ div.name }}</option>
+                        }
+                      </select>
+                      @if (presentAddressForm.get('divisionId')?.touched && presentAddressForm.get('divisionId')?.invalid) {
+                        <div class="field-error">Division is required</div>
+                      }
+                    </div>
+                    <div class="form-group">
+                      <label>District *</label>
+                      <select formControlName="districtId" (change)="onPresentDistrictChange(+$any($event.target).value)">
+                        <option value="">Select District</option>
+                        @for (dist of presentDistricts; track dist.id) {
+                          <option [value]="dist.id">{{ dist.name }}</option>
+                        }
+                      </select>
+                      @if (presentAddressForm.get('districtId')?.touched && presentAddressForm.get('districtId')?.invalid) {
+                        <div class="field-error">District is required</div>
+                      }
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Police Station *</label>
+                      <select formControlName="policeStationId">
+                        <option value="">Select Police Station</option>
+                        @for (ps of presentPoliceStations; track ps.id) {
+                          <option [value]="ps.id">{{ ps.name }}</option>
+                        }
+                      </select>
+                      @if (presentAddressForm.get('policeStationId')?.touched && presentAddressForm.get('policeStationId')?.invalid) {
+                        <div class="field-error">Police station is required</div>
+                      }
+                    </div>
+                    <div class="form-group">
+                      <label>Postal Code</label>
+                      <input type="text" formControlName="postalCode" placeholder="1000" />
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Holding No</label>
+                      <input type="text" formControlName="holdingNo" placeholder="12/A" />
+                    </div>
+                    <div class="form-group">
+                      <label>Area / Road</label>
+                      <input type="text" formControlName="area" placeholder="Dhanmondi, Road 27" />
+                    </div>
+                  </div>
+                </form>
+              </div>
+            }
+          </div>
+        }
+
+        @if (currentStep() === 3) {
+          <form [formGroup]="kycForm" class="step-form">
+            <p class="step-description">Upload your identification documents. All documents are optional but recommended for faster account verification.</p>
+
+            <div class="document-grid">
+              <div class="document-card" [class.has-file]="selectedNidFile()">
+                <div class="doc-header">
+                  <span class="doc-icon">🪪</span>
+                  <span class="doc-title">National ID (NID)</span>
+                </div>
+                @if (selectedNidFile()) {
+                  <div class="doc-file-info">
+                    <span class="doc-filename">{{ selectedNidFile()!.name }}</span>
+                    <button type="button" class="remove-file" (click)="removeFile('nid')">✕</button>
+                  </div>
+                } @else {
+                  <label class="doc-upload-btn">
+                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" (change)="onNidSelected($event)" hidden />
+                    <span>Choose File</span>
+                  </label>
+                }
+                <span class="doc-hint">JPG, PNG or PDF (max 10MB)</span>
+              </div>
+
+              <div class="document-card" [class.has-file]="selectedPassportFile()">
+                <div class="doc-header">
+                  <span class="doc-icon">📘</span>
+                  <span class="doc-title">Passport</span>
+                </div>
+                @if (selectedPassportFile()) {
+                  <div class="doc-file-info">
+                    <span class="doc-filename">{{ selectedPassportFile()!.name }}</span>
+                    <button type="button" class="remove-file" (click)="removeFile('passport')">✕</button>
+                  </div>
+                } @else {
+                  <label class="doc-upload-btn">
+                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" (change)="onPassportSelected($event)" hidden />
+                    <span>Choose File</span>
+                  </label>
+                }
+                <span class="doc-hint">Optional — for international verification</span>
+              </div>
+
+              <div class="document-card" [class.has-file]="selectedDrivingLicenseFile()">
+                <div class="doc-header">
+                  <span class="doc-icon">🚗</span>
+                  <span class="doc-title">Driving License</span>
+                </div>
+                @if (selectedDrivingLicenseFile()) {
+                  <div class="doc-file-info">
+                    <span class="doc-filename">{{ selectedDrivingLicenseFile()!.name }}</span>
+                    <button type="button" class="remove-file" (click)="removeFile('drivingLicense')">✕</button>
+                  </div>
+                } @else {
+                  <label class="doc-upload-btn">
+                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" (change)="onDrivingLicenseSelected($event)" hidden />
+                    <span>Choose File</span>
+                  </label>
+                }
+                <span class="doc-hint">Optional</span>
+              </div>
+
+              <div class="document-card" [class.has-file]="selectedBirthCertFile()">
+                <div class="doc-header">
+                  <span class="doc-icon">📜</span>
+                  <span class="doc-title">Birth Certificate</span>
+                </div>
+                @if (selectedBirthCertFile()) {
+                  <div class="doc-file-info">
+                    <span class="doc-filename">{{ selectedBirthCertFile()!.name }}</span>
+                    <button type="button" class="remove-file" (click)="removeFile('birthCert')">✕</button>
+                  </div>
+                } @else {
+                  <label class="doc-upload-btn">
+                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" (change)="onBirthCertSelected($event)" hidden />
+                    <span>Choose File</span>
+                  </label>
+                }
+                <span class="doc-hint">Optional</span>
+              </div>
+            </div>
+          </form>
+        }
+
+        @if (currentStep() === 4) {
+          <form [formGroup]="securityForm" class="step-form">
+            <div class="form-group">
+              <label>Password *</label>
+              <div class="input-wrapper" [class.error]="securityForm.get('password')?.touched && securityForm.get('password')?.invalid">
+                <input [type]="showPassword() ? 'text' : 'password'" formControlName="password" placeholder="Min. 6 characters" />
+                <button type="button" class="toggle-password" (click)="togglePassword()">
+                  {{ showPassword() ? '🙈' : '👁' }}
+                </button>
+              </div>
+              @if (securityForm.get('password')?.touched && securityForm.get('password')?.errors) {
+                <div class="field-error">Password must be at least 6 characters</div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>Confirm Password *</label>
+              <div class="input-wrapper" [class.error]="securityForm.get('confirmPassword')?.touched && (securityForm.errors?.['passwordMismatch'] || securityForm.get('confirmPassword')?.invalid)">
+                <input [type]="showConfirmPassword() ? 'text' : 'password'" formControlName="confirmPassword" placeholder="Re-enter password" />
+                <button type="button" class="toggle-password" (click)="toggleConfirmPassword()">
+                  {{ showConfirmPassword() ? '🙈' : '👁' }}
+                </button>
+              </div>
+              @if (securityForm.get('confirmPassword')?.touched && securityForm.errors?.['passwordMismatch']) {
+                <div class="field-error">Passwords do not match</div>
+              }
+            </div>
+
+            <div class="security-info">
+              <div class="info-item">
+                <span class="info-icon">🔒</span>
+                <span>Passwords are encrypted with SHA-256 before transmission</span>
+              </div>
+              <div class="info-item">
+                <span class="info-icon">📧</span>
+                <span>A verification email will be sent after registration</span>
+              </div>
+            </div>
+          </form>
+        }
+      </div>
+
+      <div class="form-actions">
+        @if (currentStep() > 1) {
+          <button type="button" class="btn-back" (click)="prevStep()">← Back</button>
+        } @else {
+          <div></div>
+        }
+
+        @if (currentStep() < totalSteps) {
+          <button type="button" class="btn-next" (click)="nextStep()">
+            Next Step →
+          </button>
+        } @else {
+          <button type="button" class="btn-submit" (click)="onSubmit()" [disabled]="isLoading()">
+            @if (isLoading()) {
+              <span class="spinner"></span>
+              <span>Creating Account...</span>
+            } @else {
+              <span>Create Account</span>
+            }
+          </button>
+        }
+      </div>
+
+      <div class="form-footer">
+        <p>Already have an account? <a routerLink="/login">Sign In</a></p>
+      </div>
+    </div>
+  </div>
+</div>

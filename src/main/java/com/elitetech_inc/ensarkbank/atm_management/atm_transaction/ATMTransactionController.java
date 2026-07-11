@@ -18,13 +18,13 @@ public class ATMTransactionController {
 
     private final ATMTransactionService atmTransactionService;
 
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CUSTOMER')")
     @PostMapping
     public ResponseEntity<ATMTransactionResponse> transaction(@RequestBody ATMTransactionRequest request) {
         return ResponseEntity.ok(atmTransactionService.transaction(request));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATM_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'ATM_MANAGER')")
     @PostMapping("/{atmId}/refill")
     public ResponseEntity<ATMTransactionResponse> refill(
             @PathVariable Long atmId,
@@ -32,25 +32,25 @@ public class ATMTransactionController {
         return ResponseEntity.ok(atmTransactionService.refill(atmId, amount));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATM_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'ATM_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @GetMapping
     public ResponseEntity<List<ATMTransactionResponse>> getAll() {
         return ResponseEntity.ok(atmTransactionService.getAll());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATM_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'ATM_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @GetMapping("/{id}")
     public ResponseEntity<ATMTransactionResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(atmTransactionService.getById(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATM_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'ATM_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @GetMapping("/atm/{atmId}")
     public ResponseEntity<List<ATMTransactionResponse>> getByAtmId(@PathVariable Long atmId) {
         return ResponseEntity.ok(atmTransactionService.getByAtmId(atmId));
     }
 
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CUSTOMER')")
     @PostMapping("/balance")
     public ResponseEntity<BigDecimal> checkBalance(@RequestBody BalanceCheckRequest request) {
         return ResponseEntity.ok(

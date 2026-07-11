@@ -19,49 +19,49 @@ import java.util.Optional;
 public class CardController {
     private final CardService cardService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
     @PostMapping
     public ResponseEntity<CardResponse> createCard(@RequestBody CardRequest cr) {
         return ResponseEntity.ok(cardService.createCard(cr));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CUSTOMER_SERVICE', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CUSTOMER_SERVICE', 'AUDITOR')")
     @GetMapping
     public ResponseEntity<List<CardResponse>> getAllCards() {
         return ResponseEntity.ok(cardService.getAll());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'CUSTOMER')")
     @GetMapping("account/{id}")
     public ResponseEntity<Optional<CardResponse>> getCardByAccountId(@PathVariable Long id) {
         return ResponseEntity.ok(cardService.findCardByAccountId(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'CUSTOMER')")
     @GetMapping("customer/{id}")
     public ResponseEntity<Optional<CardResponse>> getCardByCustomerId(@PathVariable Long id) {
         return ResponseEntity.ok(cardService.findCardsByCustomerId(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
     @PatchMapping("{id}/status")
     public ResponseEntity<CardResponse> updateCardStatus(@PathVariable Long id, @RequestParam CardStatus status) {
         return ResponseEntity.ok(cardService.updateCardStatus(id, status));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
     @PatchMapping("{id}/type")
     public ResponseEntity<CardResponse> updateCardType(@PathVariable Long id, @RequestParam CardType type) {
         return ResponseEntity.ok(cardService.updateCardType(id, type));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
     @PatchMapping("{id}/international")
     public ResponseEntity<CardResponse> enableInternationalTransaction(@PathVariable Long id, @RequestParam boolean enabled) {
         return ResponseEntity.ok(cardService.enableInternationalTransaction(id, enabled));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
     @PatchMapping("{id}/change-pin")
     public ResponseEntity<CardResponse> updateCardPin(@PathVariable Long id, @RequestParam String pin) {
         return ResponseEntity.ok(cardService.updateCardPin(id, pin));

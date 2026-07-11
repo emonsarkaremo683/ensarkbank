@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/division/")
-@PreAuthorize("hasAnyRole(ADMIN, SUPER_ADMIN)")
 public class DivisionController {
 
     @Autowired
@@ -22,19 +21,20 @@ public class DivisionController {
 
 
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PostMapping
     public ResponseEntity<Division> save(@RequestBody Division division){
 
         return new ResponseEntity<>(divisionService.save(division), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAllRoles()")
-    @GetMapping
+
+    @GetMapping("all")
     public ResponseEntity<List<Division>> findAll(){
         return new ResponseEntity<>(divisionService.findAll(), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAllRoles()")
+
     @GetMapping("{id}")
     public ResponseEntity<Division> findById(@PathVariable Long id){
         Division d = divisionService.findByDivisionId(id).orElseThrow(
@@ -44,7 +44,19 @@ public class DivisionController {
     }
 
 
-    @DeleteMapping("{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PutMapping("{id}/update")
+    public ResponseEntity<Division> update(@PathVariable Long id, @RequestBody Division division){
+        Division existing = divisionService.findByDivisionId(id).orElseThrow(
+                ()-> new RuntimeException("Division with id " + id + " not found")
+        );
+        existing.setName(division.getName());
+        return new ResponseEntity<>(divisionService.save(existing), HttpStatus.OK);
+    }
+
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @DeleteMapping("{id}/delete")
     public ResponseEntity<String> deleteById(@PathVariable Long id){
         divisionService.delete(id);
         return new ResponseEntity<>("Division with id " + id + " deleted", HttpStatus.OK);

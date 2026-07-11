@@ -19,26 +19,26 @@ public class CashierTransactionController {
 
     private final CashierTransactionService cashierTransactionService;
 
-    @PreAuthorize("hasAnyRole('CASHIER', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'CASHIER', 'BRANCH_MANAGER', 'ADMIN')")
     @PostMapping
     public ResponseEntity<CashierTransactionResponse> createTransaction(
             @Valid @RequestBody CashierTransactionRequest request) {
         return new ResponseEntity<>(cashierTransactionService.createTransaction(request), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('CASHIER', 'BRANCH_MANAGER', 'ADMIN', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'CASHIER', 'BRANCH_MANAGER', 'ADMIN', 'ACCOUNTANT', 'AUDITOR')")
     @GetMapping("/{id}")
     public ResponseEntity<CashierTransactionResponse> getTransactionById(@PathVariable Long id) {
         return ResponseEntity.ok(cashierTransactionService.getTransactionById(id));
     }
 
-    @PreAuthorize("hasAnyRole('BRANCH_MANAGER', 'ADMIN', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'CASHIER', 'BRANCH_MANAGER', 'ADMIN', 'ACCOUNTANT', 'AUDITOR')")
     @GetMapping
     public ResponseEntity<List<CashierTransactionResponse>> getAllTransactions() {
         return ResponseEntity.ok(cashierTransactionService.getAllTransactions());
     }
 
-    @PreAuthorize("hasAnyRole('BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRANCH_MANAGER', 'ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<CashierTransactionResponse> updateTransaction(
             @PathVariable Long id,
@@ -46,7 +46,7 @@ public class CashierTransactionController {
         return ResponseEntity.ok(cashierTransactionService.updateTransaction(id, request));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
         cashierTransactionService.deleteTransaction(id);

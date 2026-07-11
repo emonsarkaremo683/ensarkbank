@@ -44,7 +44,7 @@ public class CustomerController {
      *   - DRIVING_LICENSE (file, optional)
      *   - BIRTH_CERTIFICATE (file, optional)
      */
-    @PreAuthorize("hasAnyRole('CUSTOMER_SERVICE', 'CASHIER', 'BRANCH_MANAGER', 'ADMIN', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'CUSTOMER_SERVICE', 'CASHIER', 'BRANCH_MANAGER', 'ADMIN', 'CUSTOMER')")
     @PostMapping
     public CustomerResponse save(
             @RequestPart("data") String data,
@@ -71,26 +71,26 @@ public class CustomerController {
     }
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'ACCOUNTANT', 'AUDITOR')")
     @GetMapping
     public List<CustomerResponse> getAll() {
         return customerService.getAll();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'ACCOUNTANT', 'AUDITOR', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'ACCOUNTANT', 'AUDITOR', 'CUSTOMER')")
     @GetMapping("{id}")
     public Optional<CustomerResponse> findById(@PathVariable Long id) {
         return customerService.findById(id);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
     @PutMapping("{id}/kyc-status")
     public CustomerResponse changeKycStatus(@PathVariable Long id,
                                             @RequestParam KYCStatus status) {
         return customerService.changeKycStatus(id, status);
     }
 
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'CUSTOMER_SERVICE', 'CASHIER', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'CUSTOMER_SERVICE', 'CASHIER', 'BRANCH_MANAGER', 'ADMIN', 'SUPER_ADMIN')")
     @PutMapping("{id}/kyc")
     public CustomerResponse changeKyc(
             @PathVariable Long id,
@@ -109,7 +109,7 @@ public class CustomerController {
         return customerService.changeKyc(id, documents);
     }
 
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'CUSTOMER_SERVICE', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'CUSTOMER_SERVICE', 'BRANCH_MANAGER', 'ADMIN', 'SUPER_ADMIN')")
     @PutMapping("{id}")
     public CustomerResponse changeCustomerDetails(
             @PathVariable Long id,
@@ -120,7 +120,7 @@ public class CustomerController {
         return customerService.changeCustomerDetails(id, dto, profile);
     }
 
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'CUSTOMER_SERVICE', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'CUSTOMER_SERVICE', 'BRANCH_MANAGER', 'ADMIN', 'SUPER_ADMIN')")
     @PutMapping("{id}/profile")
     public CustomerResponse changeProfilePic(
             @PathVariable Long id,
@@ -129,13 +129,13 @@ public class CustomerController {
         return customerService.changeProfilePic(id, profile);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
     @GetMapping("customer/{id}")
     public ResponseEntity<List<AccountResponse>> getAccountsByCustomerId(@PathVariable Long id) {
         return ResponseEntity.ok(accountService.getAccountsByCustomerId(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
     @GetMapping("/history/customer/{id}")
     public ResponseEntity<List<JournalResponse>> getHistory(
             @PathVariable Long id,

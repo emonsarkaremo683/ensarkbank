@@ -1,0 +1,246 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Cards Management</h1>
+      <p class="page-subtitle">Issue, manage, and monitor bank cards</p>
+    </div>
+    <button class="btn btn-primary" (click)="openIssue()">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+      Issue New Card
+    </button>
+  </div>
+
+  <div class="stats-grid">
+    <app-stats-card title="Total Cards" [value]="totalCards()" icon="&#128179;" color="#c9a84c"></app-stats-card>
+    <app-stats-card title="Active Cards" [value]="activeCards()" icon="&#9989;" color="#22c55e"></app-stats-card>
+    <app-stats-card title="Blocked Cards" [value]="blockedCards()" icon="&#128683;" color="#ef4444"></app-stats-card>
+    <app-stats-card title="Debit Cards" [value]="debitCards()" icon="&#128176;" color="#3b82f6"></app-stats-card>
+  </div>
+
+  <div class="cards-visual-grid">
+    @for (card of cards(); track card.id) {
+      <div class="card-visual" [class]="getCardNetworkClass(card.cardNetwork)" (click)="viewDetail(card)">
+        <div class="card-top">
+          <span class="card-type-label">{{ card.cardType }}</span>
+          <span class="card-network-label">{{ card.cardNetwork }}</span>
+        </div>
+        <div class="card-chip">
+          <div class="chip-pattern"></div>
+        </div>
+        <div class="card-number">{{ maskCardNumber(card.cardNumber) }}</div>
+        <div class="card-bottom">
+          <div class="card-holder">
+            <span class="label">Card Holder</span>
+            <span class="name">{{ card.cardHolderName }}</span>
+          </div>
+          <div class="card-expiry">
+            <span class="label">Expires</span>
+            <span class="date">{{ card.expiryDate }}</span>
+          </div>
+          <div class="card-status-badge">
+            <span class="badge" [class]="getStatusClass(card.status)">{{ card.status }}</span>
+          </div>
+        </div>
+        <div class="card-actions-overlay">
+          @if (card.status === 'ACTIVE') {
+            <button class="card-action-btn danger" (click)="confirmStatusChange(card, 'BLOCK'); $event.stopPropagation()">Block</button>
+          }
+          @if (card.status === 'BLOCKED') {
+            <button class="card-action-btn success" (click)="confirmStatusChange(card, 'UNBLOCK'); $event.stopPropagation()">Unblock</button>
+          }
+          <button class="card-action-btn" (click)="openPinChange(card); $event.stopPropagation()">Change PIN</button>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (cards().length === 0 && !loading()) {
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+      </svg>
+      <p>No cards found</p>
+    </div>
+  }
+
+  @if (loading()) {
+    <app-loading message="Loading cards..."></app-loading>
+  }
+
+  @if (showModal()) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Issue New Card</h2>
+          <button class="modal-close" (click)="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Select Account *</label>
+              <select [(ngModel)]="form.accountId" class="form-control">
+                <option [value]="0">Select Account</option>
+                @for (acc of accounts(); track acc.id) {
+                  <option [value]="acc.id">{{ acc.accountNumber }} - {{ acc.accountType }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Card Type *</label>
+              <select [(ngModel)]="form.cardType" class="form-control">
+                <option value="">Select Type</option>
+                @for (type of cardTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Card Network *</label>
+              <select [(ngModel)]="form.network" class="form-control">
+                <option value="">Select Network</option>
+                @for (net of cardNetworks; track net) {
+                  <option [value]="net">{{ net }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>PIN *</label>
+              <input type="password" [(ngModel)]="form.pin" class="form-control" placeholder="Enter PIN" maxlength="6">
+            </div>
+            <div class="form-group">
+              <label>Confirm PIN *</label>
+              <input type="password" [(ngModel)]="form.confirmPin" class="form-control" placeholder="Confirm PIN" maxlength="6">
+            </div>
+            <div class="form-group">
+              <label>Daily Limit</label>
+              <input type="number" [(ngModel)]="form.dailyLimit" class="form-control" min="0">
+            </div>
+            <div class="form-group">
+              <label>Monthly Limit</label>
+              <input type="number" [(ngModel)]="form.monthlyLimit" class="form-control" min="0">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="submitCard()" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner"></span> Issuing...
+            } @else {
+              Issue Card
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showDetailModal() && selectedCard()) {
+    <div class="modal-overlay" (click)="closeDetail()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Card Details</h2>
+          <button class="modal-close" (click)="closeDetail()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-card-visual" [class]="getCardNetworkClass(selectedCard()!.cardNetwork)">
+            <div class="card-top">
+              <span class="card-type-label">{{ selectedCard()!.cardType }}</span>
+              <span class="card-network-label">{{ selectedCard()!.cardNetwork }}</span>
+            </div>
+            <div class="card-chip"><div class="chip-pattern"></div></div>
+            <div class="card-number">{{ selectedCard()!.cardNumber }}</div>
+            <div class="card-bottom">
+              <div class="card-holder">
+                <span class="label">Card Holder</span>
+                <span class="name">{{ selectedCard()!.cardHolderName }}</span>
+              </div>
+              <div class="card-expiry">
+                <span class="label">Expires</span>
+                <span class="date">{{ selectedCard()!.expiryDate }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="detail-grid" style="margin-top: 20px;">
+            <div class="detail-item">
+              <span class="detail-label">Status</span>
+              <span class="badge" [class]="getStatusClass(selectedCard()!.status)">{{ selectedCard()!.status }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Account</span>
+              <span class="detail-value">{{ selectedCard()!.accountNumber }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Daily Limit</span>
+              <span class="detail-value">{{ formatCurrency(selectedCard()!.dailyLimit) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Monthly Limit</span>
+              <span class="detail-value">{{ formatCurrency(selectedCard()!.monthlyLimit) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Issued</span>
+              <span class="detail-value">{{ selectedCard()!.createdAt | date:'medium' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeDetail()">Close</button>
+          <button class="btn btn-outline" (click)="openPinChange(selectedCard()!); closeDetail()">Change PIN</button>
+          @if (selectedCard()!.status === 'ACTIVE') {
+            <button class="btn btn-danger" (click)="confirmStatusChange(selectedCard()!, 'BLOCK')">Block Card</button>
+          }
+          @if (selectedCard()!.status === 'BLOCKED') {
+            <button class="btn btn-primary" (click)="confirmStatusChange(selectedCard()!, 'UNBLOCK')">Unblock Card</button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showPinModal() && selectedCard()) {
+    <div class="modal-overlay" (click)="closePinModal()">
+      <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Change PIN</h2>
+          <button class="modal-close" (click)="closePinModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-info">Card ending in <strong>{{ selectedCard()!.cardNumber.slice(-4) }}</strong></p>
+          <div class="form-group">
+            <label>Current PIN</label>
+            <input type="password" [(ngModel)]="pinForm.oldPin" class="form-control" placeholder="Enter current PIN" maxlength="6">
+          </div>
+          <div class="form-group">
+            <label>New PIN</label>
+            <input type="password" [(ngModel)]="pinForm.newPin" class="form-control" placeholder="Enter new PIN" maxlength="6">
+          </div>
+          <div class="form-group">
+            <label>Confirm New PIN</label>
+            <input type="password" [(ngModel)]="pinForm.confirmPin" class="form-control" placeholder="Confirm new PIN" maxlength="6">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closePinModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="changePin()" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner"></span> Changing...
+            } @else {
+              Change PIN
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <app-confirm-dialog
+    [show]="showStatusDialog()"
+    [title]="newStatusAction() === 'BLOCK' ? 'Block Card' : 'Unblock Card'"
+    [message]="newStatusAction() === 'BLOCK' ? 'This card will be blocked and cannot be used for transactions.' : 'This card will be reactivated and can be used again.'"
+    [type]="newStatusAction() === 'BLOCK' ? 'danger' : 'info'"
+    [confirmText]="newStatusAction() === 'BLOCK' ? 'Block' : 'Unblock'"
+    (confirmed)="executeStatusChange()"
+    (cancelled)="showStatusDialog.set(false)"
+  ></app-confirm-dialog>
+</div>

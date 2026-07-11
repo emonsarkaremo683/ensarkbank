@@ -1,0 +1,106 @@
+<div class="login-page">
+  <div class="login-left">
+    <div class="brand-content">
+      <div class="brand-logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">EnsarBank</span>
+      </div>
+      <h1>Secure Digital Banking<br>for <span class="gold">Everyone</span></h1>
+      <p>Manage your finances with confidence. Fast, secure, and accessible banking at your fingertips.</p>
+      <div class="brand-features">
+        <div class="brand-feature">
+          <span class="bf-icon">🔒</span>
+          <span>256-bit AES Encryption</span>
+        </div>
+        <div class="brand-feature">
+          <span class="bf-icon">⚡</span>
+          <span>Instant Transfers</span>
+        </div>
+        <div class="brand-feature">
+          <span class="bf-icon">🌍</span>
+          <span>Global Access</span>
+        </div>
+      </div>
+    </div>
+    <div class="brand-bg">
+      <div class="brand-grid"></div>
+      <div class="brand-glow"></div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-form-container">
+      <div class="form-header">
+        <h2>Welcome Back</h2>
+        <p>Sign in to your account to continue</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper" [class.error]="f['email'].touched && f['email'].invalid" [class.focused]="false">
+            <span class="input-icon">✉</span>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+            />
+          </div>
+          @if (f['email'].touched && f['email'].errors) {
+            <div class="field-error">
+              @if (f['email'].errors?.['required']) { Email is required }
+              @if (f['email'].errors?.['email']) { Please enter a valid email }
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper" [class.error]="f['password'].touched && f['password'].invalid">
+            <span class="input-icon">🔑</span>
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+            />
+            <button type="button" class="toggle-password" (click)="togglePassword()">
+              {{ showPassword() ? '🙈' : '👁' }}
+            </button>
+          </div>
+          @if (f['password'].touched && f['password'].errors) {
+            <div class="field-error">
+              @if (f['password'].errors?.['required']) { Password is required }
+              @if (f['password'].errors?.['minlength']) { Password must be at least 6 characters }
+            </div>
+          }
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-label">
+            <input type="checkbox" (change)="rememberMe.set($any($event.target).checked)" />
+            <span class="checkmark"></span>
+            <span>Remember me</span>
+          </label>
+          <a routerLink="/forgot-password" class="forgot-link">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn-submit" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <span class="spinner"></span>
+            <span>Signing in...</span>
+          } @else {
+            <span>Sign In</span>
+          }
+        </button>
+      </form>
+
+      <div class="form-footer">
+        <p>Don't have an account? <a routerLink="/register">Open Account</a></p>
+      </div>
+    </div>
+  </div>
+</div>

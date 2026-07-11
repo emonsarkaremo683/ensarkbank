@@ -68,7 +68,7 @@ public class JwtUtil {
 
     // Get Role
     public Role getRole(String token){
-        return (Role) getClaims(token).get("role");
+        return Role.valueOf((String) getClaims(token).get("role"));
     }
 
     // Validate token — checks signature + expiry

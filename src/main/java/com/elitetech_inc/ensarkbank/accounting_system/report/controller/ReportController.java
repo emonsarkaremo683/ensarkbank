@@ -19,7 +19,7 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @PostMapping("ledger/{branchId}/{accountNumber}")
     public ResponseEntity<LedgerResponse> ledger(@PathVariable Long branchId,
                                                  @PathVariable String accountNumber,
@@ -28,19 +28,19 @@ public class ReportController {
                 reportService.getLedger(branchId, accountNumber, normalize(request)));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @PostMapping("ledger")
     public ResponseEntity<List<LedgerResponse>> ledgers(@RequestBody(required = false) ReportRequest request) {
         return ResponseEntity.ok(reportService.getLedgers(normalize(request)));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT', 'AUDITOR')")
     @PostMapping("trial-balance")
     public ResponseEntity<TrialBalanceResponse> trialBalance(@RequestBody(required = false) ReportRequest request) {
         return ResponseEntity.ok(reportService.getTrialBalance(normalize(request)));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT', 'AUDITOR')")
     @PostMapping("balance-sheet")
     public ResponseEntity<BalanceSheetResponse> balanceSheet(@RequestBody(required = false) ReportRequest request) {
         return ResponseEntity.ok(reportService.getBalanceSheet(normalize(request)));

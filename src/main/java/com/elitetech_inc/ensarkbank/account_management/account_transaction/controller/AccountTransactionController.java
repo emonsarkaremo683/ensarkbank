@@ -21,31 +21,31 @@ public class AccountTransactionController {
 
     private final AccountTransactionService accountTransactionService;
 
-    @PreAuthorize("hasAnyRole('CASHIER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CASHIER', 'CUSTOMER')")
     @PostMapping
     public ResponseEntity<AccountTransactionResponse> save(@RequestBody AccountTransactionRequest atr){
         return new ResponseEntity<>(accountTransactionService.save(atr), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CUSTOMER')")
     @PostMapping("online/initiate")
     public ResponseEntity<OtpInitiateResponse> initiateOnlineTransaction(@RequestBody AccountTransactionRequest atr){
         return new ResponseEntity<>(accountTransactionService.initiateOnlineTransaction(atr), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CUSTOMER')")
     @PostMapping("online/verify")
     public ResponseEntity<AccountTransactionResponse> verifyOnlineTransaction(@RequestBody OtpVerifyRequest req){
         return new ResponseEntity<>(accountTransactionService.verifyOnlineTransaction(req), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @GetMapping("all/")
     public ResponseEntity<List<AccountTransactionResponse>> getAll(){
         return new ResponseEntity<>(accountTransactionService.findAll(), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
     @GetMapping("{id}")
     public ResponseEntity<AccountTransactionResponse> getById(@PathVariable Long id){
         return accountTransactionService.findById(id)
@@ -53,7 +53,7 @@ public class AccountTransactionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
     @GetMapping("accountNumber/{accountNumber}")
     public ResponseEntity<List<AccountTransactionResponse>> findByAccountNumber(@PathVariable String accountNumber){
         return new ResponseEntity<>(
@@ -62,7 +62,7 @@ public class AccountTransactionController {
         );
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
     @GetMapping("account/{accountId}")
     public ResponseEntity<List<AccountTransactionResponse>> findByAccountId(@PathVariable Long accountId){
         return new ResponseEntity<>(accountTransactionService.findByAccountId(accountId), HttpStatus.OK);
