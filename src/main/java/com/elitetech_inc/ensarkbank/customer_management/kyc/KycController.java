@@ -25,7 +25,7 @@ public class KycController {
         return ResponseEntity.ok(kycService.updateKycStatusBYCustomerId(id, status));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','ACCOUNTANT','CASHIER', 'SUPER_ADMIN', 'CUSTOMER_SERVICE', 'BRANCH_MANAGER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ACCOUNTANT','CASHIER', 'SUPER_ADMIN', 'CUSTOMER_SERVICE', 'BRANCH_MANAGER') or (hasRole('CUSTOMER') and @customerSecurity.isCustomerIdsMatch(#id, authentication))")
     @PatchMapping("customer/{id}/upload")
     public ResponseEntity<CustomerResponse> updateKycUploadBYCustomerId(@PathVariable Long id,@RequestPart(value = "NID", required = false) MultipartFile nid,
                                                                         @RequestPart(value = "PASSPORT",          required = false) MultipartFile passport,

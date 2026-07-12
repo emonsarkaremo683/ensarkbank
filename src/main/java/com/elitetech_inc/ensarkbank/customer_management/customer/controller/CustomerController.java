@@ -91,7 +91,7 @@ public class CustomerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'ACCOUNTANT', 'AUDITOR', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'ACCOUNTANT', 'AUDITOR') or (hasRole('CUSTOMER') and @customerSecurity.isCustomerIdsMatch(#id, authentication))")
     @GetMapping("{id}")
     public Optional<CustomerResponse> findById(@PathVariable Long id) {
         return customerService.findById(id);
@@ -104,7 +104,7 @@ public class CustomerController {
         return customerService.changeKycStatus(id, status);
     }
 
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'CUSTOMER_SERVICE', 'CASHIER', 'BRANCH_MANAGER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER_SERVICE', 'CASHIER', 'BRANCH_MANAGER', 'ADMIN', 'SUPER_ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.isCustomerIdsMatch(#id, authentication))")
     @PutMapping("{id}/kyc")
     public CustomerResponse changeKyc(
             @PathVariable Long id,
@@ -123,7 +123,7 @@ public class CustomerController {
         return customerService.changeKyc(id, documents);
     }
 
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'CUSTOMER_SERVICE', 'BRANCH_MANAGER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER_SERVICE', 'BRANCH_MANAGER', 'ADMIN', 'SUPER_ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.isCustomerIdsMatch(#id, authentication))")
     @PutMapping("{id}")
     public CustomerResponse changeCustomerDetails(
             @PathVariable Long id,
@@ -134,7 +134,7 @@ public class CustomerController {
         return customerService.changeCustomerDetails(id, dto, profile);
     }
 
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'CUSTOMER_SERVICE', 'BRANCH_MANAGER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER_SERVICE', 'BRANCH_MANAGER', 'ADMIN', 'SUPER_ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.isCustomerIdsMatch(#id, authentication))")
     @PutMapping("{id}/profile")
     public CustomerResponse changeProfilePic(
             @PathVariable Long id,
@@ -143,13 +143,13 @@ public class CustomerController {
         return customerService.changeProfilePic(id, profile);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR') or (hasRole('CUSTOMER') and @customerSecurity.isCustomerIdsMatch(#id, authentication))")
     @GetMapping("customer/{id}")
     public ResponseEntity<List<AccountResponse>> getAccountsByCustomerId(@PathVariable Long id) {
         return ResponseEntity.ok(accountService.getAccountsByCustomerId(id));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR') or (hasRole('CUSTOMER') and @customerSecurity.isCustomerIdsMatch(#id, authentication))")
     @GetMapping("/history/customer/{id}")
     public ResponseEntity<List<JournalResponse>> getHistory(
             @PathVariable Long id,

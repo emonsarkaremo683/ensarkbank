@@ -31,13 +31,13 @@ public class CardController {
         return ResponseEntity.ok(cardService.getAll());
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER') or (hasRole('CUSTOMER') and @customerSecurity.isOwner(#id, authentication))")
     @GetMapping("account/{id}")
     public ResponseEntity<Optional<CardResponse>> getCardByAccountId(@PathVariable Long id) {
         return ResponseEntity.ok(cardService.findCardByAccountId(id));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER') or (hasRole('CUSTOMER') and @customerSecurity.isCustomerIdsMatch(#id, authentication))")
     @GetMapping("customer/{id}")
     public ResponseEntity<Optional<CardResponse>> getCardByCustomerId(@PathVariable Long id) {
         return ResponseEntity.ok(cardService.findCardsByCustomerId(id));
@@ -55,13 +55,13 @@ public class CardController {
         return ResponseEntity.ok(cardService.updateCardType(id, type));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE') or (hasRole('CUSTOMER') and @customerSecurity.isCardOwner(#id, authentication))")
     @PatchMapping("{id}/international")
     public ResponseEntity<CardResponse> enableInternationalTransaction(@PathVariable Long id, @RequestParam boolean enabled) {
         return ResponseEntity.ok(cardService.enableInternationalTransaction(id, enabled));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE') or (hasRole('CUSTOMER') and @customerSecurity.isCardOwner(#id, authentication))")
     @PatchMapping("{id}/change-pin")
     public ResponseEntity<CardResponse> updateCardPin(@PathVariable Long id, @RequestParam String pin) {
         return ResponseEntity.ok(cardService.updateCardPin(id, pin));

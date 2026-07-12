@@ -29,4 +29,13 @@ public interface TransactionOtpRepository extends JpaRepository<TransactionOtp, 
         AND t.expiresAt < CURRENT_TIMESTAMP
     """)
     List<TransactionOtp> findExpiredPendingOtps();
+
+    @Query("""
+        SELECT COUNT(o) > 0 FROM TransactionOtp o
+        WHERE o.id = :otpId AND EXISTS (
+            SELECT 1 FROM Account a JOIN a.holders h
+            WHERE a.accountNumber = o.accountNumber AND h.customer.id = :customerId
+        )
+    """)
+    boolean existsByOtpIdAndCustomerId(@Param("otpId") Long otpId, @Param("customerId") Long customerId);
 }

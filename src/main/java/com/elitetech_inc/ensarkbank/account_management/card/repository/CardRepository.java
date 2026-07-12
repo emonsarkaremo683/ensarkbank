@@ -21,4 +21,7 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     WHERE h.customer.id = :customerId
 """)
     Optional<Card> findCardByCustomerId(@Param("customerId") Long customerId);
+
+    @Query("SELECT COUNT(c) > 0 FROM Card c JOIN c.account a JOIN a.holders h WHERE c.id = :cardId AND h.customer.id = :customerId")
+    boolean existsByCardIdAndCustomerId(@Param("cardId") Long cardId, @Param("customerId") Long customerId);
 }

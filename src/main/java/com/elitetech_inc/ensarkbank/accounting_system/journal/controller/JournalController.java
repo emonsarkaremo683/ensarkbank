@@ -19,7 +19,7 @@ public class JournalController {
 
     private final JournalService journalService;
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR') or (hasRole('CUSTOMER') and @customerSecurity.isAccountNumberOwner(#accountNumber, authentication))")
     @GetMapping("{accountNumber}")
     public ResponseEntity<List<JournalResponse>> getByNumber(@PathVariable String accountNumber){
         return ResponseEntity.ok(journalService.getByAccountNumber(accountNumber));

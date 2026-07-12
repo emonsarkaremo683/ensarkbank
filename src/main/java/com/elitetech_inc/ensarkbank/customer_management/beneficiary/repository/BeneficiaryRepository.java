@@ -11,4 +11,6 @@ import java.util.Optional;
 @Repository
 public interface BeneficiaryRepository extends JpaRepository<Beneficiary, Long> {
     List<Beneficiary> findBeneficiaryByCustomer_id(Long customerId);
+
+    boolean existsByCustomerIdAndId(Long customerId, Long id);
 }

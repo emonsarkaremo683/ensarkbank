@@ -18,4 +18,10 @@ public interface AccountRepository extends JpaRepository<Account,Long> {
     boolean existsById(Long id);
 
     List<Account> findDistinctByHoldersCustomerId(Long customerId);
+
+    @Query("SELECT COUNT(a) > 0 FROM Account a JOIN a.holders h WHERE a.id = :accountId AND h.customer.id = :customerId")
+    boolean existsByAccountIdAndCustomerId(@Param("accountId") Long accountId, @Param("customerId") Long customerId);
+
+    @Query("SELECT COUNT(a) > 0 FROM Account a JOIN a.holders h WHERE a.accountNumber = :accountNumber AND h.customer.id = :customerId")
+    boolean existsByAccountNumberAndCustomerId(@Param("accountNumber") String accountNumber, @Param("customerId") Long customerId);
 }

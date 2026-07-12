@@ -36,4 +36,13 @@ public interface AccountTransactionRepository extends JpaRepository<AccountTrans
     List<AccountTransaction> findByAccountId(@Param("accountId") Long accountId);
 
     Optional<AccountTransaction> findAccountTransactionByTransactionId(Long transactionId);
+
+    @Query("""
+        SELECT COUNT(t) > 0 FROM AccountTransaction t
+        LEFT JOIN t.account a LEFT JOIN a.holders sh
+        LEFT JOIN t.receiver r LEFT JOIN r.holders rh
+        WHERE t.id = :transactionId
+        AND (sh.customer.id = :customerId OR rh.customer.id = :customerId)
+    """)
+    boolean existsByTransactionIdAndCustomerId(@Param("transactionId") Long transactionId, @Param("customerId") Long customerId);
 }
