@@ -86,11 +86,11 @@
             <div class="documents-list">
               <span class="detail-label">Submitted Documents</span>
               <div class="doc-items">
-                @for (doc of selectedCustomer()!.documents; track doc.id) {
+                @for (doc of selectedCustomer()!.documents; track $index) {
                   <div class="doc-item">
-                    <span class="doc-type">{{ doc.docType }}</span>
-                    <span class="doc-status" [class.verified]="doc.verified">
-                      {{ doc.verified ? 'Verified' : 'Pending' }}
+                    <span class="doc-type">{{ doc.doc_type }}</span>
+                    <span class="doc-status">
+                      Uploaded
                     </span>
                   </div>
                 }

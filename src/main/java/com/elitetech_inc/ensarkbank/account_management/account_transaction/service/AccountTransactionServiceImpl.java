@@ -108,12 +108,8 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
 
         Transaction transaction = new Transaction();
         transaction.setStatus(TransactionStatus.PENDING);
-        transaction.setTransactionType(atr.getRequest().getTransactionType() != null
-                ? atr.getRequest().getTransactionType()
-                : TransactionType.TRANSFER);
-        transaction.setChannel(atr.getRequest().getChannel() != null
-                ? atr.getRequest().getChannel()
-                : TransactionChannel.INTERNET_BANKING);
+        transaction.setTransactionType(TransactionType.TRANSFER);
+        transaction.setChannel(TransactionChannel.INTERNET_BANKING);
         transaction.setAmount(atr.getRequest().getAmount());
         transaction.setRemarks(atr.getRequest().getRemarks());
         transaction.setChargeAmount(BigDecimal.ZERO);
@@ -254,11 +250,9 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
 
         transactionOtpRepository.save(transactionOtp);
 
-        String transactionType = atr.getRequest().getTransactionType() != null
-                ? atr.getRequest().getTransactionType().name()
-                : "TRANSFER";
 
-        transactionEmailService.sendOtpEmail(customerEmail, otpCode, amount, transactionType);
+
+        transactionEmailService.sendOtpEmail(customerEmail, otpCode, amount, TransactionType.TRANSFER.toString());
 
         return OtpInitiateResponse.builder()
                 .otpReferenceId(transactionOtp.getId())

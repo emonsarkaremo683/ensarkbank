@@ -29,8 +29,6 @@ public class TransactionMapper {
         Transaction t = new Transaction();
         t.setAmount(tr.getAmount());
         t.setRemarks(tr.getRemarks());
-        t.setTransactionType(tr.getTransactionType() != null ? tr.getTransactionType() : TransactionType.TRANSFER);
-        t.setChannel(tr.getChannel() != null ? tr.getChannel() : TransactionChannel.INTERNET_BANKING);
         return t;
     }
 }

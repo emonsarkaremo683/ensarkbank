@@ -71,7 +71,7 @@ export class CustomerKycComponent implements OnInit {
   }
 
   getDocsByType(type: string): KycResponse | undefined {
-    return this.customer()?.documents?.find(d => d.docType === type);
+    return this.customer()?.documents?.find(d => d.doc_type === type);
   }
 
   openUploadModal(): void {

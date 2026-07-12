@@ -153,8 +153,7 @@ public class RequestValidator {
         ValidationUtils.notNull(req, "TransactionRequest");
         ValidationUtils.notNull(req.getAmount(), "Transaction amount");
         ValidationUtils.positive(req.getAmount(), "Transaction amount");
-        ValidationUtils.notNull(req.getTransactionType(), "Transaction type");
-        ValidationUtils.notNull(req.getChannel(), "Transaction channel");
+
     }
 
     public void validateAccountTransaction(AccountTransactionRequest req) {

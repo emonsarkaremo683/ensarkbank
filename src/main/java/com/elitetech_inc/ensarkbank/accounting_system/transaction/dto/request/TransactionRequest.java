@@ -9,8 +9,6 @@ import lombok.Data;
 
 @Data
 public class TransactionRequest {
-    private TransactionType transactionType = TransactionType.TRANSFER;
-    private TransactionChannel channel = TransactionChannel.INTERNET_BANKING;
     private BigDecimal amount;
     private String remarks;
 }

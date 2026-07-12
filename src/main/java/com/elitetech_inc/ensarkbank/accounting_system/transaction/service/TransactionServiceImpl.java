@@ -79,8 +79,8 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = t != null ? t : new Transaction();
         transaction.setAmount(tr.getAmount());
         transaction.setRemarks(tr.getRemarks());
-        transaction.setTransactionType(tr.getTransactionType() != null ? tr.getTransactionType() : TransactionType.TRANSFER);
-        transaction.setChannel(tr.getChannel() != null ? tr.getChannel() : TransactionChannel.INTERNET_BANKING);
+        transaction.setTransactionType(t.getTransactionType() != null ? t.getTransactionType() : TransactionType.TRANSFER);
+        transaction.setChannel(t.getChannel() != null ? t.getChannel() : TransactionChannel.INTERNET_BANKING);
         transaction.setTransactionId(utils.generateReference());
         transaction.setReferenceNo(utils.generateReference());
         transaction.setChargeAmount(transaction.getChargeAmount() == null ? BigDecimal.ZERO : transaction.getChargeAmount());

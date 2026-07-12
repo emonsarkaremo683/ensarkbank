@@ -82,11 +82,11 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
         cashierTransaction.setEmployee(employee);
 
         Transaction transaction = transactionMapper.toTransaction(request.getTransactionRequest());
-        transaction.setTransactionType(request.getTransactionRequest().getTransactionType());
+        transaction.setTransactionType(request.getType());
         transaction.setChannel(TransactionChannel.BRANCH);
         transaction.setStatus(TransactionStatus.SUCCESS);
 
-        if(request.getTransactionRequest().getTransactionType() == TransactionType.DEPOSIT){
+        if(request.getType() == TransactionType.DEPOSIT){
             transactionService.createTransaction(
                     request.getTransactionRequest(),
                     transaction,

@@ -114,15 +114,18 @@ public class LoanServiceImpl implements LoanService{
 
         TransactionRequest request = new TransactionRequest();
         request.setAmount(loan.getEmiAmount().setScale(SCALE, RM));
-        request.setTransactionType(TransactionType.LOAN_DISBURSEMENT);
         request.setRemarks("Loan disbursement - Loan #" + loan.getId());
-        request.setChannel(TransactionChannel.INTERNET_BANKING);
+
 
         Transaction transaction = transactionMapper.toTransaction(request);
+        transaction.setTransactionType(TransactionType.LOAN_DISBURSEMENT);
+
+        transaction.setChannel(TransactionChannel.INTERNET_BANKING);
         TransactionResponse response = transactionService.createTransaction(request,
                 transaction,
                 loanControlAccount.getAccountNumber(),
                 loan.getAccount().getAccountNumber());
+
 
         loan.setStatus(LoanStatus.DISBURSED);
         loan.setDisbursementDate(LocalDate.now());
@@ -180,11 +183,11 @@ public class LoanServiceImpl implements LoanService{
         TransactionRequest request = new TransactionRequest();
         request.setAmount(repayment.getEmiAmount());
         request.setRemarks("EMI payment - Loan #" + loan.getId() + " Installment #" + repayment.getInstallmentNumber());
-        request.setChannel(TransactionChannel.INTERNET_BANKING);
-        request.setTransactionType(TransactionType.LOAN_REPAYMENT);
+
 
         Transaction transaction = transactionMapper.toTransaction(request);
-
+        transaction.setChannel(TransactionChannel.INTERNET_BANKING);
+        transaction.setTransactionType(TransactionType.LOAN_REPAYMENT);
         TransactionResponse response = transactionService.createTransaction(request,
                 transaction,
                 loan.getAccount().getAccountNumber(),

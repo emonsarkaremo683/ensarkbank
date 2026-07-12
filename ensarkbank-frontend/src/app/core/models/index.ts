@@ -152,10 +152,8 @@ export interface KycRequest {
 }
 
 export interface KycResponse {
-  id: number;
   path: string;
-  docType: DocumentType;
-  verified: boolean;
+  doc_type: DocumentType;
 }
 
 // Employee
@@ -260,8 +258,6 @@ export interface BeneficiaryResponse {
 
 // Transactions
 export interface TransactionRequest {
-  transactionType: TransactionType;
-  channel: TransactionChannel;
   amount: number;
   remarks?: string;
 }
@@ -289,7 +285,7 @@ export interface AccountTransactionResponse {
 }
 
 export interface OtpInitiateResponse {
-  otpReferenceId: string;
+  otpReferenceId: number;
   maskedEmail: string;
   expiresAt: string;
 }
@@ -308,7 +304,7 @@ export interface TransactionResponse {
 }
 
 export interface OtpVerifyRequest {
-  otpReferenceId: string;
+  otpReferenceId: number;
   otpCode: string;
 }
 
@@ -365,13 +361,16 @@ export interface LoanResponse {
 
 export interface LoanRepayment {
   id: number;
+  loanId: number;
   installmentNumber: number;
-  principalPart: number;
-  interestPart: number;
-  totalPaid: number;
   dueDate: string;
-  paidDate?: string;
+  principalComponent: number;
+  interestComponent: number;
+  emiAmount: number;
+  remainingBalanceAfter: number;
   status: string;
+  paidDate?: string;
+  transactionRef?: string;
 }
 
 // Card
@@ -462,6 +461,7 @@ export interface CashierTransactionResponse {
   cashierName: string;
   branchName: string;
   transaction?: TransactionResponse;
+  journals?: JournalEntry[];
 }
 
 // Reports
@@ -474,9 +474,6 @@ export interface ReportRequest {
 export interface TrialBalanceResponse {
   branchId?: number;
   branchName: string;
-  branchCode?: string;
-  fromDate?: string;
-  toDate?: string;
   lines: TrialBalanceLine[];
   totalDebit: number;
   totalCredit: number;

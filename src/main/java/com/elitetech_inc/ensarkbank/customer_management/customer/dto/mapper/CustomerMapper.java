@@ -65,6 +65,7 @@ public class CustomerMapper {
                     .map(this::toKycRequest)
                     .toList();
             response.setDocuments(documents);
+            response.setKycStatus(customer.getKyc().getStatus());
         } else {
             response.setDocuments(List.of());
         }

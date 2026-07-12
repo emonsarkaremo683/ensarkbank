@@ -50,12 +50,12 @@
         <h2 class="section-title">Submitted Documents</h2>
         @if (customer()!.documents && customer()!.documents!.length > 0) {
           <div class="documents-grid">
-            @for (doc of customer()!.documents; track doc.id) {
+            @for (doc of customer()!.documents; track $index) {
               <div class="doc-card">
                 <div class="doc-header">
-                  <span class="doc-type-badge">{{ getDocStatusLabel(doc.docType) }}</span>
-                  <span class="doc-status" [class.verified]="doc.verified">
-                    {{ doc.verified ? 'Verified' : 'Pending Review' }}
+                  <span class="doc-type-badge">{{ getDocStatusLabel(doc.doc_type) }}</span>
+                  <span class="doc-status">
+                    Uploaded
                   </span>
                 </div>
                 <div class="doc-body">

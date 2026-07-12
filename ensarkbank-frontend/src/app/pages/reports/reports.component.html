@@ -81,7 +81,7 @@
           <h2>Trial Balance</h2>
           <div class="report-meta">
             <span>Branch: <strong>{{ trialBalance()!.branchName || 'All Branches' }}</strong></span>
-            <span>Period: {{ trialBalance()!.fromDate | date:'mediumDate' }} - {{ trialBalance()!.toDate | date:'mediumDate' }}</span>
+            <span>Period: {{ tbForm.fromDate | date:'mediumDate' }} - {{ tbForm.toDate | date:'mediumDate' }}</span>
           </div>
         </div>
         <div class="table-wrapper">

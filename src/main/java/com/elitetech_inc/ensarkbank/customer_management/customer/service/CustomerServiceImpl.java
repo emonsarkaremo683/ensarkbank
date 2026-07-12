@@ -133,6 +133,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 
     @Override
+    @Transactional
     public List<CustomerResponse> getAll() {
         return customerRepository.findAll().stream()
                 .map(customerMapper::toResponse)
@@ -140,11 +141,13 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public Optional<CustomerResponse> findById(Long id) {
         return customerRepository.findById(id).map(customerMapper::toResponse);
     }
 
     @Override
+    @Transactional
     public CustomerResponse changeKycStatus(Long id, KYCStatus status) {
 
         Customer c = customerRepository.findById(id).orElseThrow(
@@ -157,6 +160,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public CustomerResponse changeKyc(Long id, Map<DocumentType, MultipartFile> documents) {
         Customer c = customerRepository.findById(id).orElseThrow(
                 ()-> new RuntimeException("Customer with id " + id + " not found")
@@ -255,6 +259,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public List<CustomerResponse> searchCustomers(String query) {
         return customerRepository.searchCustomers(query).stream()
                 .map(customerMapper::toResponse)
@@ -262,6 +267,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public Optional<CustomerResponse> findByUserEmail(String email) {
         return customerRepository.findByUserEmail(email).map(customerMapper::toResponse);
     }

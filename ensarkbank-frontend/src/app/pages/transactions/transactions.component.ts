@@ -38,8 +38,6 @@ export class TransactionsComponent implements OnInit {
   form = {
     senderAccountNumber: '',
     receiverAccountNumber: '',
-    transactionType: '',
-    channel: '',
     amount: 0,
     remarks: ''
   };
@@ -105,17 +103,17 @@ export class TransactionsComponent implements OnInit {
   resetForm(): void {
     this.form = {
       senderAccountNumber: '', receiverAccountNumber: '',
-      transactionType: '', channel: '', amount: 0, remarks: ''
+      amount: 0, remarks: ''
     };
   }
 
   initiateTransaction(): void {
-    if (!this.form.senderAccountNumber || !this.form.transactionType || this.form.amount <= 0) {
+    if (!this.form.senderAccountNumber || this.form.amount <= 0) {
       this.notify.warning('Validation', 'Please fill all required fields');
       return;
     }
-    if (this.form.transactionType === 'TRANSFER' && !this.form.receiverAccountNumber) {
-      this.notify.warning('Validation', 'Receiver account is required for transfers');
+    if (!this.form.receiverAccountNumber) {
+      this.notify.warning('Validation', 'Receiver account is required');
       return;
     }
 
@@ -123,10 +121,8 @@ export class TransactionsComponent implements OnInit {
     const senderAccount = this.accounts().find(a => a.accountNumber === this.form.senderAccountNumber);
     const request: AccountTransactionRequest = {
       senderId: senderAccount?.id,
-      receiverAccountNumber: this.form.receiverAccountNumber || undefined,
+      receiverAccountNumber: this.form.receiverAccountNumber,
       request: {
-        transactionType: this.form.transactionType as TransactionType,
-        channel: (this.form.channel as TransactionChannel) || TransactionChannel.BRANCH,
         amount: this.form.amount,
         remarks: this.form.remarks || undefined
       }
