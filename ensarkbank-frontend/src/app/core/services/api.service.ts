@@ -111,8 +111,8 @@ export class ApiService {
   getCustomerByEmail(email: string): Observable<CustomerResponse> { return this.http.get<CustomerResponse>(`${this.BASE}/customer/email/${email}`); }
   createCustomer(data: CustomerRequest): Observable<CustomerResponse> { return this.http.post<CustomerResponse>(`${this.BASE}/customer/`, data); }
   updateCustomer(id: number, data: Partial<CustomerRequest>): Observable<CustomerResponse> { return this.http.put<CustomerResponse>(`${this.BASE}/customer/${id}`, data); }
-  getCustomerHistory(id: number): Observable<any> { return this.http.get(`${this.BASE}/customer/history/${id}`); }
-  updateKycStatus(id: number, status: string): Observable<CustomerResponse> { return this.http.put<CustomerResponse>(`${this.BASE}/customer/${id}/kyc-status`, { status }); }
+  getCustomerHistory(id: number): Observable<any> { return this.http.get(`${this.BASE}/customer/history/customer/${id}`); }
+  updateKycStatus(id: number, status: string): Observable<CustomerResponse> { return this.http.put<CustomerResponse>(`${this.BASE}/customer/${id}/kyc-status`, null, { params: { status } }); }
   uploadKycDocuments(customerId: number, documents: FormData): Observable<CustomerResponse> { return this.http.patch<CustomerResponse>(`${this.BASE}/kyc/customer/${customerId}/upload`, documents); }
 
   // Beneficiary
@@ -122,27 +122,27 @@ export class ApiService {
   deleteBeneficiary(id: number): Observable<void> { return this.http.delete<void>(`${this.BASE}/beneficiary/${id}`); }
 
   // Account
-  getAccounts(): Observable<AccountResponse[]> { return this.http.get<AccountResponse[]>(`${this.BASE}/account/`); }
+  getAccounts(): Observable<AccountResponse[]> { return this.http.get<AccountResponse[]>(`${this.BASE}/account/all/`); }
   getAccountById(id: number): Observable<AccountResponse> { return this.http.get<AccountResponse>(`${this.BASE}/account/${id}`); }
-  getAccountByNumber(number: string): Observable<AccountResponse> { return this.http.get<AccountResponse>(`${this.BASE}/account/number/${number}`); }
+  getAccountByNumber(number: string): Observable<AccountResponse> { return this.http.get<AccountResponse>(`${this.BASE}/account/account-number/${number}`); }
   getAccountsByBranch(branchId: number): Observable<AccountResponse[]> { return this.http.get<AccountResponse[]>(`${this.BASE}/account/branch/${branchId}`); }
-  createAccount(data: AccountRequest | FormData): Observable<AccountResponse> { return this.http.post<AccountResponse>(`${this.BASE}/account/`, data); }
-  updateAccountStatus(id: number, status: string): Observable<AccountResponse> { return this.http.put<AccountResponse>(`${this.BASE}/account/${id}/status`, { status }); }
+  createAccount(data: AccountRequest | FormData): Observable<AccountResponse> { return this.http.post<AccountResponse>(`${this.BASE}/account/create`, data); }
+  updateAccountStatus(id: number, status: string): Observable<AccountResponse> { return this.http.patch<AccountResponse>(`${this.BASE}/account/${id}/status/${status}`, null); }
 
   // Transactions
   processTransaction(data: AccountTransactionRequest): Observable<AccountTransactionResponse> { return this.http.post<AccountTransactionResponse>(`${this.BASE}/account-transaction/`, data); }
   initiateOnlineTransaction(data: AccountTransactionRequest): Observable<OtpInitiateResponse> { return this.http.post<OtpInitiateResponse>(`${this.BASE}/account-transaction/online/initiate`, data); }
   verifyOnlineTransaction(data: OtpVerifyRequest): Observable<AccountTransactionResponse> { return this.http.post<AccountTransactionResponse>(`${this.BASE}/account-transaction/online/verify`, data); }
   getTransactions(): Observable<AccountTransactionResponse[]> { return this.http.get<AccountTransactionResponse[]>(`${this.BASE}/account-transaction/all`); }
-  getTransactionsByAccount(accountNumber: string): Observable<AccountTransactionResponse[]> { return this.http.get<AccountTransactionResponse[]>(`${this.BASE}/account-transaction/account/${accountNumber}`); }
+  getTransactionsByAccount(accountNumber: string): Observable<AccountTransactionResponse[]> { return this.http.get<AccountTransactionResponse[]>(`${this.BASE}/account-transaction/accountNumber/${accountNumber}`); }
 
   // Loans
-  getLoans(): Observable<LoanResponse[]> { return this.http.get<LoanResponse[]>(`${this.BASE}/loans/`); }
+  getLoans(): Observable<LoanResponse[]> { return this.http.get<LoanResponse[]>(`${this.BASE}/loans/all`); }
   getLoanById(id: number): Observable<LoanResponse> { return this.http.get<LoanResponse>(`${this.BASE}/loans/${id}`); }
-  applyLoan(data: LoanApplicationRequest): Observable<LoanResponse> { return this.http.post<LoanResponse>(`${this.BASE}/loans/`, data); }
+  applyLoan(data: LoanApplicationRequest): Observable<LoanResponse> { return this.http.post<LoanResponse>(`${this.BASE}/loans/apply`, data); }
   approveLoan(id: number): Observable<LoanResponse> { return this.http.put<LoanResponse>(`${this.BASE}/loans/${id}/approve`, {}); }
-  rejectLoan(id: number): Observable<LoanResponse> { return this.http.put<LoanResponse>(`${this.BASE}/loans/${id}/reject`, {}); }
-  disburseLoan(id: number): Observable<LoanResponse> { return this.http.put<LoanResponse>(`${this.BASE}/loans/${id}/disburse`, {}); }
+  rejectLoan(id: number, reason?: string): Observable<LoanResponse> { return this.http.put<LoanResponse>(`${this.BASE}/loans/${id}/reject`, null, { params: reason ? { reason } : {} }); }
+  disburseLoan(id: number): Observable<LoanResponse> { return this.http.post<LoanResponse>(`${this.BASE}/loans/${id}/disburse`, {}); }
   repayLoan(id: number, amount: number): Observable<any> { return this.http.post(`${this.BASE}/loans/${id}/repay`, { amount }); }
 
   // Cards
@@ -150,14 +150,14 @@ export class ApiService {
   getCardById(id: number): Observable<CardResponse> { return this.http.get<CardResponse>(`${this.BASE}/card/${id}`); }
   getCardsByAccount(accountId: number): Observable<CardResponse[]> { return this.http.get<CardResponse[]>(`${this.BASE}/card/account/${accountId}`); }
   createCard(data: CardRequest): Observable<CardResponse> { return this.http.post<CardResponse>(`${this.BASE}/card/`, data); }
-  updateCardStatus(id: number, status: string): Observable<CardResponse> { return this.http.put<CardResponse>(`${this.BASE}/card/${id}/status`, { status }); }
-  changeCardPin(id: number, oldPin: string, newPin: string): Observable<any> { return this.http.put(`${this.BASE}/card/${id}/pin`, { oldPin, newPin }); }
+  updateCardStatus(id: number, status: string): Observable<CardResponse> { return this.http.patch<CardResponse>(`${this.BASE}/card/${id}/status`, null, { params: { status } }); }
+  changeCardPin(id: number, oldPin: string, newPin: string): Observable<any> { return this.http.patch(`${this.BASE}/card/${id}/change-pin`, null, { params: { pin: newPin } }); }
 
   // ATM
-  getATMs(): Observable<ATMResponse[]> { return this.http.get<ATMResponse[]>(`${this.BASE}/atm`); }
+  getATMs(): Observable<ATMResponse[]> { return this.http.get<ATMResponse[]>(`${this.BASE}/atm/all`); }
   getATMById(id: number): Observable<ATMResponse> { return this.http.get<ATMResponse>(`${this.BASE}/atm/${id}`); }
   createATM(data: ATMRequest): Observable<ATMResponse> { return this.http.post<ATMResponse>(`${this.BASE}/atm`, data); }
-  updateATMStatus(id: number, status: string): Observable<ATMResponse> { return this.http.put<ATMResponse>(`${this.BASE}/atm/${id}/status`, { status }); }
+  updateATMStatus(id: number, status: string): Observable<ATMResponse> { return this.http.patch<ATMResponse>(`${this.BASE}/atm/${id}/status`, null, { params: { status } }); }
 
   // ATM Transactions
   processATMTransaction(data: ATMTransactionRequest): Observable<ATMTransactionResponse> { return this.http.post<ATMTransactionResponse>(`${this.BASE}/atm-transactions`, data); }
@@ -175,7 +175,7 @@ export class ApiService {
   getBalanceSheet(data: ReportRequest): Observable<BalanceSheetResponse> { return this.http.post<BalanceSheetResponse>(`${this.BASE}/reports/balance-sheet`, data); }
 
   // Journal
-  getJournalByAccount(accountNumber: string): Observable<JournalEntry[]> { return this.http.get<JournalEntry[]>(`${this.BASE}/history/account/${accountNumber}`); }
+  getJournalByAccount(accountNumber: string): Observable<JournalEntry[]> { return this.http.get<JournalEntry[]>(`${this.BASE}/history/${accountNumber}`); }
 
   // Address Data
   getDivisions(): Observable<Division[]> {

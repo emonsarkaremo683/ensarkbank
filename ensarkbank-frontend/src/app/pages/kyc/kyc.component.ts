@@ -175,4 +175,9 @@ export class KycComponent implements OnInit {
     const base = 'http://localhost:8085';
     return path.startsWith('/') ? base + path : base + '/' + path;
   }
+
+  onPreviewError(): void {
+    this.notify.warning('Preview', 'Unable to load document preview');
+    this.closePreview();
+  }
 }

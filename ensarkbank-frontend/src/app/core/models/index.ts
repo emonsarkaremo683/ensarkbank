@@ -395,8 +395,10 @@ export interface CardResponse {
   dailyLimit: number;
   monthlyLimit: number;
   expiryDate: string;
+  cvv?: string;
   isInternationalEnabled: boolean;
-  createdAt: string;
+  isOnlineTransactionEnabled?: boolean;
+  createdAt?: string;
 }
 
 // ATM
@@ -447,6 +449,10 @@ export interface CashierTransactionRequest {
   checkNo?: string;
   branchId: number;
   accountNumber: string;
+  accountName?: string;
+  bankName?: string;
+  employeeId?: number;
+  routingNumber?: string;
   transactionRequest: TransactionRequest;
 }
 
@@ -466,10 +472,11 @@ export interface ReportRequest {
 }
 
 export interface TrialBalanceResponse {
+  branchId?: number;
   branchName: string;
-  branchCode: string;
-  fromDate: string;
-  toDate: string;
+  branchCode?: string;
+  fromDate?: string;
+  toDate?: string;
   lines: TrialBalanceLine[];
   totalDebit: number;
   totalCredit: number;
