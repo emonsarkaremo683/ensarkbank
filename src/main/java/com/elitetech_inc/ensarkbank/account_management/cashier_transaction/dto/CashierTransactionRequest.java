@@ -10,6 +10,7 @@ public class CashierTransactionRequest {
     private String accountNumber;
     private String accountName;
     private String bankName;
+    private Long employeeId;
     private String routingNumber; // receiver branch
     private TransactionRequest transactionRequest;
 }

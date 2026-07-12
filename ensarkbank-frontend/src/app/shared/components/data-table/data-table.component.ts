@@ -30,9 +30,10 @@ export class DataTableComponent implements OnChanges {
   currentPage = signal(1);
   sortKey = signal('');
   sortDirection = signal<'asc' | 'desc'>('asc');
+  private dataSignal = signal<any[]>([]);
 
   filteredData = computed(() => {
-    let result = [...this.data];
+    let result = [...this.dataSignal()];
     const query = this.searchQuery().toLowerCase().trim();
 
     if (query) {
@@ -92,6 +93,7 @@ export class DataTableComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']) {
+      this.dataSignal.set(this.data);
       this.currentPage.set(1);
     }
   }
@@ -159,6 +161,6 @@ export class DataTableComponent implements OnChanges {
       'FROZEN': 'status-info',
       'FREEZE': 'status-info',
     };
-    return statusMap[value?.toUpperCase()] || 'status-neutral';
+    return statusMap[String(value ?? '').toUpperCase()] || 'status-neutral';
   }
 }

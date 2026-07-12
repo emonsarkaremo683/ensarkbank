@@ -50,7 +50,7 @@
               <select [(ngModel)]="form.branchId" class="form-control">
                 <option [value]="0">Select Branch</option>
                 @for (branch of branches(); track branch.id) {
-                  <option [value]="branch.id">{{ branch.branchName }}</option>
+                  <option [value]="branch.id">{{ branch.name }}</option>
                 }
               </select>
             </div>
@@ -102,14 +102,14 @@
     <div class="modal-overlay" (click)="closeDetail()">
       <div class="modal-container" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>ATM Details - {{ selectedAtm()!.atmCode }}</h2>
+          <h2>ATM Details - #{{ selectedAtm()!.atmId }}</h2>
           <button class="modal-close" (click)="closeDetail()">&times;</button>
         </div>
         <div class="modal-body">
           <div class="detail-grid">
             <div class="detail-item">
-              <span class="detail-label">ATM Code</span>
-              <span class="detail-value highlight">{{ selectedAtm()!.atmCode }}</span>
+              <span class="detail-label">ATM ID</span>
+              <span class="detail-value highlight">#{{ selectedAtm()!.atmId }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Status</span>
@@ -117,24 +117,20 @@
             </div>
             <div class="detail-item">
               <span class="detail-label">Balance</span>
-              <span class="detail-value balance">{{ formatCurrency(selectedAtm()!.balance) }}</span>
+              <span class="detail-value balance">{{ formatCurrency(selectedAtm()!.availableBalance || 0) }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Daily Limit</span>
-              <span class="detail-value">{{ formatCurrency(selectedAtm()!.dailyLimit) }}</span>
+              <span class="detail-value">{{ formatCurrency(selectedAtm()!.limit || 0) }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Branch</span>
               <span class="detail-value">{{ selectedAtm()!.branchName }}</span>
             </div>
-            <div class="detail-item">
-              <span class="detail-label">Created At</span>
-              <span class="detail-value">{{ selectedAtm()!.createdAt | date:'medium' }}</span>
-            </div>
             @if (selectedAtm()!.address) {
               <div class="detail-item full-width">
                 <span class="detail-label">Address</span>
-                <span class="detail-value">{{ selectedAtm()!.address!.area || '' }} {{ selectedAtm()!.address!.holdingNo || '' }}</span>
+                <span class="detail-value">{{ selectedAtm()!.address }}</span>
               </div>
             }
           </div>
@@ -157,11 +153,11 @@
           <button class="modal-close" (click)="closeRefill()">&times;</button>
         </div>
         <div class="modal-body">
-          <p class="modal-info">ATM: <strong>{{ selectedAtm()!.atmCode }}</strong></p>
+          <p class="modal-info">ATM: <strong>#{{ selectedAtm()!.atmId }}</strong></p>
           <div class="refill-info">
             <div class="refill-row">
               <span>Current Balance</span>
-              <span>{{ formatCurrency(selectedAtm()!.balance) }}</span>
+              <span>{{ formatCurrency(selectedAtm()!.availableBalance || 0) }}</span>
             </div>
           </div>
           <div class="form-group">
@@ -170,7 +166,7 @@
           </div>
           <div class="refill-total">
             <span>New Balance</span>
-            <span class="total">{{ formatCurrency(selectedAtm()!.balance + refillAmount) }}</span>
+            <span class="total">{{ formatCurrency((selectedAtm()!.availableBalance || 0) + refillAmount) }}</span>
           </div>
         </div>
         <div class="modal-footer">
@@ -234,7 +230,7 @@
           <button class="modal-close" (click)="closeStatusModal()">&times;</button>
         </div>
         <div class="modal-body">
-          <p class="modal-info">ATM <strong>{{ selectedAtm()!.atmCode }}</strong></p>
+          <p class="modal-info">ATM <strong>#{{ selectedAtm()!.atmId }}</strong></p>
           <div class="form-group">
             <label>New Status</label>
             <select [(ngModel)]="newStatus" class="form-control">
@@ -265,7 +261,7 @@
     <div class="modal-overlay" (click)="closeTransactions()">
       <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>ATM Transactions - {{ selectedAtm()!.atmCode }}</h2>
+          <h2>ATM Transactions - #{{ selectedAtm()!.atmId }}</h2>
           <button class="modal-close" (click)="closeTransactions()">&times;</button>
         </div>
         <div class="modal-body">
@@ -275,20 +271,19 @@
             </div>
           } @else {
             <div class="transactions-list">
-              @for (tx of getAtmTransactions(); track tx.id) {
+              @for (tx of getAtmTransactions(); track tx.ATMTransactionId) {
                 <div class="transaction-item">
                   <div class="tx-left">
-                    <span class="tx-id">{{ tx.transactionId }}</span>
-                    <span class="tx-type">{{ tx.type }}</span>
+                    <span class="tx-id">TXN-{{ tx.ATMTransactionId }}</span>
+                    <span class="tx-type">{{ tx.transactionType }}</span>
                   </div>
                   <div class="tx-center">
                     <span class="tx-card">****{{ tx.cardNumber.slice(-4) }}</span>
                   </div>
                   <div class="tx-right">
-                    <span class="tx-amount" [class.deposit]="tx.type === ATMTransactionType.CASH_DEPOSIT">{{ formatCurrency(tx.amount) }}</span>
-                    <span class="tx-status badge" [class]="getStatusClass(tx.status)">{{ tx.status }}</span>
+                    <span class="tx-amount" [class.deposit]="tx.transactionType === ATMTransactionType.CASH_DEPOSIT">{{ formatCurrency(tx.transactionResponse?.amount || 0) }}</span>
+                    <span class="tx-status badge" [class]="getStatusClass(tx.transactionResponse?.status || '')">{{ tx.transactionResponse?.status }}</span>
                   </div>
-                  <span class="tx-date">{{ tx.createdAt | date:'short' }}</span>
                 </div>
               }
             </div>

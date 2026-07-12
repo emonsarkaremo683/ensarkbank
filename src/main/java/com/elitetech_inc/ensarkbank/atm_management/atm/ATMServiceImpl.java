@@ -72,7 +72,42 @@ public class ATMServiceImpl implements ATMService {
 
     @Override
     public ATMResponse updateATM(Long id, ATMRequest atmRequest) {
-        return null;
+        ATM atm = atmRepository.findById(id).orElseThrow(
+                ()-> new RuntimeException("ATM not found")
+        );
+        if (atm.getBranch() != null) {
+            branchValidator.assertNotAgentBank(atm.getBranch().getId());
+        }
+
+        if (atmRequest.getStatus() != null) {
+            atm.setStatus(atmRequest.getStatus());
+        }
+        if (atmRequest.getLimit() != null) {
+            atm.setLimit(atmRequest.getLimit());
+        }
+        if (atmRequest.getAddress() != null) {
+            atm.setAddress(atmRequest.getAddress());
+        }
+
+        if (atmRequest.getBranchId() != null) {
+            Branch branch = branchRepository.findById(atmRequest.getBranchId()).orElseThrow(
+                    ()-> new RuntimeException("Branch not found")
+            );
+            branchValidator.assertNotAgentBank(branch.getId());
+            atm.setBranch(branch);
+        }
+
+        Account acc = atm.getAccount();
+        if (acc != null) {
+            acc.setAccountStatus(atmMapper.toAccountStatus(atm.getStatus()));
+            if (atmRequest.getBalance() != null) {
+                acc.setCurrentBalance(atmRequest.getBalance());
+                acc.setAvailableBalance(atmRequest.getBalance());
+            }
+            accountRepository.save(acc);
+        }
+
+        return atmMapper.toResponse(atmRepository.save(atm));
     }
 
     @Override

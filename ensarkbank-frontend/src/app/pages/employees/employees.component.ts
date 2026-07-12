@@ -128,7 +128,7 @@ export class EmployeesComponent implements OnInit {
       gender: employee.gender as any,
       phone: employee.phone,
       designation: employee.designation,
-      branchId: employee.branchId,
+      branchId: 0,
       role: employee.role,
       dateOfBirth: employee.dob?.split('T')[0] || '',
       addresses: employee.addresses?.map(a => ({

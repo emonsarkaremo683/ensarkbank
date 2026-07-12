@@ -21,6 +21,8 @@ import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionStatus;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
 import com.elitetech_inc.ensarkbank.common.exception.ResourceNotFoundException;
+import com.elitetech_inc.ensarkbank.human_resource_management.employee.entity.Employee;
+import com.elitetech_inc.ensarkbank.human_resource_management.employee.repository.EmployeeRepository;
 import com.elitetech_inc.ensarkbank.util.BranchValidator;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Validator;
@@ -47,6 +49,7 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
     private final BranchValidator branchValidator;
     private final RequestValidator requestValidator;
     private final Validator validator;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     public CashierTransactionResponse createTransaction(CashierTransactionRequest request) {
@@ -65,6 +68,10 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
             validator.checkAccountStatus(request.getAccountNumber());
         }
 
+        Employee employee = employeeRepository.findById(request.getEmployeeId()).orElseThrow(
+                () -> new ResourceNotFoundException("Employee not found", request.getEmployeeId())
+        );
+
         CashierTransaction cashierTransaction = new CashierTransaction();
         cashierTransaction.setCheckNo(request.getCheckNo());
         cashierTransaction.setBranch(branch);
@@ -72,7 +79,7 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
         cashierTransaction.setAccountName(request.getAccountName());
         cashierTransaction.setBankName(request.getBankName());
         cashierTransaction.setRoutingNumber(request.getRoutingNumber());
-
+        cashierTransaction.setEmployee(employee);
 
         Transaction transaction = transactionMapper.toTransaction(request.getTransactionRequest());
         transaction.setTransactionType(request.getTransactionRequest().getTransactionType());

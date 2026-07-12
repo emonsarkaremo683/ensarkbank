@@ -48,7 +48,7 @@
             <select [(ngModel)]="form.senderAccountNumber" class="form-control">
               <option value="">Select Sender</option>
               @for (acc of accounts(); track acc.id) {
-                <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.accountType }} ({{ formatCurrency(acc.balance) }})</option>
+                <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.accountType }} ({{ formatCurrency(acc.availableBalance) }})</option>
               }
             </select>
           </div>
@@ -121,9 +121,9 @@
   }
 
   @if (step() === 'result') {
-    <div class="result-card" [class.success]="transactionResult()?.status === 'SUCCESS'" [class.failed]="transactionResult()?.status !== 'SUCCESS'">
+    <div class="result-card" [class.success]="transactionResult()?.response?.status === 'SUCCESS'" [class.failed]="transactionResult()?.response?.status !== 'SUCCESS'">
       <div class="result-icon">
-        @if (transactionResult()?.status === 'SUCCESS') {
+        @if (transactionResult()?.response?.status === 'SUCCESS') {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
             <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
             <polyline points="22 4 12 14.01 9 11.01"/>
@@ -134,7 +134,7 @@
           </svg>
         }
       </div>
-      <h2>{{ transactionResult()?.status === 'SUCCESS' ? 'Transaction Successful' : 'Transaction Failed' }}</h2>
+      <h2>{{ transactionResult()?.response?.status === 'SUCCESS' ? 'Transaction Successful' : 'Transaction Failed' }}</h2>
       @if (transactionResult()) {
         <div class="result-details">
           <div class="result-row">
@@ -143,7 +143,7 @@
           </div>
           <div class="result-row">
             <span>Amount</span>
-            <span class="amount">{{ formatCurrency(transactionResult()!.amount) }}</span>
+            <span class="amount">{{ formatCurrency(transactionResult()!.response?.amount || 0) }}</span>
           </div>
           <div class="result-row">
             <span>Sender</span>
@@ -155,11 +155,11 @@
           </div>
           <div class="result-row">
             <span>Type</span>
-            <span>{{ transactionResult()!.type }}</span>
+            <span>{{ transactionResult()!.response?.transactionType }}</span>
           </div>
           <div class="result-row">
             <span>Status</span>
-            <span class="badge" [class]="getStatusClass(transactionResult()!.status)">{{ transactionResult()!.status }}</span>
+            <span class="badge" [class]="getStatusClass(transactionResult()!.response?.status || '')">{{ transactionResult()!.response?.status }}</span>
           </div>
         </div>
       }
@@ -227,15 +227,15 @@
             </div>
             <div class="detail-item">
               <span class="detail-label">Type</span>
-              <span class="detail-value">{{ selectedTransaction()!.type }}</span>
+              <span class="detail-value">{{ selectedTransaction()!.response?.transactionType }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Amount</span>
-              <span class="detail-value balance">{{ formatCurrency(selectedTransaction()!.amount) }}</span>
+              <span class="detail-value balance">{{ formatCurrency(selectedTransaction()!.response?.amount || 0) }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Status</span>
-              <span class="badge" [class]="getStatusClass(selectedTransaction()!.status)">{{ selectedTransaction()!.status }}</span>
+              <span class="badge" [class]="getStatusClass(selectedTransaction()!.response?.status || '')">{{ selectedTransaction()!.response?.status }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Sender</span>
@@ -247,16 +247,16 @@
             </div>
             <div class="detail-item">
               <span class="detail-label">Channel</span>
-              <span class="detail-value">{{ selectedTransaction()!.channel }}</span>
+              <span class="detail-value">{{ selectedTransaction()!.response?.channel }}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Date</span>
-              <span class="detail-value">{{ selectedTransaction()!.createdAt | date:'medium' }}</span>
+              <span class="detail-label">Direction</span>
+              <span class="detail-value">{{ selectedTransaction()!.direction || '-' }}</span>
             </div>
-            @if (selectedTransaction()!.remarks) {
+            @if (selectedTransaction()!.response?.remarks) {
               <div class="detail-item full-width">
                 <span class="detail-label">Remarks</span>
-                <span class="detail-value">{{ selectedTransaction()!.remarks }}</span>
+                <span class="detail-value">{{ selectedTransaction()!.response?.remarks }}</span>
               </div>
             }
           </div>

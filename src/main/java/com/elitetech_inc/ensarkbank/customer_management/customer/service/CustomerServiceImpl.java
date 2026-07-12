@@ -254,4 +254,16 @@ public class CustomerServiceImpl implements CustomerService {
         return customerMapper.toResponse(customerRepository.save(c));
     }
 
+    @Override
+    public List<CustomerResponse> searchCustomers(String query) {
+        return customerRepository.searchCustomers(query).stream()
+                .map(customerMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<CustomerResponse> findByUserEmail(String email) {
+        return customerRepository.findByUserEmail(email).map(customerMapper::toResponse);
+    }
+
 }

@@ -5,9 +5,9 @@ import { ApiService } from '../../core/services/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import {
   ATMResponse, ATMRequest, ATMTransactionResponse, Branch,
-  BalanceCheckRequest, AddressRequest
+  BalanceCheckRequest
 } from '../../core/models';
-import { AddressType, ATMStatus, ATMTransactionType } from '../../core/enums/role.enum';
+import { ATMStatus, ATMTransactionType } from '../../core/enums/role.enum';
 import { DataTableComponent, TableColumn } from '../../shared/components/data-table/data-table.component';
 import { StatsCardComponent } from '../../shared/components/stats-card/stats-card.component';
 import { LoadingComponent } from '../../shared/components/loading/loading.component';
@@ -57,10 +57,10 @@ export class AtmComponent implements OnInit {
   };
 
   columns: TableColumn[] = [
-    { key: 'atmCode', label: 'ATM Code', sortable: true },
+    { key: 'atmId', label: 'ATM ID', sortable: true },
     { key: 'status', label: 'Status', type: 'status', sortable: true },
-    { key: 'balance', label: 'Balance', type: 'currency', sortable: true },
-    { key: 'dailyLimit', label: 'Daily Limit', type: 'currency', sortable: true },
+    { key: 'availableBalance', label: 'Balance', type: 'currency', sortable: true },
+    { key: 'limit', label: 'Daily Limit', type: 'currency', sortable: true },
     { key: 'branchName', label: 'Branch', sortable: true },
   ];
 
@@ -69,7 +69,7 @@ export class AtmComponent implements OnInit {
   totalAtms = computed(() => this.atms().length);
   activeAtms = computed(() => this.atms().filter(a => a.status === 'ACTIVE').length);
   offlineAtms = computed(() => this.atms().filter(a => a.status === 'OFFLINE' || a.status === 'OUT_OF_SERVICE').length);
-  totalBalance = computed(() => this.atms().reduce((s, a) => s + a.balance, 0));
+  totalBalance = computed(() => this.atms().reduce((s, a) => s + (a.availableBalance || 0), 0));
 
   constructor(
     private api: ApiService,
@@ -88,10 +88,6 @@ export class AtmComponent implements OnInit {
     });
     this.api.getBranches().subscribe({
       next: data => this.branches.set(data),
-      error: () => {}
-    });
-    this.api.getATMTransactions().subscribe({
-      next: data => this.atmTransactions.set(data),
       error: () => {}
     });
   }
@@ -114,22 +110,17 @@ export class AtmComponent implements OnInit {
       return;
     }
     this.submitting.set(true);
+    const address = [this.form.addressHolding, this.form.addressArea, this.form.addressPostalCode].filter(Boolean).join(', ');
     const request: ATMRequest = {
       branchId: this.form.branchId,
       balance: this.form.balance,
-      dailyLimit: this.form.dailyLimit,
+      limit: this.form.dailyLimit,
       status: this.form.status as ATMStatus,
-      address: {
-        holdingNo: this.form.addressHolding || undefined,
-        area: this.form.addressArea || undefined,
-        postalCode: this.form.addressPostalCode || undefined,
-        addressType: AddressType.PRESENT,
-        policeStation: { id: 1 }
-      }
+      address: address || undefined
     };
     this.api.createATM(request).subscribe({
       next: (res) => {
-        this.notify.success('Success', `ATM ${res.atmCode} created`);
+        this.notify.success('Success', `ATM ${res.atmId} created`);
         this.atms.update(list => [res, ...list]);
         this.closeModal();
         this.submitting.set(false);
@@ -168,10 +159,9 @@ export class AtmComponent implements OnInit {
     if (!atm || this.refillAmount <= 0) return;
     this.submitting.set(true);
     const request: ATMRequest = {
-      branchId: atm.branchId,
-      balance: atm.balance + this.refillAmount,
-      dailyLimit: atm.dailyLimit,
-      address: { holdingNo: '', area: '', postalCode: '', addressType: AddressType.PERMANENT, policeStation: { id: 1 } }
+      branchId: 0,
+      balance: (atm.availableBalance || 0) + this.refillAmount,
+      limit: atm.limit || 0,
     };
     this.api.createATM(request).subscribe({
       next: () => {
@@ -230,10 +220,10 @@ export class AtmComponent implements OnInit {
     const atm = this.selectedAtm();
     if (!atm) return;
     this.submitting.set(true);
-    this.api.updateATMStatus(atm.id, this.newStatus()).subscribe({
+    this.api.updateATMStatus(atm.atmId, this.newStatus()).subscribe({
       next: (res) => {
-        this.notify.success('Status Updated', `ATM ${atm.atmCode} is now ${this.newStatus()}`);
-        this.atms.update(list => list.map(a => a.id === res.id ? res : a));
+        this.notify.success('Status Updated', `ATM ${atm.atmId} is now ${this.newStatus()}`);
+        this.atms.update(list => list.map(a => a.atmId === res.atmId ? res : a));
         this.closeStatusModal();
         this.submitting.set(false);
       },
@@ -246,7 +236,13 @@ export class AtmComponent implements OnInit {
 
   viewAtmTransactions(atm: ATMResponse): void {
     this.selectedAtm.set(atm);
-    this.showTransactionsModal.set(true);
+    this.api.getATMTransactionsByATM(atm.atmId).subscribe({
+      next: (data) => {
+        this.atmTransactions.set(data);
+        this.showTransactionsModal.set(true);
+      },
+      error: () => this.notify.error('Error', 'Failed to load ATM transactions')
+    });
   }
 
   closeTransactions(): void {
@@ -255,9 +251,7 @@ export class AtmComponent implements OnInit {
   }
 
   getAtmTransactions(): ATMTransactionResponse[] {
-    const atm = this.selectedAtm();
-    if (!atm) return [];
-    return this.atmTransactions().filter(t => t.atmId === atm.id);
+    return this.atmTransactions();
   }
 
   formatCurrency(val: number): string {

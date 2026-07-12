@@ -2,7 +2,7 @@ package com.elitetech_inc.ensarkbank.account_management.loan.controller;
 
 import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanApplicationRequest;
 import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanApplicationResponse;
-import com.elitetech_inc.ensarkbank.account_management.loan.entity.LoanRepayment;
+import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanRepaymentResponse;
 import com.elitetech_inc.ensarkbank.account_management.loan.service.LoanService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class LoanController {
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'LOAN_OFFICER', 'ACCOUNTANT', 'AUDITOR', 'CUSTOMER')")
-    @GetMapping("{id}")
+    @GetMapping("{id:\\d+}")
     public ResponseEntity<LoanApplicationResponse> getLoanById(@PathVariable Long id) {
         return ResponseEntity.ok(loanService.getLoanById(id));
     }
@@ -64,7 +64,7 @@ public class LoanController {
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'CUSTOMER', 'LOAN_OFFICER', 'BRANCH_MANAGER', 'ADMIN', 'CASHIER')")
     @PostMapping("repayments/{repaymentId}/pay")
-    public ResponseEntity<LoanRepayment> payInstallment(@PathVariable Long repaymentId) {
+    public ResponseEntity<LoanRepaymentResponse> payInstallment(@PathVariable Long repaymentId) {
         return ResponseEntity.ok(loanService.payInstallment(repaymentId));
     }
 }

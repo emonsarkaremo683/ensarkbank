@@ -4,6 +4,7 @@ import com.elitetech_inc.ensarkbank.account_management.account.repository.Accoun
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepository;
 import com.elitetech_inc.ensarkbank.common.enums.AccountType;
 import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
+import com.elitetech_inc.ensarkbank.common.exception.BadRequestException;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,17 +25,17 @@ public class Validator {
                  customerRepository.findById(customerId)
                     .map(c -> {
                     if (c.getKyc() == null) {
-                        throw new RuntimeException("KYC data is missing for this customer");
+                        throw new BadRequestException("KYC data is missing for this customer");
                     }
 
                     String msg = "Kyc verification is " + c.getKyc().getStatus();
                     return switch (c.getKyc().getStatus()) {
-                        case PENDING, EXPIRED, UNDER_REVIEW, REJECTED -> throw new RuntimeException(msg);
+                        case PENDING, EXPIRED, UNDER_REVIEW, REJECTED -> throw new BadRequestException(msg);
                         case VERIFIED -> true;
-                        default -> throw new RuntimeException("Unknown KYC status: " + c.getKyc().getStatus());
+                        default -> throw new BadRequestException("Unknown KYC status: " + c.getKyc().getStatus());
                     };
                 })
-                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + customerId));
+                .orElseThrow(() -> new BadRequestException("Customer not found with id: " + customerId));
     }
 
     public void checkAccountStatus(String accountNumber){
@@ -43,10 +44,10 @@ public class Validator {
                     String msg = "Account is " + a.getAccountStatus();
                     return switch (a.getAccountStatus()){
                         case ACTIVE -> true;
-                        default -> throw new RuntimeException(msg);
+                        default -> throw new BadRequestException(msg);
                     };
                 })
-                .orElseThrow(()-> new RuntimeException("Account Not Found"));
+                .orElseThrow(()-> new BadRequestException("Account Not Found"));
     }
 
     public void checkCardStatus(String cardNumber){
@@ -55,13 +56,13 @@ public class Validator {
                     String msg = "Account is " + card.getStatus();
                     return switch (card.getStatus()){
                         case ACTIVE -> true;
-                        default -> throw new RuntimeException(msg);
+                        default -> throw new BadRequestException(msg);
                     };
 
-
                 })
-                .orElseThrow(()-> new RuntimeException("Card Not Found"));
+                .orElseThrow(()-> new BadRequestException("Card Not Found"));
     }
+
 
     public boolean checkAccountExists(String accountNumber){
         return accountRepository.existsByAccountNumber(accountNumber);

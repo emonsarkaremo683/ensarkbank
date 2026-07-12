@@ -24,7 +24,7 @@ public class Kyc extends BaseEntity {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @OneToMany(mappedBy = "kyc", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "kyc", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<KycDocuments> documents = new ArrayList<>();
 
 }

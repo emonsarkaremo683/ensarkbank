@@ -67,7 +67,7 @@
             </td>
           </tr>
         } @else {
-          @for (row of paginatedData(); track row.id || $index) {
+          @for (row of paginatedData(); track $index) {
             <tr (click)="onRowClick(row)" [class.clickable]="true">
               @for (column of columns; track column.key) {
                 <td [attr.data-label]="column.label">

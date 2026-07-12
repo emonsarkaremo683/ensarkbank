@@ -37,20 +37,12 @@ public class CashierTransactionMapper {
             transactionResponse = transactionMapper.toResponse(ct.getTransaction());
             journalResponses = mapJournals(ct.getTransaction());
         }
-
-
         String cashierName = "";
         String branchName = "";
         if (ct.getBranch() != null) {
             branchName = ct.getBranch().getName();
-            List<Employee> empList = employeeRepository.findEmployeeByBranchId(ct.getBranch().getId());
-            cashierName = empList
-                    .stream()
-                    .filter(emp -> emp.getUser() != null && emp.getUser().getRole() == Role.CASHIER)
-                    .map(Employee::getName)
-                    .findFirst()
-                    .orElse("");
         }
+        cashierName = ct.getEmployee().getName();
 
 
         return CashierTransactionResponse.builder()

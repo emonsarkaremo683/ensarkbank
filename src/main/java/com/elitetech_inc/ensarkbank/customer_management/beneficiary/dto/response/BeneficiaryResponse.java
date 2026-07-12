@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 public class BeneficiaryResponse {
+    private Long id;
     private String accNumber;
     private String name;
     private String provider;

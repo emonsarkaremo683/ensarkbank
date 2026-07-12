@@ -4,12 +4,10 @@ import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.r
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.request.OtpVerifyRequest;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response.AccountTransactionResponse;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response.OtpInitiateResponse;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
 public interface AccountTransactionService {
     AccountTransactionResponse save(AccountTransactionRequest accountTransactionRequest);
     Optional<AccountTransactionResponse> findById(Long id);

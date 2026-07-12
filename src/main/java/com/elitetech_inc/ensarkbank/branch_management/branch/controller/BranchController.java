@@ -28,13 +28,13 @@ public class BranchController {
         return ResponseEntity.ok(branchService.updateBranch(id, branch));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'LOAN_OFFICER', 'ATM_MANAGER', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'LOAN_OFFICER', 'ATM_MANAGER', 'AUDITOR', 'CUSTOMER')")
     @GetMapping("/{id}")
     public ResponseEntity<Branch>getBranch(@PathVariable Long id) {
         return ResponseEntity.ok(branchService.getBranchById(id));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'LOAN_OFFICER', 'ATM_MANAGER', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'LOAN_OFFICER', 'ATM_MANAGER', 'AUDITOR', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<List<Branch>> getAllBranches() {
         return ResponseEntity.ok(branchService.getAllBranches());

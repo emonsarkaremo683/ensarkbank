@@ -84,7 +84,7 @@
             <select class="form-select" [(ngModel)]="form.branchId">
               <option [value]="0">Select branch</option>
               @for (b of branches(); track b.id) {
-                <option [ngValue]="b.id">{{ b.branchName }}</option>
+                <option [ngValue]="b.id">{{ b.name }}</option>
               }
             </select>
           </div>

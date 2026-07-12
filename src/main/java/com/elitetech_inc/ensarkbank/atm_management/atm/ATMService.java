@@ -3,12 +3,10 @@ package com.elitetech_inc.ensarkbank.atm_management.atm;
 import com.elitetech_inc.ensarkbank.atm_management.atm.dto.ATMRequest;
 import com.elitetech_inc.ensarkbank.atm_management.atm.dto.ATMResponse;
 import com.elitetech_inc.ensarkbank.common.enums.ATMStatus;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
 public interface ATMService {
     ATMResponse createATM(ATMRequest atmRequest);
     ATMResponse updateATM(Long id, ATMRequest atmRequest);

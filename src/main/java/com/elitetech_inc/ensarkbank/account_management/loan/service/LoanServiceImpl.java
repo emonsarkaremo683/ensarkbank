@@ -5,6 +5,7 @@ import com.elitetech_inc.ensarkbank.account_management.account.repository.Accoun
 import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanApplicationRequest;
 import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanApplicationResponse;
 import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanMapper;
+import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanRepaymentResponse;
 import com.elitetech_inc.ensarkbank.account_management.loan.entity.Loan;
 import com.elitetech_inc.ensarkbank.account_management.loan.entity.LoanRepayment;
 import com.elitetech_inc.ensarkbank.account_management.loan.repository.LoanRepaymentRepository;
@@ -135,6 +136,7 @@ public class LoanServiceImpl implements LoanService{
         return loanMapper.toResponse(loanRepository.save(loan));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<LoanApplicationResponse> getLoansByAccount(Long accountId) {
         return loanRepository.findByAccountId(accountId)
@@ -143,6 +145,7 @@ public class LoanServiceImpl implements LoanService{
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<LoanApplicationResponse> getLoans() {
         return loanRepository.findAll()
@@ -151,6 +154,7 @@ public class LoanServiceImpl implements LoanService{
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public LoanApplicationResponse getLoanById(Long loanId) {
         Loan loan = getLoanOrThrow(loanId);
@@ -162,7 +166,7 @@ public class LoanServiceImpl implements LoanService{
 
     @Transactional
     @Override
-    public LoanRepayment payInstallment(Long loanRepaymentId) {
+    public LoanRepaymentResponse payInstallment(Long loanRepaymentId) {
         LoanRepayment repayment = repaymentRepository.findById(loanRepaymentId)
                 .orElseThrow(() -> new IllegalArgumentException("Repayment not found: " + loanRepaymentId));
 
@@ -209,7 +213,19 @@ public class LoanServiceImpl implements LoanService{
         }
         loanRepository.save(loan);
 
-        return repayment;
+        LoanRepaymentResponse dto = new LoanRepaymentResponse();
+        dto.setId(repayment.getId());
+        dto.setLoanId(loan.getId());
+        dto.setInstallmentNumber(repayment.getInstallmentNumber());
+        dto.setDueDate(repayment.getDueDate());
+        dto.setPrincipalComponent(repayment.getPrincipalComponent());
+        dto.setInterestComponent(repayment.getInterestComponent());
+        dto.setEmiAmount(repayment.getEmiAmount());
+        dto.setRemainingBalanceAfter(repayment.getRemainingBalanceAfter());
+        dto.setStatus(repayment.getStatus());
+        dto.setPaidDate(repayment.getPaidDate());
+        dto.setTransactionRef(repayment.getTransactionRef());
+        return dto;
     }
 
 

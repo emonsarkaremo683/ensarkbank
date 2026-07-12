@@ -77,6 +77,20 @@ public class CustomerController {
         return customerService.getAll();
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER')")
+    @GetMapping("search")
+    public List<CustomerResponse> search(@RequestParam String query) {
+        return customerService.searchCustomers(query);
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER')")
+    @GetMapping("email/{email}")
+    public ResponseEntity<CustomerResponse> findByEmail(@PathVariable String email) {
+        return customerService.findByUserEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER', 'ACCOUNTANT', 'AUDITOR', 'CUSTOMER')")
     @GetMapping("{id}")
     public Optional<CustomerResponse> findById(@PathVariable Long id) {

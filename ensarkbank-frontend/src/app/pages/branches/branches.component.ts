@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { Role, BranchType, BranchStatus, AddressType } from '../../core/enums/role.enum';
+import { Role, BranchType, BranchStatus } from '../../core/enums/role.enum';
 import { Branch } from '../../core/models';
 import { LoadingComponent } from '../../shared';
 import { DataTableComponent, TableColumn } from '../../shared/components/data-table/data-table.component';
@@ -30,18 +30,19 @@ export class BranchesComponent implements OnInit {
   form = this.getEmptyForm();
 
   columns: TableColumn[] = [
-    { key: 'branchName', label: 'Branch Name', type: 'text', sortable: true },
+    { key: 'name', label: 'Branch Name', type: 'text', sortable: true },
     { key: 'branchCode', label: 'Code', type: 'badge', sortable: true },
-    { key: 'branchType', label: 'Type', type: 'badge', sortable: true },
+    { key: 'type', label: 'Type', type: 'badge', sortable: true },
     { key: 'status', label: 'Status', type: 'status', sortable: true },
     { key: 'email', label: 'Email', type: 'text', sortable: true },
-    { key: 'phone', label: 'Phone', type: 'text', sortable: true },
+    { key: 'phoneNumber', label: 'Phone', type: 'text', sortable: true },
     { key: 'actions', label: 'Actions', type: 'actions', sortable: false },
   ];
 
-  branchTypes = ['HEAD_OFFICE', 'REGIONAL', 'CITY', 'SUB_BRANCH', 'UDDOY'];
+  branchTypes = Object.values(BranchType);
 
-  canManage = computed(() => this.auth.hasRole([Role.SUPER_ADMIN]));
+  canManage = computed(() => this.auth.hasRole([Role.SUPER_ADMIN, Role.ADMIN]));
+  canEdit = computed(() => this.auth.hasRole([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER]));
 
   constructor(
     private auth: AuthService,
@@ -71,17 +72,19 @@ export class BranchesComponent implements OnInit {
     const query = this.searchQuery().toLowerCase().trim();
     if (!query) return this.branches();
     return this.branches().filter(b =>
-      b.branchName.toLowerCase().includes(query) ||
-      b.branchCode.toLowerCase().includes(query) ||
-      b.branchType?.toLowerCase().includes(query) ||
-      b.status?.toLowerCase().includes(query)
+      b.name?.toLowerCase().includes(query) ||
+      b.branchCode?.toLowerCase().includes(query) ||
+      b.type?.toLowerCase().includes(query) ||
+      b.status?.toLowerCase().includes(query) ||
+      b.email?.toLowerCase().includes(query) ||
+      b.phoneNumber?.toLowerCase().includes(query)
     );
   });
 
   onAction(event: { type: string; row: Branch }): void {
-    if (event.type === 'edit') {
+    if (event.type === 'edit' && this.canEdit()) {
       this.editBranch(event.row);
-    } else if (event.type === 'delete') {
+    } else if (event.type === 'delete' && this.canManage()) {
       this.confirmDelete(event.row);
     }
   }
@@ -95,16 +98,13 @@ export class BranchesComponent implements OnInit {
   editBranch(branch: Branch): void {
     this.editMode.set(true);
     this.form = {
-      branchName: branch.branchName,
-      branchCode: branch.branchCode,
-      branchType: branch.branchType,
-      status: branch.status,
-      email: branch.email,
-      phone: branch.phone,
-      addressHoldingNo: branch.address?.holdingNo || '',
-      addressArea: branch.address?.area || '',
-      addressPostalCode: branch.address?.postalCode || '',
-      addressPoliceStationId: 0
+      name: branch.name || '',
+      branchCode: branch.branchCode || '',
+      type: branch.type || '',
+      status: branch.status || BranchStatus.ACTIVE,
+      email: branch.email || '',
+      phoneNumber: branch.phoneNumber || '',
+      address: branch.address || ''
     };
     this.selectedBranch.set(branch);
     this.showModal.set(true);
@@ -121,64 +121,41 @@ export class BranchesComponent implements OnInit {
     this.submitting.set(true);
     this.api.deleteBranch(branch.id).subscribe({
       next: () => {
-        this.notify.success('Deleted', `${branch.branchName} has been deleted.`);
+        this.notify.success('Deleted', `${branch.name} has been deleted.`);
         this.loadBranches();
         this.showConfirm.set(false);
         this.selectedBranch.set(null);
         this.submitting.set(false);
       },
-      error: () => {
-        this.notify.error('Error', 'Failed to delete branch.');
+      error: (err) => {
+        this.notify.error('Error', err.error?.message || 'Failed to delete branch.');
         this.submitting.set(false);
       }
     });
   }
 
-  toggleStatus(branch: Branch): void {
-    const newStatus = branch.status === BranchStatus.ACTIVE ? BranchStatus.CLOSED : BranchStatus.ACTIVE;
-    this.api.updateBranch(branch.id, { status: newStatus }).subscribe({
-      next: () => {
-        this.notify.success('Updated', `${branch.branchName} is now ${newStatus}.`);
-        this.loadBranches();
-      },
-      error: () => {
-        this.notify.error('Error', 'Failed to update branch status.');
-      }
-    });
-  }
-
   onSubmit(): void {
-    if (!this.form.branchName || !this.form.branchCode || !this.form.branchType) {
+    const { name, email, phoneNumber, type, status } = this.form;
+
+    if (!name?.trim() || !email?.trim() || !phoneNumber?.trim() || !type || !status) {
       this.notify.warning('Validation', 'Please fill in all required fields.');
       return;
     }
 
     this.submitting.set(true);
 
-    const payload: Partial<Branch> = {
-      branchName: this.form.branchName,
-      branchCode: this.form.branchCode,
-      branchType: this.form.branchType as BranchType,
-      status: (this.form.status as BranchStatus) || BranchStatus.ACTIVE,
-      email: this.form.email,
-      phone: this.form.phone
-    };
-
-    if (this.form.addressArea || this.form.addressHoldingNo) {
-      payload.address = {
-        id: 0,
-        holdingNo: this.form.addressHoldingNo || '',
-        area: this.form.addressArea || '',
-        postalCode: this.form.addressPostalCode || '',
-        addressType: AddressType.PRESENT,
-        policeStationName: ''
-      };
-    }
-
     if (this.editMode() && this.selectedBranch()) {
+      const payload: Partial<Branch> = {
+        name: name.trim(),
+        email: email.trim(),
+        phoneNumber: phoneNumber.trim(),
+        status: status as BranchStatus,
+        address: this.form.address?.trim() || ''
+      };
+
       this.api.updateBranch(this.selectedBranch()!.id, payload).subscribe({
         next: () => {
-          this.notify.success('Updated', `${payload.branchName} has been updated.`);
+          this.notify.success('Updated', `${payload.name} has been updated.`);
           this.loadBranches();
           this.closeModal();
           this.submitting.set(false);
@@ -189,9 +166,18 @@ export class BranchesComponent implements OnInit {
         }
       });
     } else {
+      const payload: Partial<Branch> = {
+        name: name.trim(),
+        email: email.trim(),
+        phoneNumber: phoneNumber.trim(),
+        type: type as BranchType,
+        status: status as BranchStatus,
+        address: this.form.address?.trim() || ''
+      };
+
       this.api.createBranch(payload).subscribe({
         next: () => {
-          this.notify.success('Created', `${payload.branchName} has been created.`);
+          this.notify.success('Created', `${payload.name} has been created.`);
           this.loadBranches();
           this.closeModal();
           this.submitting.set(false);
@@ -213,16 +199,13 @@ export class BranchesComponent implements OnInit {
 
   private getEmptyForm() {
     return {
-      branchName: '',
+      name: '',
       branchCode: '',
-      branchType: '',
-      status: 'ACTIVE',
+      type: '',
+      status: BranchStatus.ACTIVE,
       email: '',
-      phone: '',
-      addressHoldingNo: '',
-      addressArea: '',
-      addressPostalCode: '',
-      addressPoliceStationId: 0
+      phoneNumber: '',
+      address: ''
     };
   }
 }

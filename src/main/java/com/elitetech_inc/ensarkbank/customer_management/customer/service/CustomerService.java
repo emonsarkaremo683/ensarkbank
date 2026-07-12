@@ -23,8 +23,6 @@ public interface CustomerService {
                                            MultipartFile profile);
     CustomerResponse changeProfilePic(Long id, MultipartFile profile);
 
-
-
-
-
+    List<CustomerResponse> searchCustomers(String query);
+    Optional<CustomerResponse> findByUserEmail(String email);
 }

@@ -90,6 +90,22 @@ export class ApiService {
     };
   }
 
+  // Division, district, police station
+  getDivision(): Observable<Division[]>{
+    return this.getDivisions();
+  }
+
+  getDistrictsByDivisionId(id: number): Observable<District[]>{
+    return this.getDistrictsByDivision(id);
+  }
+  getPoliceStationByDistrictId(id: number): Observable<PoliceStation[]>{
+    return this.getPoliceStationsByDistrict(id);
+  }
+
+
+
+
+
   // Employee
   getEmployees(): Observable<EmployeeResponse[]> { return this.http.get<EmployeeResponse[]>(`${this.BASE}/employee/`); }
   getEmployeeById(id: number): Observable<EmployeeResponse> { return this.http.get<EmployeeResponse>(`${this.BASE}/employee/${id}`); }
@@ -107,46 +123,54 @@ export class ApiService {
   // Customer
   getCustomers(): Observable<CustomerResponse[]> { return this.http.get<CustomerResponse[]>(`${this.BASE}/customer/`); }
   getCustomerById(id: number): Observable<CustomerResponse> { return this.http.get<CustomerResponse>(`${this.BASE}/customer/${id}`); }
+  searchCustomers(query: string): Observable<CustomerResponse[]> { return this.http.get<CustomerResponse[]>(`${this.BASE}/customer/search`, { params: { query } }); }
+  getCustomerByEmail(email: string): Observable<CustomerResponse> { return this.http.get<CustomerResponse>(`${this.BASE}/customer/email/${email}`); }
   createCustomer(data: CustomerRequest): Observable<CustomerResponse> { return this.http.post<CustomerResponse>(`${this.BASE}/customer/`, data); }
   updateCustomer(id: number, data: Partial<CustomerRequest>): Observable<CustomerResponse> { return this.http.put<CustomerResponse>(`${this.BASE}/customer/${id}`, data); }
   getCustomerHistory(id: number): Observable<any> { return this.http.get(`${this.BASE}/customer/history/${id}`); }
 
   // Beneficiary
+  getAllBeneficiaries(): Observable<BeneficiaryResponse[]> { return this.http.get<BeneficiaryResponse[]>(`${this.BASE}/beneficiary/`); }
+  getBeneficiaryById(id: number): Observable<BeneficiaryResponse> { return this.http.get<BeneficiaryResponse>(`${this.BASE}/beneficiary/${id}`); }
   getBeneficiaries(customerId: number): Observable<BeneficiaryResponse[]> { return this.http.get<BeneficiaryResponse[]>(`${this.BASE}/beneficiary/customer/${customerId}`); }
   createBeneficiary(data: BeneficiaryRequest): Observable<BeneficiaryResponse> { return this.http.post<BeneficiaryResponse>(`${this.BASE}/beneficiary/`, data); }
   deleteBeneficiary(id: number): Observable<void> { return this.http.delete<void>(`${this.BASE}/beneficiary/${id}`); }
 
   // Account
-  getAccounts(): Observable<AccountResponse[]> { return this.http.get<AccountResponse[]>(`${this.BASE}/account/`); }
+  getAccounts(): Observable<AccountResponse[]> { return this.http.get<AccountResponse[]>(`${this.BASE}/account/all/`); }
   getAccountById(id: number): Observable<AccountResponse> { return this.http.get<AccountResponse>(`${this.BASE}/account/${id}`); }
-  getAccountByNumber(number: string): Observable<AccountResponse> { return this.http.get<AccountResponse>(`${this.BASE}/account/number/${number}`); }
+  getAccountByNumber(number: string): Observable<AccountResponse> { return this.http.get<AccountResponse>(`${this.BASE}/account/account-number/${number}`); }
   getAccountsByBranch(branchId: number): Observable<AccountResponse[]> { return this.http.get<AccountResponse[]>(`${this.BASE}/account/branch/${branchId}`); }
-  createAccount(data: AccountRequest): Observable<AccountResponse> { return this.http.post<AccountResponse>(`${this.BASE}/account/`, data); }
-  updateAccountStatus(id: number, status: string): Observable<AccountResponse> { return this.http.put<AccountResponse>(`${this.BASE}/account/${id}/status`, { status }); }
+  createAccount(data: FormData): Observable<AccountResponse> { return this.http.post<AccountResponse>(`${this.BASE}/account/create`, data); }
+  updateAccountStatus(id: number, status: string): Observable<AccountResponse> { return this.http.patch<AccountResponse>(`${this.BASE}/account/${id}/status/${status}`, {}); }
+  getAccountsByCustomerId(customerId: number): Observable<AccountResponse[]> { return this.http.get<AccountResponse[]>(`${this.BASE}/account/customer/${customerId}`); }
 
   // Transactions
   processTransaction(data: AccountTransactionRequest): Observable<AccountTransactionResponse> { return this.http.post<AccountTransactionResponse>(`${this.BASE}/account-transaction/`, data); }
   initiateOnlineTransaction(data: AccountTransactionRequest): Observable<OtpInitiateResponse> { return this.http.post<OtpInitiateResponse>(`${this.BASE}/account-transaction/online/initiate`, data); }
   verifyOnlineTransaction(data: OtpVerifyRequest): Observable<AccountTransactionResponse> { return this.http.post<AccountTransactionResponse>(`${this.BASE}/account-transaction/online/verify`, data); }
-  getTransactions(): Observable<AccountTransactionResponse[]> { return this.http.get<AccountTransactionResponse[]>(`${this.BASE}/account-transaction/all`); }
+  getTransactions(): Observable<AccountTransactionResponse[]> { return this.http.get<AccountTransactionResponse[]>(`${this.BASE}/account-transaction/all/`); }
   getTransactionsByAccount(accountNumber: string): Observable<AccountTransactionResponse[]> { return this.http.get<AccountTransactionResponse[]>(`${this.BASE}/account-transaction/account/${accountNumber}`); }
 
   // Loans
-  getLoans(): Observable<LoanResponse[]> { return this.http.get<LoanResponse[]>(`${this.BASE}/loans/`); }
+  getLoans(): Observable<LoanResponse[]> { return this.http.get<LoanResponse[]>(`${this.BASE}/loans/all`); }
   getLoanById(id: number): Observable<LoanResponse> { return this.http.get<LoanResponse>(`${this.BASE}/loans/${id}`); }
-  applyLoan(data: LoanApplicationRequest): Observable<LoanResponse> { return this.http.post<LoanResponse>(`${this.BASE}/loans/`, data); }
+  applyLoan(data: LoanApplicationRequest): Observable<LoanResponse> { return this.http.post<LoanResponse>(`${this.BASE}/loans/apply`, data); }
   approveLoan(id: number): Observable<LoanResponse> { return this.http.put<LoanResponse>(`${this.BASE}/loans/${id}/approve`, {}); }
-  rejectLoan(id: number): Observable<LoanResponse> { return this.http.put<LoanResponse>(`${this.BASE}/loans/${id}/reject`, {}); }
-  disburseLoan(id: number): Observable<LoanResponse> { return this.http.put<LoanResponse>(`${this.BASE}/loans/${id}/disburse`, {}); }
-  repayLoan(id: number, amount: number): Observable<any> { return this.http.post(`${this.BASE}/loans/${id}/repay`, { amount }); }
+  rejectLoan(id: number, reason: string): Observable<LoanResponse> { return this.http.put<LoanResponse>(`${this.BASE}/loans/${id}/reject?reason=${encodeURIComponent(reason)}`, {}); }
+  disburseLoan(id: number): Observable<LoanResponse> { return this.http.post<LoanResponse>(`${this.BASE}/loans/${id}/disburse`, {}); }
+  repayLoan(id: number, amount: number): Observable<any> { return this.http.post(`${this.BASE}/loans/repayments/${id}/pay`, {}); }
 
   // Cards
   getCards(): Observable<CardResponse[]> { return this.http.get<CardResponse[]>(`${this.BASE}/card/`); }
   getCardById(id: number): Observable<CardResponse> { return this.http.get<CardResponse>(`${this.BASE}/card/${id}`); }
   getCardsByAccount(accountId: number): Observable<CardResponse[]> { return this.http.get<CardResponse[]>(`${this.BASE}/card/account/${accountId}`); }
+  getCardsByCustomer(customerId: number): Observable<CardResponse[]> { return this.http.get<CardResponse[]>(`${this.BASE}/card/customer/${customerId}`); }
   createCard(data: CardRequest): Observable<CardResponse> { return this.http.post<CardResponse>(`${this.BASE}/card/`, data); }
-  updateCardStatus(id: number, status: string): Observable<CardResponse> { return this.http.put<CardResponse>(`${this.BASE}/card/${id}/status`, { status }); }
-  changeCardPin(id: number, oldPin: string, newPin: string): Observable<any> { return this.http.put(`${this.BASE}/card/${id}/pin`, { oldPin, newPin }); }
+  updateCardStatus(id: number, status: string): Observable<CardResponse> { return this.http.patch<CardResponse>(`${this.BASE}/card/${id}/status?status=${status}`, {}); }
+  updateCardType(id: number, type: string): Observable<CardResponse> { return this.http.patch<CardResponse>(`${this.BASE}/card/${id}/type?type=${type}`, {}); }
+  enableInternationalTransaction(id: number, enabled: boolean): Observable<CardResponse> { return this.http.patch<CardResponse>(`${this.BASE}/card/${id}/international?enabled=${enabled}`, {}); }
+  changeCardPin(id: number, pin: string): Observable<any> { return this.http.patch(`${this.BASE}/card/${id}/change-pin?pin=${pin}`, {}); }
 
   // ATM
   getATMs(): Observable<ATMResponse[]> { return this.http.get<ATMResponse[]>(`${this.BASE}/atm`); }
@@ -171,6 +195,11 @@ export class ApiService {
 
   // Journal
   getJournalByAccount(accountNumber: string): Observable<JournalEntry[]> { return this.http.get<JournalEntry[]>(`${this.BASE}/history/account/${accountNumber}`); }
+
+  // KYC
+  updateKycStatus(customerId: number, status: string): Observable<CustomerResponse> {
+    return this.http.patch<CustomerResponse>(`${this.BASE}/kyc/customer/${customerId}/status`, status);
+  }
 
   // Address Data
   getDivisions(): Observable<Division[]> {
