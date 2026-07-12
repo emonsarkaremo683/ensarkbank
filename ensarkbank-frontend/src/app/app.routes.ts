@@ -87,9 +87,19 @@ export const routes: Routes = [
         canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN, Role.ATM_MANAGER, Role.BRANCH_MANAGER])]
       },
       {
+        path: 'kyc',
+        loadComponent: () => import('./pages/kyc/kyc.component').then(m => m.KycComponent),
+        canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CUSTOMER_SERVICE])]
+      },
+      {
         path: 'reports',
         loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent),
         canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT, Role.AUDITOR])]
+      },
+      {
+        path: 'beneficiaries',
+        loadComponent: () => import('./pages/beneficiaries/beneficiaries.component').then(m => m.BeneficiariesComponent),
+        canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER, Role.CUSTOMER_SERVICE])]
       }
     ]
   },
@@ -123,6 +133,11 @@ export const routes: Routes = [
       {
         path: 'loans',
         loadComponent: () => import('./pages/loans/loans.component').then(m => m.LoansComponent),
+        canActivate: [roleGuard([Role.CUSTOMER])]
+      },
+      {
+        path: 'beneficiaries',
+        loadComponent: () => import('./pages/beneficiaries/beneficiaries.component').then(m => m.BeneficiariesComponent),
         canActivate: [roleGuard([Role.CUSTOMER])]
       }
     ]

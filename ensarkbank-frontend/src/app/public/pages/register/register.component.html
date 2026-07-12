@@ -134,7 +134,7 @@
                 <div class="form-row">
                   <div class="form-group">
                     <label>Division *</label>
-                    <select formControlName="divisionId" (change)="onPermanentDivisionChange(+$any($event.target).value)">
+                    <select formControlName="divisionId" (change)="onDivisionChange($event)">
                       <option value="">Select Division</option>
                       @for (div of divisions; track div.id) {
                         <option [value]="div.id">{{ div.name }}</option>

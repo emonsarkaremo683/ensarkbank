@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -22,6 +22,10 @@ export class RegisterComponent implements OnInit {
   private notification = inject(NotificationService);
   private router = inject(Router);
 
+  constructor(
+    private cdr: ChangeDetectorRef,
+  ) { }
+
   currentStep = signal(1);
   totalSteps = 4;
   isLoading = signal(false);
@@ -37,10 +41,13 @@ export class RegisterComponent implements OnInit {
   sameAsPermanent = signal(false);
 
   divisions: Division[] = [];
-  permanentDistricts: District[] = [];
-  permanentPoliceStations: PoliceStation[] = [];
   presentDistricts: District[] = [];
   presentPoliceStations: PoliceStation[] = [];
+
+
+  permanentDistricts: District[] = [];
+  permanentPoliceStations: PoliceStation[] = [];
+
   isLoadingLocations = signal(false);
 
   genderOptions = Object.values(Gender);
@@ -64,7 +71,7 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForms();
-    this.loadDivisions();
+    this.loadDivision();
   }
 
   private initForms(): void {
@@ -79,20 +86,20 @@ export class RegisterComponent implements OnInit {
 
     this.permanentAddressForm = this.fb.group({
       divisionId: ['', Validators.required],
-      districtId: [{ value: '', disabled: true }, Validators.required],
-      policeStationId: [{ value: '', disabled: true }, Validators.required],
+      districtId: ['', Validators.required],
+      policeStationId: ['', Validators.required],
+      postalCode: [''],
       holdingNo: [''],
-      area: [''],
-      postalCode: ['']
+      area: ['']
     });
 
     this.presentAddressForm = this.fb.group({
       divisionId: ['', Validators.required],
-      districtId: [{ value: '', disabled: true }, Validators.required],
-      policeStationId: [{ value: '', disabled: true }, Validators.required],
+      districtId: ['', Validators.required],
+      policeStationId: ['', Validators.required],
+      postalCode: [''],
       holdingNo: [''],
-      area: [''],
-      postalCode: ['']
+      area: ['']
     });
 
     this.kycForm = this.fb.group({});
@@ -122,116 +129,124 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  loadDivisions(): void {
-    this.isLoadingLocations.set(true);
-    this.apiService.getDivisions().subscribe({
+
+  loadDivision(): void {
+    this.apiService.getDivision().subscribe({
       next: (data) => {
         this.divisions = data;
-        this.isLoadingLocations.set(false);
+        this.cdr.markForCheck();
+
       },
-      error: () => {
-        this.isLoadingLocations.set(false);
+      error: (err) => {
+        console.log(err);
       }
     });
   }
 
-  // Permanent address handlers
-  onPermanentDivisionChange(divisionId: number): void {
-    this.permanentAddressForm.patchValue({ districtId: '', policeStationId: '' });
-    this.permanentAddressForm.get('districtId')?.disable();
-    this.permanentAddressForm.get('policeStationId')?.disable();
-    this.permanentDistricts = [];
-    this.permanentPoliceStations = [];
-    if (divisionId) {
-      this.isLoadingLocations.set(true);
-      this.apiService.getDistrictsByDivision(divisionId).subscribe({
-        next: (data) => {
-          this.permanentDistricts = data;
-          this.permanentAddressForm.get('districtId')?.enable();
-          this.isLoadingLocations.set(false);
-        },
-        error: () => { this.isLoadingLocations.set(false); }
-      });
-    }
+  onDivisionChange(event: Event): void {
+    const divisionId = Number(
+      (event.target as HTMLSelectElement).value
+    );
+
+    this.loadPermanentDistricts(divisionId);
+  }
+
+
+
+  loadDistrictByDivisionId(id: number) {
+    this.apiService.getDistrictsByDivisionId(id).subscribe({
+      next: (data) => {
+        this.presentDistricts = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
+  }
+  loadPoliceStationByDistrictId(id: number) {
+    this.apiService.getPoliceStationByDistrictId(id).subscribe({
+      next: (data) => {
+        this.presentPoliceStations = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
+  }
+
+  loadPermanentDistricts(divisionId: number) {
+    this.apiService.getDistrictsByDivisionId(divisionId).subscribe({
+      next: (data) => {
+        this.permanentDistricts = data;
+        this.permanentAddressForm.patchValue({ districtId: '', policeStationId: '' });
+        this.permanentPoliceStations = [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
+  }
+
+  loadPermanentPoliceStations(districtId: number) {
+    this.apiService.getPoliceStationByDistrictId(districtId).subscribe({
+      next: (data) => {
+        this.permanentPoliceStations = data;
+        this.permanentAddressForm.patchValue({ policeStationId: '' });
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
+  }
+
+  loadPresentDistricts(divisionId: number) {
+    this.apiService.getDistrictsByDivisionId(divisionId).subscribe({
+      next: (data) => {
+        this.presentDistricts = data;
+        this.presentAddressForm.patchValue({ districtId: '', policeStationId: '' });
+        this.presentPoliceStations = [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
+  }
+
+  loadPresentPoliceStations(districtId: number) {
+    this.apiService.getPoliceStationByDistrictId(districtId).subscribe({
+      next: (data) => {
+        this.presentPoliceStations = data;
+        this.presentAddressForm.patchValue({ policeStationId: '' });
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
   }
 
   onPermanentDistrictChange(districtId: number): void {
-    this.permanentAddressForm.patchValue({ policeStationId: '' });
-    this.permanentAddressForm.get('policeStationId')?.disable();
-    this.permanentPoliceStations = [];
-    if (districtId) {
-      this.isLoadingLocations.set(true);
-      this.apiService.getPoliceStationsByDistrict(districtId).subscribe({
-        next: (data) => {
-          this.permanentPoliceStations = data;
-          this.permanentAddressForm.get('policeStationId')?.enable();
-          this.isLoadingLocations.set(false);
-        },
-        error: () => { this.isLoadingLocations.set(false); }
-      });
-    }
+    this.loadPermanentPoliceStations(districtId);
   }
 
-  // Present address handlers
   onPresentDivisionChange(divisionId: number): void {
-    this.presentAddressForm.patchValue({ districtId: '', policeStationId: '' });
-    this.presentAddressForm.get('districtId')?.disable();
-    this.presentAddressForm.get('policeStationId')?.disable();
-    this.presentDistricts = [];
-    this.presentPoliceStations = [];
-    if (divisionId) {
-      this.isLoadingLocations.set(true);
-      this.apiService.getDistrictsByDivision(divisionId).subscribe({
-        next: (data) => {
-          this.presentDistricts = data;
-          this.presentAddressForm.get('districtId')?.enable();
-          this.isLoadingLocations.set(false);
-        },
-        error: () => { this.isLoadingLocations.set(false); }
-      });
-    }
+    this.loadPresentDistricts(divisionId);
   }
 
   onPresentDistrictChange(districtId: number): void {
-    this.presentAddressForm.patchValue({ policeStationId: '' });
-    this.presentAddressForm.get('policeStationId')?.disable();
-    this.presentPoliceStations = [];
-    if (districtId) {
-      this.isLoadingLocations.set(true);
-      this.apiService.getPoliceStationsByDistrict(districtId).subscribe({
-        next: (data) => {
-          this.presentPoliceStations = data;
-          this.presentAddressForm.get('policeStationId')?.enable();
-          this.isLoadingLocations.set(false);
-        },
-        error: () => { this.isLoadingLocations.set(false); }
-      });
-    }
+    this.loadPresentPoliceStations(districtId);
   }
 
   toggleSameAsPermanent(): void {
     this.sameAsPermanent.update(v => !v);
-    if (this.sameAsPermanent()) {
-      const permRaw = this.permanentAddressForm.getRawValue();
-      this.presentAddressForm.patchValue({
-        divisionId: permRaw.divisionId,
-        holdingNo: permRaw.holdingNo,
-        area: permRaw.area,
-        postalCode: permRaw.postalCode
-      });
-      if (permRaw.districtId) {
-        this.presentAddressForm.get('districtId')?.enable();
-        this.presentAddressForm.patchValue({ districtId: permRaw.districtId });
-        this.onPresentDivisionChange(permRaw.divisionId);
-        if (permRaw.policeStationId) {
-          setTimeout(() => {
-            this.presentAddressForm.get('policeStationId')?.enable();
-            this.presentAddressForm.patchValue({ policeStationId: permRaw.policeStationId });
-          }, 300);
-        }
-      }
-    }
   }
+
+
 
   onProfileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;

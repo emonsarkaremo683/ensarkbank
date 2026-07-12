@@ -3,6 +3,7 @@ package com.elitetech_inc.ensarkbank.account_management.nominee.entity;
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
+import com.elitetech_inc.ensarkbank.common.enums.NomineeRelation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,6 +23,12 @@ public class Nominee extends BaseEntity {
     private String email;
     @Column(nullable = false)
     private String phone;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private NomineeRelation relation;
+
+
 
     @Column(nullable = false)
     private String photo;

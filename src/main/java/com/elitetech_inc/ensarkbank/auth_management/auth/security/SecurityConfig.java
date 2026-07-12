@@ -59,7 +59,7 @@ public class SecurityConfig {
                                 "/api/policestation/{id}",
                                 "/api/policestation/district/**"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter,

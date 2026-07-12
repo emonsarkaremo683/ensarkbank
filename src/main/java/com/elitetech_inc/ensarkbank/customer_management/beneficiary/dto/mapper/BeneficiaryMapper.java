@@ -17,6 +17,7 @@ public class BeneficiaryMapper {
 
    public BeneficiaryResponse toResponse(Beneficiary b){
         BeneficiaryResponse br = new BeneficiaryResponse();
+        br.setId(b.getId());
         br.setName(b.getName());
         br.setAccNumber(b.getAccNumber());
         br.setBeneficiaryType(b.getBeneficiaryType());

@@ -187,10 +187,6 @@
   gap: 16px;
 }
 
-.form-grid-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-
 .form-group {
   display: flex;
   flex-direction: column;
@@ -237,6 +233,16 @@
     background: #162033;
     color: #e2e8f0;
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.form-input-readonly {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .section-divider {
@@ -277,8 +283,7 @@
     flex-direction: column;
   }
 
-  .form-grid,
-  .form-grid-3 {
+  .form-grid {
     grid-template-columns: 1fr;
   }
 }

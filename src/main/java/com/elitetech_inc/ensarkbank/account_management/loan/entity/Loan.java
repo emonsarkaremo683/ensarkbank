@@ -4,6 +4,7 @@ import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.common.enums.LoanStatus;
 import com.elitetech_inc.ensarkbank.common.enums.LoanType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -55,6 +56,7 @@ public class Loan extends BaseEntity {
         private String disbursementTransactionRef;
 
         @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, orphanRemoval = true)
+        @JsonIgnore
         private List<LoanRepayment> repayments = new ArrayList<>();
 
 

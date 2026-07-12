@@ -55,11 +55,11 @@ export class TransactionsComponent implements OnInit {
     { key: 'transactionId', label: 'Transaction ID', sortable: true },
     { key: 'senderAccountNumber', label: 'Sender', sortable: true },
     { key: 'receiverAccountNumber', label: 'Receiver', sortable: true },
-    { key: 'amount', label: 'Amount', type: 'currency', sortable: true },
-    { key: 'type', label: 'Type', sortable: true },
-    { key: 'channel', label: 'Channel', sortable: true },
-    { key: 'status', label: 'Status', type: 'status', sortable: true },
-    { key: 'createdAt', label: 'Date', type: 'date', sortable: true },
+    { key: 'response.amount', label: 'Amount', type: 'currency', sortable: true },
+    { key: 'response.transactionType', label: 'Type', sortable: true },
+    { key: 'response.channel', label: 'Channel', sortable: true },
+    { key: 'response.status', label: 'Status', type: 'status', sortable: true },
+    { key: 'direction', label: 'Direction', sortable: true },
   ];
 
   transactionTypes = Object.values(TransactionType);
@@ -68,27 +68,18 @@ export class TransactionsComponent implements OnInit {
   filteredTransactions = computed(() => {
     let result = this.transactions();
     if (this.filters.type) {
-      result = result.filter(t => t.type === this.filters.type);
+      result = result.filter(t => t.response?.transactionType === this.filters.type);
     }
     if (this.filters.status) {
-      result = result.filter(t => t.status === this.filters.status);
-    }
-    if (this.filters.dateFrom) {
-      const from = new Date(this.filters.dateFrom);
-      result = result.filter(t => new Date(t.createdAt) >= from);
-    }
-    if (this.filters.dateTo) {
-      const to = new Date(this.filters.dateTo);
-      to.setHours(23, 59, 59, 999);
-      result = result.filter(t => new Date(t.createdAt) <= to);
+      result = result.filter(t => t.response?.status === this.filters.status);
     }
     return result;
   });
 
   totalTransactions = computed(() => this.transactions().length);
-  successCount = computed(() => this.transactions().filter(t => t.status === 'SUCCESS').length);
-  totalAmount = computed(() => this.transactions().reduce((s, t) => s + t.amount, 0));
-  pendingCount = computed(() => this.transactions().filter(t => t.status === 'PENDING').length);
+  successCount = computed(() => this.transactions().filter(t => t.response?.status === 'SUCCESS').length);
+  totalAmount = computed(() => this.transactions().reduce((s, t) => s + (t.response?.amount || 0), 0));
+  pendingCount = computed(() => this.transactions().filter(t => t.response?.status === 'PENDING').length);
 
   constructor(
     private api: ApiService,
@@ -129,11 +120,12 @@ export class TransactionsComponent implements OnInit {
     }
 
     this.submitting.set(true);
+    const senderAccount = this.accounts().find(a => a.accountNumber === this.form.senderAccountNumber);
     const request: AccountTransactionRequest = {
-      senderAccountNumber: this.form.senderAccountNumber,
+      senderId: senderAccount?.id,
       receiverAccountNumber: this.form.receiverAccountNumber || undefined,
-      transactionRequest: {
-        type: this.form.transactionType as TransactionType,
+      request: {
+        transactionType: this.form.transactionType as TransactionType,
         channel: (this.form.channel as TransactionChannel) || TransactionChannel.BRANCH,
         amount: this.form.amount,
         remarks: this.form.remarks || undefined

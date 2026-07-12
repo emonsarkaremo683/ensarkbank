@@ -1,12 +1,11 @@
 import { Component, Input, Output, EventEmitter, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
@@ -39,6 +38,13 @@ export class HeaderComponent {
   closeDropdowns(): void {
     this.showUserMenu.set(false);
     this.showNotifications.set(false);
+  }
+
+  onHeaderClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.user-section') && !target.closest('.notification-btn')) {
+      this.closeDropdowns();
+    }
   }
 
   logout(): void {

@@ -3,6 +3,7 @@ package com.elitetech_inc.ensarkbank.auth_management.auth.security;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -10,20 +11,28 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailConfig {
 
     @Value("${server.port}")
     private String serverPort;
 
     private final JavaMailSender javaMailSender;
-    public void sendEmail(String to, String subject, String text) throws MessagingException {
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
-        messageHelper.setTo(to);
-        messageHelper.setSubject(subject);
-        messageHelper.setText(text, true);
 
-        javaMailSender.send(message);
+    public void sendEmail(String to, String subject, String text) throws MessagingException {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
+            messageHelper.setTo(to);
+            messageHelper.setSubject(subject);
+            messageHelper.setText(text, true);
+
+            javaMailSender.send(message);
+            log.info("Email sent successfully to {}", to);
+        } catch (MessagingException e) {
+            log.error("Failed to send email to {}: {}", to, e.getMessage(), e);
+            throw e;
+        }
     }
 
     // ── Email verification ───────────────────────────────────────

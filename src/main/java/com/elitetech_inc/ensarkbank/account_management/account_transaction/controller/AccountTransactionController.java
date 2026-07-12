@@ -46,7 +46,7 @@ public class AccountTransactionController {
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER', 'AUDITOR')")
-    @GetMapping("{id}")
+    @GetMapping("{id:\\d+}")
     public ResponseEntity<AccountTransactionResponse> getById(@PathVariable Long id){
         return accountTransactionService.findById(id)
                 .map(ResponseEntity::ok)

@@ -18,7 +18,7 @@
   </div>
 
   <div class="cards-visual-grid">
-    @for (card of cards(); track card.id) {
+    @for (card of cards(); track card.cardId) {
       <div class="card-visual" [class]="getCardNetworkClass(card.cardNetwork)" (click)="viewDetail(card)">
         <div class="card-top">
           <span class="card-type-label">{{ card.cardType }}</span>

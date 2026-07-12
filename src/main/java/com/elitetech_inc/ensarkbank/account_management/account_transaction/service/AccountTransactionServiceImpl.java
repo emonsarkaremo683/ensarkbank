@@ -141,6 +141,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<AccountTransactionResponse> findById(Long id) {
         if (id == null) {
             return Optional.empty();
@@ -150,6 +151,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<AccountTransactionResponse> findByAccountNumber(String accountNumber) {
         if (accountNumber == null || accountNumber.isBlank()) {
             return Optional.empty();
@@ -161,6 +163,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AccountTransactionResponse> findAllByAccountNumber(String accountNumber) {
         if (accountNumber == null || accountNumber.isBlank()) {
             return List.of();
@@ -179,6 +182,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AccountTransactionResponse> findAll() {
         return accountTransactionRepository.findAll()
                 .stream()
@@ -187,6 +191,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AccountTransactionResponse> findByAccountId(Long accountId) {
         if (accountId == null) {
             return List.of();

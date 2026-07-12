@@ -68,6 +68,7 @@ public class AccountMapper {
                 .name(ar.getN_name())
                 .email(ar.getN_email())
                 .phone(ar.getN_phone())
+                .relation(ar.getRelation())
                 .build();
     }
 

@@ -22,6 +22,7 @@ import com.elitetech_inc.ensarkbank.human_resource_management.employee.entity.Em
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.repository.EmployeeRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -35,6 +36,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -192,6 +194,14 @@ public class AuthService {
         CustomerResponse crs = customerService.saveData(dto, profile, documents);
 
         String token = jwtUtil.generateToken(dto.getEmail(), Role.CUSTOMER);
+
+        try {
+            User user = userRepository.findByEmail(dto.getEmail()).orElseThrow();
+            emailService.sendVerificationEmail(user.getEmail(), crs.getName(),
+                    jwtUtil.generateVerificationToken(user.getEmail()));
+        } catch (Exception e) {
+            log.warn("Failed to send verification email after registration: {}", e.getMessage());
+        }
 
         return LoginResponse.<CustomerResponse>builder()
                 .token(token)

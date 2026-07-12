@@ -44,7 +44,7 @@
               <select [(ngModel)]="form.accountId" class="form-control">
                 <option [value]="0">Select Account</option>
                 @for (acc of accounts(); track acc.id) {
-                  <option [value]="acc.id">{{ acc.accountNumber }} - {{ acc.accountType }} ({{ formatCurrency(acc.balance) }})</option>
+                  <option [value]="acc.id">{{ acc.accountNumber }} - {{ acc.accountType }} ({{ formatCurrency(acc.availableBalance) }})</option>
                 }
               </select>
             </div>
@@ -103,18 +103,14 @@
     <div class="modal-overlay" (click)="closeDetail()">
       <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>Loan Details #{{ selectedLoan()!.id }}</h2>
+          <h2>Loan Details #{{ selectedLoan()!.loanId }}</h2>
           <button class="modal-close" (click)="closeDetail()">&times;</button>
         </div>
         <div class="modal-body">
           <div class="detail-grid">
             <div class="detail-item">
               <span class="detail-label">Loan ID</span>
-              <span class="detail-value highlight">#{{ selectedLoan()!.id }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Loan Type</span>
-              <span class="detail-value">{{ selectedLoan()!.loanType }}</span>
+              <span class="detail-value highlight">#{{ selectedLoan()!.loanId }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Account Number</span>
@@ -134,7 +130,7 @@
             </div>
             <div class="detail-item">
               <span class="detail-label">Monthly EMI</span>
-              <span class="detail-value">{{ formatCurrency(selectedLoan()!.monthlyEmi) }}</span>
+              <span class="detail-value">{{ formatCurrency(selectedLoan()!.emiAmount) }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Tenure</span>
@@ -144,24 +140,38 @@
               <span class="detail-label">Total Payable</span>
               <span class="detail-value">{{ formatCurrency(selectedLoan()!.totalPayable) }}</span>
             </div>
-            <div class="detail-item">
-              <span class="detail-label">Total Interest</span>
-              <span class="detail-value">{{ formatCurrency(selectedLoan()!.totalInterest) }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Applied On</span>
-              <span class="detail-value">{{ selectedLoan()!.createdAt | date:'medium' }}</span>
-            </div>
-            @if (selectedLoan()!.disbursedAt) {
+            @if (selectedLoan()!.outstandingBalance) {
               <div class="detail-item">
-                <span class="detail-label">Disbursed At</span>
-                <span class="detail-value">{{ selectedLoan()!.disbursedAt | date:'medium' }}</span>
+                <span class="detail-label">Outstanding Balance</span>
+                <span class="detail-value">{{ formatCurrency(selectedLoan()!.outstandingBalance!) }}</span>
               </div>
             }
-            @if (selectedLoan()!.maturityDate) {
+            <div class="detail-item">
+              <span class="detail-label">Applied On</span>
+              <span class="detail-value">{{ selectedLoan()!.applicationDate | date:'medium' }}</span>
+            </div>
+            @if (selectedLoan()!.approvalDate) {
               <div class="detail-item">
-                <span class="detail-label">Maturity Date</span>
-                <span class="detail-value">{{ selectedLoan()!.maturityDate | date:'mediumDate' }}</span>
+                <span class="detail-label">Approved On</span>
+                <span class="detail-value">{{ selectedLoan()!.approvalDate | date:'medium' }}</span>
+              </div>
+            }
+            @if (selectedLoan()!.disbursementDate) {
+              <div class="detail-item">
+                <span class="detail-label">Disbursed At</span>
+                <span class="detail-value">{{ selectedLoan()!.disbursementDate | date:'medium' }}</span>
+              </div>
+            }
+            @if (selectedLoan()!.nextDueDate) {
+              <div class="detail-item">
+                <span class="detail-label">Next Due Date</span>
+                <span class="detail-value">{{ selectedLoan()!.nextDueDate | date:'mediumDate' }}</span>
+              </div>
+            }
+            @if (selectedLoan()!.rejectionReason) {
+              <div class="detail-item full-width">
+                <span class="detail-label">Rejection Reason</span>
+                <span class="detail-value">{{ selectedLoan()!.rejectionReason }}</span>
               </div>
             }
           </div>
@@ -191,11 +201,11 @@
           <button class="modal-close" (click)="closeRepay()">&times;</button>
         </div>
         <div class="modal-body">
-          <p class="modal-info">Loan #{{ selectedLoan()!.id }} - {{ selectedLoan()!.accountNumber }}</p>
+          <p class="modal-info">Loan #{{ selectedLoan()!.loanId }} - {{ selectedLoan()!.accountNumber }}</p>
           <div class="repay-info">
             <div class="repay-row">
               <span>Monthly EMI</span>
-              <span class="emi">{{ formatCurrency(selectedLoan()!.monthlyEmi) }}</span>
+              <span class="emi">{{ formatCurrency(selectedLoan()!.emiAmount) }}</span>
             </div>
           </div>
           <div class="form-group">

@@ -112,8 +112,8 @@ export class CardsComponent implements OnInit {
     this.submitting.set(true);
     const request: CardRequest = {
       accountId: this.form.accountId,
-      type: this.form.cardType as CardType,
-      network: this.form.network as CardNetwork,
+      cardType: this.form.cardType as CardType,
+      cardNetwork: this.form.network as CardNetwork,
       pin: this.form.pin,
       dailyLimit: this.form.dailyLimit,
       monthlyLimit: this.form.monthlyLimit
@@ -157,8 +157,8 @@ export class CardsComponent implements OnInit {
   changePin(): void {
     const card = this.selectedCard();
     if (!card) return;
-    if (!this.pinForm.oldPin || !this.pinForm.newPin) {
-      this.notify.warning('Validation', 'Please fill all fields');
+    if (!this.pinForm.newPin) {
+      this.notify.warning('Validation', 'Please enter a new PIN');
       return;
     }
     if (this.pinForm.newPin !== this.pinForm.confirmPin) {
@@ -170,7 +170,7 @@ export class CardsComponent implements OnInit {
       return;
     }
     this.submitting.set(true);
-    this.api.changeCardPin(card.id, this.pinForm.oldPin, this.pinForm.newPin).subscribe({
+    this.api.changeCardPin(card.cardId, this.pinForm.newPin).subscribe({
       next: () => {
         this.notify.success('Success', 'PIN changed successfully');
         this.closePinModal();
@@ -194,10 +194,10 @@ export class CardsComponent implements OnInit {
     if (!card) return;
     const status = this.newStatusAction() === 'BLOCK' ? 'BLOCKED' : 'ACTIVE';
     this.submitting.set(true);
-    this.api.updateCardStatus(card.id, status).subscribe({
+    this.api.updateCardStatus(card.cardId, status).subscribe({
       next: (res) => {
         this.notify.success('Success', `Card ${status.toLowerCase()}ed`);
-        this.cards.update(list => list.map(c => c.id === res.id ? res : c));
+        this.cards.update(list => list.map(c => c.cardId === res.cardId ? res : c));
         this.showStatusDialog.set(false);
         this.submitting.set(false);
       },

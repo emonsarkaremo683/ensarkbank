@@ -4,12 +4,10 @@ import com.elitetech_inc.ensarkbank.account_management.card.dto.request.CardRequ
 import com.elitetech_inc.ensarkbank.account_management.card.dto.response.CardResponse;
 import com.elitetech_inc.ensarkbank.common.enums.CardStatus;
 import com.elitetech_inc.ensarkbank.common.enums.CardType;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
 public interface CardService {
 
     CardResponse createCard(CardRequest cr);

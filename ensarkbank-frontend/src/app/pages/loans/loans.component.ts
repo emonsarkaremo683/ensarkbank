@@ -47,13 +47,13 @@ export class LoansComponent implements OnInit {
   repayAmount = 0;
 
   columns: TableColumn[] = [
-    { key: 'id', label: 'Loan ID', sortable: true },
+    { key: 'loanId', label: 'Loan ID', sortable: true },
     { key: 'accountNumber', label: 'Account', sortable: true },
-    { key: 'loanType', label: 'Type', sortable: true },
     { key: 'principalAmount', label: 'Principal', type: 'currency', sortable: true },
-    { key: 'monthlyEmi', label: 'EMI', type: 'currency', sortable: true },
+    { key: 'emiAmount', label: 'EMI', type: 'currency', sortable: true },
+    { key: 'outstandingBalance', label: 'Outstanding', type: 'currency', sortable: true },
     { key: 'status', label: 'Status', type: 'status', sortable: true },
-    { key: 'createdAt', label: 'Applied', type: 'date', sortable: true },
+    { key: 'applicationDate', label: 'Applied', type: 'date', sortable: true },
   ];
 
   loanTypes = Object.values(LoanType);
@@ -150,7 +150,7 @@ export class LoansComponent implements OnInit {
 
   openRepay(loan: LoanResponse): void {
     this.selectedLoan.set(loan);
-    this.repayAmount = loan.monthlyEmi;
+    this.repayAmount = loan.emiAmount;
     this.showRepayModal.set(true);
   }
 
@@ -164,7 +164,7 @@ export class LoansComponent implements OnInit {
     const loan = this.selectedLoan();
     if (!loan || this.repayAmount <= 0) return;
     this.submitting.set(true);
-    this.api.repayLoan(loan.id, this.repayAmount).subscribe({
+    this.api.repayLoan(loan.loanId, this.repayAmount).subscribe({
       next: () => {
         this.notify.success('Success', `Payment of ${this.formatCurrency(this.repayAmount)} submitted`);
         this.loadData();
@@ -191,15 +191,15 @@ export class LoansComponent implements OnInit {
 
     this.submitting.set(true);
     let obs;
-    if (action === 'approve') obs = this.api.approveLoan(loan.id);
-    else if (action === 'reject') obs = this.api.rejectLoan(loan.id);
-    else obs = this.api.disburseLoan(loan.id);
+    if (action === 'approve') obs = this.api.approveLoan(loan.loanId);
+    else if (action === 'reject') obs = this.api.rejectLoan(loan.loanId, 'Rejected by staff');
+    else obs = this.api.disburseLoan(loan.loanId);
 
     obs.subscribe({
       next: (res) => {
         const labels: Record<string, string> = { approve: 'approved', reject: 'rejected', disburse: 'disbursed' };
         this.notify.success('Success', `Loan ${labels[action!]} successfully`);
-        this.loans.update(list => list.map(l => l.id === res.id ? res : l));
+        this.loans.update(list => list.map(l => l.loanId === res.loanId ? res : l));
         this.showConfirmDialog.set(false);
         this.submitting.set(false);
       },
@@ -236,8 +236,8 @@ export class LoansComponent implements OnInit {
     const loan = this.selectedLoan();
     const action = this.confirmAction();
     if (!loan) return '';
-    if (action === 'approve') return `Approve loan #${loan.id} for ${this.formatCurrency(loan.principalAmount)}?`;
-    if (action === 'reject') return `Reject loan #${loan.id}? This cannot be undone.`;
-    return `Disburse ${this.formatCurrency(loan.principalAmount)} for loan #${loan.id}? Amount will be credited to account ${loan.accountNumber}.`;
+    if (action === 'approve') return `Approve loan #${loan.loanId} for ${this.formatCurrency(loan.principalAmount)}?`;
+    if (action === 'reject') return `Reject loan #${loan.loanId}? This cannot be undone.`;
+    return `Disburse ${this.formatCurrency(loan.principalAmount)} for loan #${loan.loanId}? Amount will be credited to account ${loan.accountNumber}.`;
   }
 }

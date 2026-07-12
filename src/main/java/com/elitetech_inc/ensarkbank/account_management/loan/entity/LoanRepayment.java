@@ -2,6 +2,7 @@ package com.elitetech_inc.ensarkbank.account_management.loan.entity;
 
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.common.enums.RepaymentStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,6 +18,7 @@ public class LoanRepayment extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "loan_id", nullable = false)
+    @JsonIgnore
     private Loan loan;
 
     @Column(nullable = false)

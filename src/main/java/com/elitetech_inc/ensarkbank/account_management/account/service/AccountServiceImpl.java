@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,6 +71,7 @@ public class AccountServiceImpl implements AccountService {
                 if(key.equals("photo")) nominee.setPhoto(path);
             }
         }
+        account.setAccountStatus(AccountStatus.PENDING);
 
         Account saved = accountRepository.save(account);
 
@@ -96,6 +98,7 @@ public class AccountServiceImpl implements AccountService {
                 ()-> new RuntimeException("Account not found")
         );
         acc.setAccountStatus(status);
+        acc.setHoldBalance(BigDecimal.ZERO);
         Account updated = accountRepository.save(acc);
         return accountMapper.toAccountResponse(updated);
     }
@@ -107,7 +110,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Optional<AccountResponse> getAccountsByBranchId(Long branchId) {
-        return accountRepository.findAccountsByBranchId(branchId).map(accountMapper::toAccountResponse);
+        return accountRepository.findAccountByBranchId(branchId).map(accountMapper::toAccountResponse);
     }
 
     @Override

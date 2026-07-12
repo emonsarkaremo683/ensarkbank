@@ -146,12 +146,8 @@ export enum AccountType {
   FIXED_DEPOSIT = 'FIXED_DEPOSIT',
   JOINT_ACCOUNT = 'JOINT_ACCOUNT',
   STUDENT = 'STUDENT',
-  BUSINESS = 'BUSINESS',
-  BRANCH_VAULT = 'BRANCH_VAULT',
-  ATM_VAULT = 'ATM_VAULT',
-  INTER_BANK_VAULT = 'INTER_BANK_VAULT',
-  AGENT_BANK_VAULT = 'AGENT_BANK_VAULT',
-  LOAN_VAULT = 'LOAN_VAULT'
+  BUSINESS = 'BUSINESS'
+  
 }
 
 export const AccountTypeLabels: Record<string, string> = {
@@ -364,6 +360,20 @@ export enum ATMStatus {
   OFFLINE = 'OFFLINE',
   OUT_OF_SERVICE = 'OUT_OF_SERVICE',
   MAINTENANCE = 'MAINTENANCE'
+}
+
+// ===========================
+// NomineeRelation
+// ===========================
+export enum NomineeRelation {
+  FATHER = 'FATHER',
+  MOTHER = 'MOTHER',
+  SISTER = 'SISTER',
+  BROTHER = 'BROTHER',
+  UNCLE = 'UNCLE',
+  AUNTY = 'AUNTY',
+  COUSIN = 'COUSIN',
+  OTHER = 'OTHER'
 }
 
 // ===========================

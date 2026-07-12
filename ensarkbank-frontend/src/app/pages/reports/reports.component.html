@@ -47,7 +47,7 @@
           <select [(ngModel)]="tbForm.branchId" class="form-control">
             <option [value]="0">All Branches</option>
             @for (branch of branches(); track branch.id) {
-              <option [value]="branch.id">{{ branch.branchName }}</option>
+              <option [value]="branch.id">{{ branch.name }}</option>
             }
           </select>
         </div>
@@ -127,7 +127,7 @@
           <select [(ngModel)]="ledgerForm.branchId" class="form-control">
             <option [value]="0">All Branches</option>
             @for (branch of branches(); track branch.id) {
-              <option [value]="branch.id">{{ branch.branchName }}</option>
+              <option [value]="branch.id">{{ branch.name }}</option>
             }
           </select>
         </div>
@@ -164,9 +164,7 @@
         <div class="report-header-info">
           <h2>Ledger - {{ ledger()!.accountNumber }}</h2>
           <div class="report-meta">
-            <span>Account: <strong>{{ ledger()!.accountName }}</strong></span>
             <span>Branch: {{ ledger()!.branchName }}</span>
-            <span>Period: {{ ledger()!.fromDate | date:'mediumDate' }} - {{ ledger()!.toDate | date:'mediumDate' }}</span>
           </div>
           <div class="ledger-balances">
             <div class="balance-item">
@@ -186,23 +184,23 @@
                 <th>Journal ID</th>
                 <th>Date</th>
                 <th>Particulars</th>
-                <th>Type</th>
-                <th class="text-right">Amount</th>
-                <th class="text-right">Running Balance</th>
+                <th class="text-right">Debit</th>
+                <th class="text-right">Credit</th>
+                <th class="text-right">Balance</th>
               </tr>
             </thead>
             <tbody>
-              @for (line of ledger()!.lines; track line.journalId) {
+              @for (line of ledger()!.entries; track line.journalId) {
                 <tr>
                   <td class="mono">#{{ line.journalId }}</td>
                   <td>{{ line.date | date:'mediumDate' }}</td>
                   <td>{{ line.particulars || '-' }}</td>
-                  <td><span class="entry-badge" [class.debit]="line.entryType === 'DEBIT'" [class.credit]="line.entryType === 'CREDIT'">{{ line.entryType }}</span></td>
-                  <td class="text-right mono">{{ formatCurrency(line.amount) }}</td>
-                  <td class="text-right mono" [class.debit]="line.runningBalance >= 0" [class.credit]="line.runningBalance < 0">{{ formatCurrency(line.runningBalance) }}</td>
+                  <td class="text-right mono">{{ line.debit > 0 ? formatCurrency(line.debit) : '-' }}</td>
+                  <td class="text-right mono">{{ line.credit > 0 ? formatCurrency(line.credit) : '-' }}</td>
+                  <td class="text-right mono" [class.debit]="line.balance >= 0" [class.credit]="line.balance < 0">{{ formatCurrency(line.balance) }}</td>
                 </tr>
               }
-              @if (ledger()!.lines.length === 0) {
+              @if (ledger()!.entries.length === 0) {
                 <tr>
                   <td colspan="6" class="empty-cell">No ledger entries found</td>
                 </tr>
@@ -222,7 +220,7 @@
           <select [(ngModel)]="bsForm.branchId" class="form-control">
             <option [value]="0">All Branches</option>
             @for (branch of branches(); track branch.id) {
-              <option [value]="branch.id">{{ branch.branchName }}</option>
+              <option [value]="branch.id">{{ branch.name }}</option>
             }
           </select>
         </div>
@@ -252,10 +250,6 @@
           <h2>Balance Sheet</h2>
           <div class="report-meta">
             <span>Branch: <strong>{{ balanceSheet()!.branchName || 'All Branches' }}</strong></span>
-            <span>As of: {{ balanceSheet()!.asOfDate | date:'mediumDate' }}</span>
-            <span class="balance-status" [class.balanced]="balanceSheet()!.isBalanced" [class.unbalanced]="!balanceSheet()!.isBalanced">
-              {{ balanceSheet()!.isBalanced ? 'Balanced' : 'Unbalanced' }}
-            </span>
           </div>
         </div>
 
@@ -318,11 +312,11 @@
         <div class="bs-summary">
           <div class="bs-summary-item">
             <span>Total Assets</span>
-            <span class="debit">{{ formatCurrency(balanceSheet()!.assets.total) }}</span>
+            <span class="debit">{{ formatCurrency(balanceSheet()!.totalAssets || balanceSheet()!.assets.total) }}</span>
           </div>
           <div class="bs-summary-item">
             <span>Total Liabilities + Equity</span>
-            <span class="credit">{{ formatCurrency(balanceSheet()!.liabilities.total + balanceSheet()!.equity.total) }}</span>
+            <span class="credit">{{ formatCurrency(balanceSheet()!.totalLiabilitiesAndEquity || (balanceSheet()!.liabilities.total + balanceSheet()!.equity.total)) }}</span>
           </div>
         </div>
       </div>
