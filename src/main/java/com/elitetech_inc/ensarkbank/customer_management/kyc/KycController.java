@@ -5,6 +5,7 @@ import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.response.CustomerResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,11 +19,13 @@ public class KycController {
 
     private final KycService kycService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'CUSTOMER_SERVICE', 'BRANCH_MANAGER')")
     @PatchMapping("customer/{id}/status")
     public ResponseEntity<CustomerResponse> updateKycStatusBYCustomerId(@PathVariable Long id,@RequestBody KYCStatus status) {
         return ResponseEntity.ok(kycService.updateKycStatusBYCustomerId(id, status));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','ACCOUNTANT','CASHIER', 'SUPER_ADMIN', 'CUSTOMER_SERVICE', 'BRANCH_MANAGER', 'CUSTOMER')")
     @PatchMapping("customer/{id}/upload")
     public ResponseEntity<CustomerResponse> updateKycUploadBYCustomerId(@PathVariable Long id,@RequestPart(value = "NID", required = false) MultipartFile nid,
                                                                         @RequestPart(value = "PASSPORT",          required = false) MultipartFile passport,
