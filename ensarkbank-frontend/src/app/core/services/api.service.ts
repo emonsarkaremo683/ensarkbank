@@ -90,6 +90,12 @@ export class ApiService {
     };
   }
 
+
+  getDistrictsByDivision(divisionId: number): Observable<District[]> {
+    return this.http.get<District[]>(`${this.BASE}/district/division/${divisionId}`);
+  }
+
+
   // Employee
   getEmployees(): Observable<EmployeeResponse[]> { return this.http.get<EmployeeResponse[]>(`${this.BASE}/employee/`); }
   getEmployeeById(id: number): Observable<EmployeeResponse> { return this.http.get<EmployeeResponse>(`${this.BASE}/employee/${id}`); }
