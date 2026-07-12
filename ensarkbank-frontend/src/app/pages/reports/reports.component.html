@@ -1,0 +1,325 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Reports</h1>
+      <p class="page-subtitle">Financial reports and accounting statements</p>
+    </div>
+    @if (activeTab() === 'trial-balance' && trialBalance()) {
+      <button class="btn btn-outline" (click)="printReport()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"/></svg>
+        Print
+      </button>
+    }
+    @if (activeTab() === 'ledger' && ledger()) {
+      <button class="btn btn-outline" (click)="printReport()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"/></svg>
+        Print
+      </button>
+    }
+    @if (activeTab() === 'balance-sheet' && balanceSheet()) {
+      <button class="btn btn-outline" (click)="printReport()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"/></svg>
+        Print
+      </button>
+    }
+  </div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab() === 'trial-balance'" (click)="setTab('trial-balance')">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+      Trial Balance
+    </button>
+    <button class="tab" [class.active]="activeTab() === 'ledger'" (click)="setTab('ledger')">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V14a.5.5 0 01-1 0V4.804z"/></svg>
+      Ledger
+    </button>
+    <button class="tab" [class.active]="activeTab() === 'balance-sheet'" (click)="setTab('balance-sheet')">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+      Balance Sheet
+    </button>
+  </div>
+
+  @if (activeTab() === 'trial-balance') {
+    <div class="report-form-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Branch</label>
+          <select [(ngModel)]="tbForm.branchId" class="form-control">
+            <option [value]="0">All Branches</option>
+            @for (branch of branches(); track branch.id) {
+              <option [value]="branch.id">{{ branch.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>From Date *</label>
+          <input type="date" [(ngModel)]="tbForm.fromDate" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>To Date *</label>
+          <input type="date" [(ngModel)]="tbForm.toDate" class="form-control">
+        </div>
+        <div class="form-group form-action">
+          <button class="btn btn-primary" (click)="generateTrialBalance()" [disabled]="loading()">
+            @if (loading()) {
+              <span class="spinner"></span> Generating...
+            } @else {
+              Generate
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <app-loading message="Generating trial balance..."></app-loading>
+    }
+
+    @if (trialBalance()) {
+      <div class="report-content">
+        <div class="report-header-info">
+          <h2>Trial Balance</h2>
+          <div class="report-meta">
+            <span>Branch: <strong>{{ trialBalance()!.branchName || 'All Branches' }}</strong></span>
+            <span>Period: {{ trialBalance()!.fromDate | date:'mediumDate' }} - {{ trialBalance()!.toDate | date:'mediumDate' }}</span>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>GL Code</th>
+                <th>Account Name</th>
+                <th>Account Number</th>
+                <th class="text-right">Debit</th>
+                <th class="text-right">Credit</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of trialBalance()!.lines; track line.glCode) {
+                <tr>
+                  <td class="mono">{{ line.glCode }}</td>
+                  <td>{{ line.accountName }}</td>
+                  <td class="mono">{{ line.accountNumber }}</td>
+                  <td class="text-right debit">{{ line.debit > 0 ? formatCurrency(line.debit) : '-' }}</td>
+                  <td class="text-right credit">{{ line.credit > 0 ? formatCurrency(line.credit) : '-' }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td colspan="3"><strong>TOTAL</strong></td>
+                <td class="text-right"><strong class="debit">{{ formatCurrency(trialBalance()!.totalDebit) }}</strong></td>
+                <td class="text-right"><strong class="credit">{{ formatCurrency(trialBalance()!.totalCredit) }}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    }
+  }
+
+  @if (activeTab() === 'ledger') {
+    <div class="report-form-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Branch</label>
+          <select [(ngModel)]="ledgerForm.branchId" class="form-control">
+            <option [value]="0">All Branches</option>
+            @for (branch of branches(); track branch.id) {
+              <option [value]="branch.id">{{ branch.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Account Number *</label>
+          <input type="text" [(ngModel)]="ledgerForm.accountNumber" class="form-control" placeholder="e.g. 1000001">
+        </div>
+        <div class="form-group">
+          <label>From Date *</label>
+          <input type="date" [(ngModel)]="ledgerForm.fromDate" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>To Date *</label>
+          <input type="date" [(ngModel)]="ledgerForm.toDate" class="form-control">
+        </div>
+        <div class="form-group form-action">
+          <button class="btn btn-primary" (click)="generateLedger()" [disabled]="loading()">
+            @if (loading()) {
+              <span class="spinner"></span> Generating...
+            } @else {
+              Generate
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <app-loading message="Generating ledger..."></app-loading>
+    }
+
+    @if (ledger()) {
+      <div class="report-content">
+        <div class="report-header-info">
+          <h2>Ledger - {{ ledger()!.accountNumber }}</h2>
+          <div class="report-meta">
+            <span>Branch: {{ ledger()!.branchName }}</span>
+          </div>
+          <div class="ledger-balances">
+            <div class="balance-item">
+              <span>Opening Balance</span>
+              <span [class.debit]="ledger()!.openingBalance >= 0" [class.credit]="ledger()!.openingBalance < 0">{{ formatCurrency(ledger()!.openingBalance) }}</span>
+            </div>
+            <div class="balance-item">
+              <span>Closing Balance</span>
+              <span [class.debit]="ledger()!.closingBalance >= 0" [class.credit]="ledger()!.closingBalance < 0">{{ formatCurrency(ledger()!.closingBalance) }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Journal ID</th>
+                <th>Date</th>
+                <th>Particulars</th>
+                <th class="text-right">Debit</th>
+                <th class="text-right">Credit</th>
+                <th class="text-right">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of ledger()!.entries; track line.journalId) {
+                <tr>
+                  <td class="mono">#{{ line.journalId }}</td>
+                  <td>{{ line.date | date:'mediumDate' }}</td>
+                  <td>{{ line.particulars || '-' }}</td>
+                  <td class="text-right mono">{{ line.debit > 0 ? formatCurrency(line.debit) : '-' }}</td>
+                  <td class="text-right mono">{{ line.credit > 0 ? formatCurrency(line.credit) : '-' }}</td>
+                  <td class="text-right mono" [class.debit]="line.balance >= 0" [class.credit]="line.balance < 0">{{ formatCurrency(line.balance) }}</td>
+                </tr>
+              }
+              @if (ledger()!.entries.length === 0) {
+                <tr>
+                  <td colspan="6" class="empty-cell">No ledger entries found</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+
+  @if (activeTab() === 'balance-sheet') {
+    <div class="report-form-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Branch</label>
+          <select [(ngModel)]="bsForm.branchId" class="form-control">
+            <option [value]="0">All Branches</option>
+            @for (branch of branches(); track branch.id) {
+              <option [value]="branch.id">{{ branch.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>As of Date *</label>
+          <input type="date" [(ngModel)]="bsForm.fromDate" class="form-control">
+        </div>
+        <div class="form-group form-action">
+          <button class="btn btn-primary" (click)="generateBalanceSheet()" [disabled]="loading()">
+            @if (loading()) {
+              <span class="spinner"></span> Generating...
+            } @else {
+              Generate
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <app-loading message="Generating balance sheet..."></app-loading>
+    }
+
+    @if (balanceSheet()) {
+      <div class="report-content">
+        <div class="report-header-info">
+          <h2>Balance Sheet</h2>
+          <div class="report-meta">
+            <span>Branch: <strong>{{ balanceSheet()!.branchName || 'All Branches' }}</strong></span>
+          </div>
+        </div>
+
+        <div class="balance-sheet-grid">
+          <div class="bs-section assets">
+            <div class="bs-section-header">
+              <h3>{{ balanceSheet()!.assets.title }}</h3>
+              <span class="bs-total">{{ formatCurrency(balanceSheet()!.assets.total) }}</span>
+            </div>
+            <div class="bs-lines">
+              @for (line of balanceSheet()!.assets.lines; track line.glCode) {
+                <div class="bs-line">
+                  <div class="bs-line-info">
+                    <span class="bs-gl-code mono">{{ line.glCode }}</span>
+                    <span class="bs-account-name">{{ line.accountName }}</span>
+                  </div>
+                  <span class="bs-amount">{{ formatCurrency(line.amount) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="bs-section liabilities">
+            <div class="bs-section-header">
+              <h3>{{ balanceSheet()!.liabilities.title }}</h3>
+              <span class="bs-total">{{ formatCurrency(balanceSheet()!.liabilities.total) }}</span>
+            </div>
+            <div class="bs-lines">
+              @for (line of balanceSheet()!.liabilities.lines; track line.glCode) {
+                <div class="bs-line">
+                  <div class="bs-line-info">
+                    <span class="bs-gl-code mono">{{ line.glCode }}</span>
+                    <span class="bs-account-name">{{ line.accountName }}</span>
+                  </div>
+                  <span class="bs-amount">{{ formatCurrency(line.amount) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="bs-section equity">
+            <div class="bs-section-header">
+              <h3>{{ balanceSheet()!.equity.title }}</h3>
+              <span class="bs-total">{{ formatCurrency(balanceSheet()!.equity.total) }}</span>
+            </div>
+            <div class="bs-lines">
+              @for (line of balanceSheet()!.equity.lines; track line.glCode) {
+                <div class="bs-line">
+                  <div class="bs-line-info">
+                    <span class="bs-gl-code mono">{{ line.glCode }}</span>
+                    <span class="bs-account-name">{{ line.accountName }}</span>
+                  </div>
+                  <span class="bs-amount">{{ formatCurrency(line.amount) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="bs-summary">
+          <div class="bs-summary-item">
+            <span>Total Assets</span>
+            <span class="debit">{{ formatCurrency(balanceSheet()!.totalAssets || balanceSheet()!.assets.total) }}</span>
+          </div>
+          <div class="bs-summary-item">
+            <span>Total Liabilities + Equity</span>
+            <span class="credit">{{ formatCurrency(balanceSheet()!.totalLiabilitiesAndEquity || (balanceSheet()!.liabilities.total + balanceSheet()!.equity.total)) }}</span>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

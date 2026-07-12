@@ -33,7 +33,7 @@ public class AccountController {
     private final ObjectMapper objectMapper;
     private final CustomerSecurity customerSecurity;
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CASHIER') or (hasRole('CUSTOMER') and @customerSecurity.isOwner(#dto.accountHolders[0].customerId, authentication))")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CASHIER', 'CUSTOMER')")
     @PostMapping("create")
     public ResponseEntity<AccountResponse> addAccount(
             @RequestPart("data") String data,

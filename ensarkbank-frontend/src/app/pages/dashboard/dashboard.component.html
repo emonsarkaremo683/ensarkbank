@@ -1,0 +1,133 @@
+@if (loading()) {
+  <app-loading message="Loading dashboard..." />
+}
+
+<div class="dashboard">
+  <div class="dashboard-header">
+    <div class="header-left">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Welcome back, {{ currentUser()?.name }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="toggleAutoRefresh()" [class.active]="autoRefresh()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+        </svg>
+        {{ autoRefresh() ? 'Auto-refresh On' : 'Auto-refresh Off' }}
+      </button>
+      <button class="btn btn-primary" (click)="refresh()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    @if (visibleStats().includes('customers')) {
+      <app-stats-card
+        title="Total Customers"
+        [value]="customerCount()"
+        icon="👥"
+        color="#22c55e"
+      />
+    }
+    @if (visibleStats().includes('accounts')) {
+      <app-stats-card
+        title="Total Accounts"
+        [value]="accountCount()"
+        icon="🏦"
+        color="#3b82f6"
+      />
+    }
+    @if (visibleStats().includes('transactions')) {
+      <app-stats-card
+        title="Total Transactions"
+        [value]="transactionCount()"
+        icon="📝"
+        color="#c9a84c"
+      />
+    }
+    @if (visibleStats().includes('loans')) {
+      <app-stats-card
+        title="Active Loans"
+        [value]="loanCount()"
+        icon="📋"
+        color="#8b5cf6"
+      />
+    }
+    @if (visibleStats().includes('balance')) {
+      <app-stats-card
+        title="Total Balance"
+        [value]="formatCurrency(totalBalance())"
+        icon="💰"
+        color="#f59e0b"
+      />
+    }
+    @if (visibleStats().includes('atms')) {
+      <app-stats-card
+        title="ATM Count"
+        [value]="atmCount()"
+        icon="🏧"
+        color="#f97316"
+      />
+    }
+  </div>
+
+  <div class="content-grid">
+    <div class="main-content">
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">Recent Transactions</h2>
+          <button class="btn btn-link" (click)="navigate('/transactions')">View All →</button>
+        </div>
+        <app-data-table
+          [columns]="transactionColumns"
+          [data]="recentTransactions()"
+          [searchable]="false"
+          [paginated]="true"
+          [pageSize]="5"
+          emptyMessage="No transactions found"
+          (rowClick)="onTransactionAction($event)"
+        />
+      </div>
+    </div>
+
+    <div class="side-content">
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">Quick Actions</h2>
+        </div>
+        <div class="quick-actions">
+          @for (action of quickActions(); track action.label) {
+            <button class="action-item" (click)="navigate(action.route)" [style.--action-color]="action.color">
+              <span class="action-icon">{{ action.icon }}</span>
+              <span class="action-label">{{ action.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">System Overview</h2>
+        </div>
+        <div class="system-info">
+          <div class="info-row">
+            <span class="info-label">Last Refresh</span>
+            <span class="info-value">{{ lastRefresh() | date:'medium' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Your Role</span>
+            <span class="info-badge">{{ currentUser()?.role }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">User</span>
+            <span class="info-value">{{ currentUser()?.email }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

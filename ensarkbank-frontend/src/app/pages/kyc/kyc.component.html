@@ -1,0 +1,238 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">KYC Management</h1>
+      <p class="page-subtitle">Manage customer identity verification and KYC status</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <app-stats-card title="Total Customers" [value]="totalCustomers()" icon="&#128101;" color="#c9a84c"></app-stats-card>
+    <app-stats-card title="Pending Review" [value]="pendingCount()" icon="&#9203;" color="#f59e0b"></app-stats-card>
+    <app-stats-card title="Verified" [value]="verifiedCount()" icon="&#9989;" color="#22c55e"></app-stats-card>
+    <app-stats-card title="Rejected" [value]="rejectedCount()" icon="&#10060;" color="#ef4444"></app-stats-card>
+  </div>
+
+  <div class="filter-bar">
+    <label class="filter-label">Filter by Status</label>
+    <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" class="form-control filter-select">
+      <option value="">All Statuses</option>
+      @for (status of kycStatuses; track status) {
+        <option [value]="status">{{ getStatusLabel(status) }}</option>
+      }
+    </select>
+  </div>
+
+  @if (loading()) {
+    <app-loading message="Loading customers..."></app-loading>
+  } @else {
+    <div class="table-card">
+      <app-data-table
+        [columns]="columns"
+        [data]="filteredCustomers()"
+        [searchable]="true"
+        [paginated]="true"
+        [pageSize]="10"
+        emptyMessage="No customers found"
+        (rowClick)="viewCustomer($event)"
+        (action)="onAction($event)"
+      ></app-data-table>
+    </div>
+  }
+
+  @if (showModal() && selectedCustomer()) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="customer-title">
+            <div class="customer-avatar">
+              {{ selectedCustomer()!.name?.charAt(0) }}
+            </div>
+            <div class="customer-title-text">
+              <h2 class="modal-title">{{ selectedCustomer()!.name }}</h2>
+              <span class="customer-email">{{ selectedCustomer()!.email }}</span>
+            </div>
+          </div>
+          <button class="close-btn" (click)="closeModal()">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="detail-section">
+            <h3 class="section-label">Verification Status</h3>
+            <div class="kyc-status-card">
+              <div class="kyc-status-row">
+                <span class="detail-label">KYC Status</span>
+                <span class="badge" [class]="getStatusClass(selectedCustomer()!.kycStatus)">
+                  {{ getStatusLabel(selectedCustomer()!.kycStatus) }}
+                </span>
+              </div>
+              <div class="kyc-status-row">
+                <span class="detail-label">Email Verified</span>
+                <span class="status-badge" [class]="selectedCustomer()!.isEmailVerified ? 'status-success' : 'status-warning'">
+                  {{ selectedCustomer()!.isEmailVerified ? 'Verified' : 'Not Verified' }}
+                </span>
+              </div>
+              <div class="kyc-status-row">
+                <span class="detail-label">Account Status</span>
+                <span class="status-badge" [class]="selectedCustomer()!.active ? 'status-success' : 'status-danger'">
+                  {{ selectedCustomer()!.active ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3 class="section-label">Personal Information</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Gender</span>
+                <span class="detail-value">{{ selectedCustomer()!.gender || '-' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Phone</span>
+                <span class="detail-value">{{ selectedCustomer()!.phone || '-' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Occupation</span>
+                <span class="detail-value">{{ selectedCustomer()!.occupation || '-' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Date of Birth</span>
+                <span class="detail-value">{{ selectedCustomer()!.dob | date:'mediumDate' }}</span>
+              </div>
+            </div>
+          </div>
+
+          @if (selectedCustomer()!.documents && selectedCustomer()!.documents!.length > 0) {
+            <div class="detail-section">
+              <h3 class="section-label">Submitted Documents ({{ getDocCount(selectedCustomer()!) }})</h3>
+              <div class="documents-list">
+                @for (doc of selectedCustomer()!.documents; track doc.id) {
+                  <div class="doc-item">
+                    <div class="doc-info">
+                      <span class="doc-type">{{ getDocStatusLabel(doc.docType) }}</span>
+                      <span class="doc-path">{{ doc.path }}</span>
+                    </div>
+                    <div class="doc-actions">
+                      <button class="btn-preview" (click)="openPreview(doc)">View</button>
+                      <span class="doc-status" [class.verified]="doc.verified">
+                        {{ doc.verified ? 'Verified' : 'Pending' }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="detail-section">
+              <h3 class="section-label">Submitted Documents</h3>
+              <div class="empty-docs">
+                <p>No documents submitted</p>
+              </div>
+            </div>
+          }
+
+          @if (selectedCustomer()!.addresses && selectedCustomer()!.addresses!.length > 0) {
+            <div class="detail-section">
+              <h3 class="section-label">Addresses</h3>
+              <div class="addresses-list">
+                @for (addr of selectedCustomer()!.addresses; track addr.id) {
+                  <div class="address-item">
+                    <div class="address-type">{{ addr.addressType }}</div>
+                    <div class="address-details">
+                      {{ addr.holdingNo ? addr.holdingNo + ', ' : '' }}{{ addr.area ? addr.area + ', ' : '' }}{{ addr.postalCode ? addr.postalCode : '' }}
+                    </div>
+                    @if (addr.policeStationName) {
+                      <div class="address-ps">PS: {{ addr.policeStationName }}</div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+          <button class="btn btn-primary" (click)="openStatusDialog(selectedCustomer()!)">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+            Update KYC Status
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showStatusDialog() && selectedCustomer()) {
+    <div class="modal-overlay" (click)="closeStatusDialog()">
+      <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Update KYC Status</h2>
+          <button class="close-btn" (click)="closeStatusDialog()">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-info">Customer: <strong>{{ selectedCustomer()!.name }}</strong></p>
+          <div class="form-group">
+            <label>KYC Status</label>
+            <select [ngModel]="newStatus()" (ngModelChange)="newStatus.set($event)" class="form-control">
+              @for (status of kycStatuses; track status) {
+                <option [value]="status">{{ getStatusLabel(status) }}</option>
+              }
+            </select>
+          </div>
+          <div class="status-preview">
+            <span class="badge" [class]="getStatusClass(newStatus())">{{ getStatusLabel(newStatus()) }}</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeStatusDialog()">Cancel</button>
+          <button class="btn btn-primary" (click)="updateKycStatus()" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner"></span> Updating...
+            } @else {
+              Update Status
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showPreviewModal() && previewDocument()) {
+    <div class="modal-overlay" (click)="closePreview()">
+      <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ getDocStatusLabel(previewDocument()!.docType) }}</h2>
+          <button class="close-btn" (click)="closePreview()">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body preview-body">
+          @if (previewDocument()!.path && isImageFile(previewDocument()!.path)) {
+            <img [src]="getDocumentUrl(previewDocument()!.path)" [alt]="previewDocument()!.docType" class="preview-image" (error)="previewDocument.set(null)">
+          } @else {
+            <div class="preview-file">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="64" height="64">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+              </svg>
+              <span>{{ previewDocument()!.path.split('/').pop() || 'Document' }}</span>
+            </div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closePreview()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,527 @@
+import {
+  Gender,
+  CustomerOccupation,
+  AddressType,
+  DocumentType,
+  Role,
+  AccountType,
+  AccountStatus,
+  TransactionType,
+  TransactionStatus,
+  TransactionChannel,
+  CardType,
+  CardStatus,
+  CardNetwork,
+  LoanType,
+  LoanStatus,
+  Designation,
+  HolderType,
+  EntryType,
+  BeneficiaryType,
+  ATMTransactionType,
+  ATMStatus,
+  BranchType,
+  BranchStatus,
+  NomineeRelation,
+  KYCStatus,
+} from '../enums/role.enum';
+
+// Auth models
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  tokenType: string;
+  user: any;
+}
+
+export interface UserInfo {
+  id: number;
+  email: string;
+  name: string;
+  role: Role;
+  phone?: string;
+  gender?: Gender;
+  occupation?: CustomerOccupation;
+  dob?: string;
+  profile?: string;
+  imageUrl?: string;
+  isEmailVerified?: boolean;
+  active?: boolean;
+  designation?: Designation;
+  branchId?: number;
+  branchName?: string;
+  addresses?: AddressResponse[];
+}
+
+export interface ForgetPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
+// Address models
+export interface AddressRequest {
+  holdingNo?: string;
+  area?: string;
+  postalCode?: string;
+  addressType: AddressType;
+  policeStation: { id: number };
+}
+
+export interface AddressResponse {
+  id: number;
+  holdingNo?: string;
+  area?: string;
+  postalCode?: string;
+  addressType: AddressType;
+  policeStationName: string;
+}
+
+// Division/District/PoliceStation
+export interface Division {
+  id: number;
+  name: string;
+}
+
+export interface District {
+  id?: number;
+  name: string;
+  divisionId: number;
+}
+
+export interface PoliceStation {
+  id?: number;
+  name: string;
+  districtId: number;
+}
+
+// Branch
+export interface Branch {
+  id: number;
+  name: string;
+  branchCode: string;
+  type: BranchType;
+  status: BranchStatus;
+  email: string;
+  phoneNumber: string;
+  address?: string;
+  routingNumber?: string;
+}
+
+// Customer
+export interface CustomerRequest {
+  email: string;
+  password?: string;
+  name: string;
+  gender: Gender;
+  phone: string;
+  occupation?: CustomerOccupation;
+  dob: string;
+  profile?: string;
+  addresses: AddressRequest[];
+  kycRequests?: KycRequest[];
+}
+
+export interface CustomerResponse {
+  id: number;
+  email: string;
+  role: Role;
+  isEmailVerified: boolean;
+  active: boolean;
+  name: string;
+  gender: Gender;
+  phone: string;
+  occupation: CustomerOccupation;
+  dob: string;
+  profile?: string;
+  addresses: AddressResponse[];
+  documents?: KycResponse[];
+  kycStatus?: KYCStatus;
+}
+
+export interface KycRequest {
+  path: string;
+  doc_type: DocumentType;
+}
+
+export interface KycResponse {
+  id: number;
+  path: string;
+  docType: DocumentType;
+  verified: boolean;
+}
+
+// Employee
+export interface EmployeeRequest {
+  email: string;
+  password?: string;
+  role?: Role;
+  branchId: number;
+  name: string;
+  gender: Gender;
+  phone: string;
+  designation: Designation;
+  dob: string;
+  profile?: string;
+  addresses: AddressRequest[];
+}
+
+export interface EmployeeResponse {
+  id: number;
+  user_id: number;
+  name: string;
+  email: string;
+  gender: Gender;
+  phone: string;
+  designation: Designation;
+  dob: string;
+  role: Role;
+  branchName: string;
+  profile?: string;
+  addresses: AddressResponse[];
+}
+
+// Account
+export interface AccountRequest {
+  accountType: AccountType;
+  availableBalance: number;
+  branchId: number;
+  n_name?: string;
+  n_email?: string;
+  n_phone?: string;
+  relation?: NomineeRelation;
+  accountHolders: AccountHolderRequest[];
+}
+
+export interface AccountResponse {
+  id: number;
+  accountNumber: string;
+  accountType: AccountType;
+  accountStatus: AccountStatus;
+  availableBalance: number;
+  currentBalance: number;
+  holdBalance: number;
+  branchName: string;
+  branchRoutingNumber: string;
+  n_name?: string;
+  n_email?: string;
+  n_phone?: string;
+  relation?: NomineeRelation;
+  n_photo?: string;
+  n_nid_front?: string;
+  n_nid_back?: string;
+  holderResponses: AccountHolderResponse[];
+}
+
+export interface AccountHolderRequest {
+  holderType: HolderType;
+  canWithdraw: boolean;
+  canDeposit: boolean;
+  canApproveTransaction: boolean;
+  customerId: number;
+}
+
+export interface AccountHolderResponse {
+  id: number;
+  accountHolderName: string;
+  holderType: HolderType;
+  canWithdraw: boolean;
+  canDeposit: boolean;
+  canApproveTransaction: boolean;
+}
+
+// Beneficiary
+export interface BeneficiaryRequest {
+  accNumber: string;
+  name: string;
+  provider?: string;
+  routingNumber?: string;
+  beneficiaryType: BeneficiaryType;
+  customerId: number;
+}
+
+export interface BeneficiaryResponse {
+  id: number;
+  accNumber: string;
+  name: string;
+  provider?: string;
+  routingNumber?: string;
+  beneficiaryType: BeneficiaryType;
+  customerId: number;
+  customerName: string;
+}
+
+// Transactions
+export interface TransactionRequest {
+  transactionType: TransactionType;
+  channel: TransactionChannel;
+  amount: number;
+  remarks?: string;
+}
+
+export interface AccountTransactionRequest {
+  senderId?: number;
+  receiverId?: number;
+  receiverAccountNumber?: string;
+  receiverName?: string;
+  bankName?: string;
+  beneficiaryId?: number;
+  request: TransactionRequest;
+}
+
+export interface AccountTransactionResponse {
+  id: number;
+  transactionId: string;
+  senderAccountNumber: string;
+  senderName?: string;
+  receiverAccountNumber?: string;
+  receiverName?: string;
+  bankName?: string;
+  direction?: string;
+  response?: TransactionResponse;
+}
+
+export interface OtpInitiateResponse {
+  otpReferenceId: string;
+  maskedEmail: string;
+  expiresAt: string;
+}
+
+export interface TransactionResponse {
+  transactionId: string;
+  referenceNo?: string;
+  transactionType: TransactionType;
+  channel: TransactionChannel;
+  status: TransactionStatus;
+  amount: number;
+  chargeAmount?: number;
+  vatAmount?: number;
+  remarks?: string;
+  createdAt?: string;
+}
+
+export interface OtpVerifyRequest {
+  otpReferenceId: string;
+  otpCode: string;
+}
+
+// Transaction
+export interface Transaction {
+  id: number;
+  transactionId: string;
+  type: TransactionType;
+  channel: TransactionChannel;
+  amount: number;
+  status: TransactionStatus;
+  remarks?: string;
+  branchId: number;
+  createdAt: string;
+}
+
+// Journal
+export interface JournalEntry {
+  id: number;
+  transactionId: string;
+  accountNumber: string;
+  entryType: EntryType;
+  amount: number;
+  particulars?: string;
+  date: string;
+}
+
+// Loan
+export interface LoanApplicationRequest {
+  accountId: number;
+  principalAmount: number;
+  annualInterestRate: number;
+  tenureMonths: number;
+}
+
+export interface LoanResponse {
+  loanId: number;
+  accountId: number;
+  accountNumber: string;
+  principalAmount: number;
+  annualInterestRate: number;
+  tenureMonths: number;
+  emiAmount: number;
+  totalPayable: number;
+  outstandingBalance?: number;
+  status: LoanStatus;
+  applicationDate: string;
+  approvalDate?: string;
+  disbursementDate?: string;
+  nextDueDate?: string;
+  rejectionReason?: string;
+  disbursementTransactionRef?: string;
+}
+
+export interface LoanRepayment {
+  id: number;
+  installmentNumber: number;
+  principalPart: number;
+  interestPart: number;
+  totalPaid: number;
+  dueDate: string;
+  paidDate?: string;
+  status: string;
+}
+
+// Card
+export interface CardRequest {
+  accountId: number;
+  cardNetwork: CardNetwork;
+  cardType: CardType;
+  pin: string;
+  dailyLimit?: number;
+  monthlyLimit?: number;
+}
+
+export interface CardResponse {
+  cardId: number;
+  cardNumber: string;
+  cardType: CardType;
+  cardNetwork: CardNetwork;
+  status: CardStatus;
+  cardHolderName: string;
+  accountNumber: string;
+  dailyLimit: number;
+  monthlyLimit: number;
+  expiryDate: string;
+  isInternationalEnabled: boolean;
+  createdAt: string;
+}
+
+// ATM
+export interface ATMRequest {
+  status?: ATMStatus;
+  balance: number;
+  limit: number;
+  address?: string;
+  branchId: number;
+}
+
+export interface ATMResponse {
+  atmId: number;
+  status: ATMStatus;
+  availableBalance: number;
+  limit: number;
+  branchName: string;
+  address?: string;
+  routingNumber?: string;
+  accNumber?: string;
+  type?: string;
+  accountStatus?: string;
+}
+
+export interface ATMTransactionRequest {
+  atmId: number;
+  cardNumber: string;
+  transactionType: ATMTransactionType;
+  pin: string;
+  transactionRequest: TransactionRequest;
+}
+
+export interface ATMTransactionResponse {
+  ATMTransactionId: number;
+  transactionType: ATMTransactionType;
+  cardNumber: string;
+  address?: string;
+  transactionResponse?: TransactionResponse;
+}
+
+export interface BalanceCheckRequest {
+  cardNumber: string;
+  pin: string;
+}
+
+// Cashier Transaction
+export interface CashierTransactionRequest {
+  checkNo?: string;
+  branchId: number;
+  accountNumber: string;
+  transactionRequest: TransactionRequest;
+}
+
+export interface CashierTransactionResponse {
+  id: number;
+  checkNo?: string;
+  cashierName: string;
+  branchName: string;
+  transaction?: TransactionResponse;
+}
+
+// Reports
+export interface ReportRequest {
+  branchId?: number;
+  fromDate: string;
+  toDate: string;
+}
+
+export interface TrialBalanceResponse {
+  branchName: string;
+  branchCode: string;
+  fromDate: string;
+  toDate: string;
+  lines: TrialBalanceLine[];
+  totalDebit: number;
+  totalCredit: number;
+}
+
+export interface TrialBalanceLine {
+  glCode: string;
+  accountName: string;
+  accountNumber: string;
+  debit: number;
+  credit: number;
+}
+
+export interface LedgerResponse {
+  branchId?: number;
+  branchName: string;
+  accountNumber: string;
+  openingBalance: number;
+  closingBalance: number;
+  entries: LedgerLine[];
+}
+
+export interface LedgerLine {
+  journalId: number;
+  date: string;
+  transactionId?: string;
+  particulars: string;
+  accountNumber?: string;
+  accountName?: string;
+  debit: number;
+  credit: number;
+  balance: number;
+}
+
+export interface BalanceSheetResponse {
+  branchId?: number;
+  branchName: string;
+  assets: BalanceSheetSection;
+  liabilities: BalanceSheetSection;
+  equity: BalanceSheetSection;
+  totalAssets?: number;
+  totalLiabilitiesAndEquity?: number;
+}
+
+export interface BalanceSheetSection {
+  title: string;
+  lines: BalanceSheetSectionLine[];
+  total: number;
+}
+
+export interface BalanceSheetSectionLine {
+  glCode: string;
+  accountName: string;
+  amount: number;
+}
