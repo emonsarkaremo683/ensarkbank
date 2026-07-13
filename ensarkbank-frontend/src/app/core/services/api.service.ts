@@ -94,8 +94,8 @@ export class ApiService {
   // Employee
   getEmployees(): Observable<EmployeeResponse[]> { return this.http.get<EmployeeResponse[]>(`${this.BASE}/employee/`); }
   getEmployeeById(id: number): Observable<EmployeeResponse> { return this.http.get<EmployeeResponse>(`${this.BASE}/employee/${id}`); }
-  createEmployee(data: EmployeeRequest): Observable<EmployeeResponse> { return this.http.post<EmployeeResponse>(`${this.BASE}/employee/`, data); }
-  updateEmployee(id: number, data: EmployeeRequest): Observable<EmployeeResponse> { return this.http.put<EmployeeResponse>(`${this.BASE}/employee/${id}`, data); }
+  createEmployee(formData: FormData): Observable<EmployeeResponse> { return this.http.post<EmployeeResponse>(`${this.BASE}/employee/`, formData); }
+  updateEmployee(id: number, formData: FormData): Observable<EmployeeResponse> { return this.http.put<EmployeeResponse>(`${this.BASE}/employee/${id}`, formData); }
   deleteEmployee(id: number): Observable<void> { return this.http.delete<void>(`${this.BASE}/employee/${id}`); }
 
   // Branch
@@ -109,8 +109,8 @@ export class ApiService {
   getCustomers(): Observable<CustomerResponse[]> { return this.http.get<CustomerResponse[]>(`${this.BASE}/customer/`); }
   getCustomerById(id: number): Observable<CustomerResponse> { return this.http.get<CustomerResponse>(`${this.BASE}/customer/${id}`); }
   getCustomerByEmail(email: string): Observable<CustomerResponse> { return this.http.get<CustomerResponse>(`${this.BASE}/customer/email/${email}`); }
-  createCustomer(data: CustomerRequest): Observable<CustomerResponse> { return this.http.post<CustomerResponse>(`${this.BASE}/customer/`, data); }
-  updateCustomer(id: number, data: Partial<CustomerRequest>): Observable<CustomerResponse> { return this.http.put<CustomerResponse>(`${this.BASE}/customer/${id}`, data); }
+  createCustomer(formData: FormData): Observable<CustomerResponse> { return this.http.post<CustomerResponse>(`${this.BASE}/customer/`, formData); }
+  updateCustomer(id: number, formData: FormData): Observable<CustomerResponse> { return this.http.put<CustomerResponse>(`${this.BASE}/customer/${id}`, formData); }
   getCustomerHistory(id: number): Observable<any> { return this.http.get(`${this.BASE}/customer/history/customer/${id}`); }
   updateKycStatus(id: number, status: string): Observable<CustomerResponse> { return this.http.put<CustomerResponse>(`${this.BASE}/customer/${id}/kyc-status`, null, { params: { status } }); }
   uploadKycDocuments(customerId: number, documents: FormData): Observable<CustomerResponse> { return this.http.patch<CustomerResponse>(`${this.BASE}/kyc/customer/${customerId}/upload`, documents); }

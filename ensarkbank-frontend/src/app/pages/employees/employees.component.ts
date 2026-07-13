@@ -32,6 +32,7 @@ export class EmployeesComponent implements OnInit {
   divisions = signal<any[]>([]);
   districts = signal<any[]>([]);
   policeStations = signal<any[]>([]);
+  selectedProfileFile = signal<File | null>(null);
 
   form = this.getEmptyForm();
 
@@ -116,6 +117,7 @@ export class EmployeesComponent implements OnInit {
   openAddForm(): void {
     this.form = this.getEmptyForm();
     this.editMode.set(false);
+    this.selectedProfileFile.set(null);
     this.showModal.set(true);
   }
 
@@ -180,7 +182,7 @@ export class EmployeesComponent implements OnInit {
 
     this.submitting.set(true);
 
-    const payload: EmployeeRequest = {
+    const dto: EmployeeRequest = {
       email: this.form.email,
       password: this.form.password || undefined,
       name: this.form.name,
@@ -193,10 +195,16 @@ export class EmployeesComponent implements OnInit {
       addresses: this.form.addresses.length > 0 ? this.form.addresses : []
     };
 
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
+    if (this.selectedProfileFile()) {
+      formData.append('profile', this.selectedProfileFile()!);
+    }
+
     if (this.editMode() && this.selectedEmployee()) {
-      this.api.updateEmployee(this.selectedEmployee()!.id, payload).subscribe({
+      this.api.updateEmployee(this.selectedEmployee()!.id, formData).subscribe({
         next: () => {
-          this.notify.success('Updated', `${payload.name} has been updated.`);
+          this.notify.success('Updated', `${dto.name} has been updated.`);
           this.loadData();
           this.closeModal();
           this.submitting.set(false);
@@ -207,9 +215,9 @@ export class EmployeesComponent implements OnInit {
         }
       });
     } else {
-      this.api.createEmployee(payload).subscribe({
+      this.api.createEmployee(formData).subscribe({
         next: () => {
-          this.notify.success('Created', `${payload.name} has been created.`);
+          this.notify.success('Created', `${dto.name} has been created.`);
           this.loadData();
           this.closeModal();
           this.submitting.set(false);
@@ -226,6 +234,7 @@ export class EmployeesComponent implements OnInit {
     this.showModal.set(false);
     this.editMode.set(false);
     this.selectedEmployee.set(null);
+    this.selectedProfileFile.set(null);
     this.form = this.getEmptyForm();
   }
 
@@ -241,6 +250,13 @@ export class EmployeesComponent implements OnInit {
 
   removeAddress(index: number): void {
     this.form.addresses.splice(index, 1);
+  }
+
+  onProfileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedProfileFile.set(input.files[0]);
+    }
   }
 
   onDesignationChange(): void {

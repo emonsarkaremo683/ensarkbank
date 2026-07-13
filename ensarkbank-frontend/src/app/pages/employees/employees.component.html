@@ -103,6 +103,10 @@
               <input type="password" class="form-input" [(ngModel)]="form.password" placeholder="Enter password" />
             </div>
           }
+          <div class="form-group">
+            <label class="form-label">Profile Photo</label>
+            <input type="file" class="form-input" accept="image/*" (change)="onProfileSelected($event)" />
+          </div>
         </div>
 
         <div class="section-divider">

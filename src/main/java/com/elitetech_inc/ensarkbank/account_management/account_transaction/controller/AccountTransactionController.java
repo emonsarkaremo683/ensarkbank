@@ -24,7 +24,7 @@ public class AccountTransactionController {
     private final AccountTransactionService accountTransactionService;
     private final CustomerSecurity customerSecurity;
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CASHIER') or (hasRole('CUSTOMER') and @customerSecurity.isOwner(#atr.senderId, authentication))")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CASHIER')")
     @PostMapping
     public ResponseEntity<AccountTransactionResponse> save(@RequestBody AccountTransactionRequest atr, Authentication auth){
         return new ResponseEntity<>(accountTransactionService.save(atr), HttpStatus.CREATED);
