@@ -10,4 +10,6 @@ public enum TransactionType {
     ATM_DEPOSIT,
     LOAN_DISBURSEMENT,
     LOAN_REPAYMENT,
+    CARD_PURCHASE,
+    CARD_REVERSAL,
 }

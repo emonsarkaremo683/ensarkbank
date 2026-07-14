@@ -7,6 +7,7 @@ import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.mapper.AccountHolderMapper;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
+import com.elitetech_inc.ensarkbank.account_management.hold_transaction.service.HoldTransactionService;
 import com.elitetech_inc.ensarkbank.account_management.nominee.entity.Nominee;
 import com.elitetech_inc.ensarkbank.account_management.nominee.repository.NomineeRepository;
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
@@ -16,12 +17,14 @@ import com.elitetech_inc.ensarkbank.accounting_system.transaction.service.Transa
 import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
+import com.elitetech_inc.ensarkbank.common.enums.HoldReason;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import com.elitetech_inc.ensarkbank.util.Validator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +38,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
@@ -47,6 +51,7 @@ public class AccountServiceImpl implements AccountService {
     private final BranchRepository branchRepository;
     private final TransactionService transactionService;
     private final TransactionMapper transactionMapper;
+    private final HoldTransactionService holdTransactionService;
 
     @Transactional
     @Override
@@ -115,7 +120,13 @@ public class AccountServiceImpl implements AccountService {
             return accountMapper.toAccountResponse(updated);
         }
 
-        // Create DEPOSIT transaction for initial deposit
+        // Check if there are any active card-related holds before releasing deposit hold
+        boolean hasCardHolds = holdTransactionService.hasActiveCardHolds(acc.getId());
+        if (hasCardHolds) {
+            log.warn("Account {} has active card holds, only releasing deposit hold", acc.getAccountNumber());
+        }
+
+        // Only release deposit-related holds (PENDING_APPROVAL), leave card holds untouched
         BigDecimal depositAmount = acc.getHoldBalance();
         if (depositAmount != null && depositAmount.compareTo(BigDecimal.ZERO) > 0) {
             Branch branch = acc.getBranch();
@@ -134,10 +145,11 @@ public class AccountServiceImpl implements AccountService {
             }
         }
 
-
-        acc.setAvailableBalance(depositAmount);
-        acc.setCurrentBalance(depositAmount);
-        acc.setHoldBalance(BigDecimal.ZERO);
+        // Recalculate holdBalance from active HoldTransaction records (preserves card holds)
+        BigDecimal activeHoldBalance = holdTransactionService.getActiveHoldBalance(acc.getId());
+        acc.setAvailableBalance(depositAmount != null ? depositAmount : BigDecimal.ZERO);
+        acc.setHoldBalance(activeHoldBalance);
+        acc.setCurrentBalance(acc.getAvailableBalance().add(activeHoldBalance));
         Account updated = accountRepository.save(acc);
         return accountMapper.toAccountResponse(updated);
     }

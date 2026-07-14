@@ -3,6 +3,9 @@ package com.elitetech_inc.ensarkbank.accounting_system.transaction.service;
 import java.math.BigDecimal;
 
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
+import com.elitetech_inc.ensarkbank.account_management.hold_transaction.entity.HoldTransaction;
+import com.elitetech_inc.ensarkbank.account_management.hold_transaction.service.HoldTransactionService;
+import com.elitetech_inc.ensarkbank.common.enums.HoldReason;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +21,7 @@ import com.elitetech_inc.ensarkbank.common.enums.EntryType;
 public class TransactionPostingService {
 
     private final AccountRepository accountRepository;
+    private final HoldTransactionService holdTransactionService;
 
 
     /*
@@ -292,32 +296,49 @@ public class TransactionPostingService {
 
     /*
      * =====================================================
-     * HOLD BALANCE
+     * HOLD BALANCE (legacy — scalar only, no HoldTransaction record)
      * =====================================================
-     * CardController Purchase / POS / Pending Transaction
-     * availableBalance ↓  holdBalance ↑  (currentBalance unchanged)
+     * Kept for backward-compatibility (e.g. account-creation deposit hold).
+     * Prefer the overloaded version below for card/POS auth holds.
      */
     public void holdAmount(Account account, BigDecimal amount) {
-
         account.setAvailableBalance(account.getAvailableBalance().subtract(amount));
         account.setHoldBalance(account.getHoldBalance().add(amount));
     }
 
     /*
      * =====================================================
-     * RELEASE HOLD BALANCE
+     * HOLD BALANCE (with HoldTransaction record)
      * =====================================================
-     * Reversal of auth / expired hold
-     * availableBalance ↑  holdBalance ↓
+     * Creates a tracked hold record and updates the scalar.
+     * Returns the created HoldTransaction for reference.
+     */
+    public HoldTransaction holdAmount(Account account, BigDecimal amount, HoldReason reason, int holdDurationMinutes, String merchantInfo) {
+        return holdTransactionService.createHold(account, amount, reason, holdDurationMinutes, null, merchantInfo);
+    }
+
+    /*
+     * =====================================================
+     * RELEASE HOLD BALANCE (legacy — scalar only)
+     * =====================================================
+     * Kept for backward-compatibility.
      */
     public void releaseHold(String acc, BigDecimal amount) {
-
         Account account = accountRepository.findAccountByAccountNumber(acc).orElseThrow(
                 ()-> new RuntimeException("Account not found")
         );
-
         account.setAvailableBalance(account.getAvailableBalance().add(amount));
         account.setHoldBalance(account.getHoldBalance().subtract(amount));
+    }
+
+    /*
+     * =====================================================
+     * RELEASE HOLD BALANCE (by HoldTransaction record)
+     * =====================================================
+     * Releases a specific tracked hold and updates the scalar.
+     */
+    public void releaseHold(HoldTransaction hold) {
+        holdTransactionService.releaseHold(hold);
     }
 
     /*
