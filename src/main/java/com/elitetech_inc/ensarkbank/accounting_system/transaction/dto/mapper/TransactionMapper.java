@@ -21,6 +21,7 @@ public class TransactionMapper {
         tr.setChargeAmount(t.getChargeAmount());
         tr.setVatAmount(t.getVatAmount());
         tr.setReferenceNo(t.getReferenceNo());
+        tr.setCreatedAt(t.getCreatedAt());
 
         return tr;
     }

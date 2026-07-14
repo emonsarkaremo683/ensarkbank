@@ -15,6 +15,7 @@ public interface CustomerService {
                               MultipartFile profile,
                               Map<DocumentType, MultipartFile> documents);
     List<CustomerResponse> getAll();
+    List<CustomerResponse> getCustomersByBranchIds(List<Long> branchIds);
     Optional<CustomerResponse> findById(Long id);
 
     CustomerResponse changeKycStatus(Long id, KYCStatus status);

@@ -50,6 +50,7 @@ public class SecurityConfig {
                         // ── Public endpoints (no token needed) ────────────
                         .requestMatchers(
                                 "/api/auth/**",
+                                "/uploads/**",
                                 "/api/division/all",
                                 "/api/division/{id}",
                                 "/api/district/all",
@@ -59,7 +60,7 @@ public class SecurityConfig {
                                 "/api/policestation/{id}",
                                 "/api/policestation/district/**"
                         ).permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter,

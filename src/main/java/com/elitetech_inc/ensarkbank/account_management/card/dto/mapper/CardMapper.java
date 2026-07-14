@@ -45,10 +45,8 @@ public class CardMapper {
         card.setPinHash(encoder.encode(cr.getPin()));
         card.setCardNumber(cardGenerator.cardGenerator(cr.getCardNetwork(), cr.getCardType(), account.getAccountNumber()));
         card.setExpiryDate(Date.from(LocalDate.now().plusYears(5).atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        card.setDailyLimit(cr.getDailyLimit());
-        card.setMonthlyLimit(cr.getMonthlyLimit());
-        card.setInternationalEnabled(false);
-        card.setOnlineTransactionEnabled(false);
+        card.setInternationalEnabled(cr.isInternationalEnabled());
+        card.setOnlineTransactionEnabled(cr.isOnlineTransactionEnabled());
 
         return card;
     }
@@ -73,6 +71,7 @@ public class CardMapper {
                 .dailyLimit(card.getDailyLimit())
                 .monthlyLimit(card.getMonthlyLimit())
                 .accountNumber(card.getAccount() != null ? card.getAccount().getAccountNumber() : null)
+                .createdAt(card.getCreatedAt() != null ? Date.from(card.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()) : null)
                 .build();
     }
 }

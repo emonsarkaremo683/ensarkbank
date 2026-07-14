@@ -29,6 +29,7 @@ public class EmployeeResponse {
     private String profile;
 
     private String branchName;
+    private Long branchId;
 
     private List<AddressResponse> addresses;
 }

@@ -72,8 +72,8 @@
               @for (column of columns; track column.key) {
                 <td [attr.data-label]="column.label">
                   @if (column.type === 'status') {
-                    <span class="status-badge" [class]="getStatusClass(row[column.key])">
-                      {{ row[column.key] || '-' }}
+                    <span class="status-badge" [class]="getStatusClass(resolveValue(row, column.key))">
+                      {{ resolveValue(row, column.key) || '-' }}
                     </span>
                   } @else if (column.type === 'badge') {
                     <span class="cell-badge">{{ getCellValue(row, column) }}</span>

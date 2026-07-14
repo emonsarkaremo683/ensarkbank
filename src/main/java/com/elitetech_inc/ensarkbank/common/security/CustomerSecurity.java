@@ -4,12 +4,13 @@ import com.elitetech_inc.ensarkbank.account_management.account.repository.Accoun
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.repository.AccountTransactionRepository;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.repository.TransactionOtpRepository;
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepository;
-import com.elitetech_inc.ensarkbank.account_management.loan.repository.LoanRepaymentRepository;
 import com.elitetech_inc.ensarkbank.account_management.loan.repository.LoanRepository;
+import com.elitetech_inc.ensarkbank.account_management.loan.repository.LoanRepaymentRepository;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.repository.BeneficiaryRepository;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @Component("customerSecurity")
 @RequiredArgsConstructor
+@Slf4j
 public class CustomerSecurity {
 
     private final CustomerRepository customerRepository;
@@ -31,10 +33,13 @@ public class CustomerSecurity {
 
     private Optional<Long> resolveCustomerId(Authentication auth) {
         if (auth == null || !(auth.getPrincipal() instanceof UserDetails)) {
+            log.warn("resolveCustomerId: auth is null or principal is not a UserDetails -> returning empty");
             return Optional.empty();
         }
         String email = ((UserDetails) auth.getPrincipal()).getUsername();
-        return customerRepository.findByUserEmail(email).map(Customer::getId);
+        Optional<Long> customerId = customerRepository.findByUserEmail(email).map(Customer::getId);
+        log.info("resolveCustomerId: email={}, resolvedCustomerId={}", email, customerId.orElse(null));
+        return customerId;
     }
 
     public Long getAuthenticatedCustomerId(Authentication auth) {
@@ -43,8 +48,13 @@ public class CustomerSecurity {
 
     public boolean isOwner(Long accountId, Authentication auth) {
         Optional<Long> customerId = resolveCustomerId(auth);
-        if (customerId.isEmpty() || accountId == null) return false;
-        return accountRepository.existsByAccountIdAndCustomerId(accountId, customerId.get());
+        if (customerId.isEmpty() || accountId == null) {
+            log.warn("isOwner: DENIED (customerIdEmpty={}, accountId={})", customerId.isEmpty(), accountId);
+            return false;
+        }
+        boolean owns = accountRepository.existsByAccountIdAndCustomerId(accountId, customerId.get());
+        log.info("isOwner: accountId={}, customerId={}, owns={}", accountId, customerId.get(), owns);
+        return owns;
     }
 
     public boolean isAccountNumberOwner(String accountNumber, Authentication auth) {

@@ -9,7 +9,15 @@ import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.mapper
 import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
 import com.elitetech_inc.ensarkbank.account_management.nominee.entity.Nominee;
 import com.elitetech_inc.ensarkbank.account_management.nominee.repository.NomineeRepository;
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.TransactionMapper;
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.request.TransactionRequest;
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.entity.Transaction;
+import com.elitetech_inc.ensarkbank.accounting_system.transaction.service.TransactionService;
+import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
+import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
+import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
+import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import com.elitetech_inc.ensarkbank.util.Validator;
@@ -36,6 +44,9 @@ public class AccountServiceImpl implements AccountService {
     private final NomineeRepository nomineeRepository;
     private final RequestValidator requestValidator;
     private final Validator validator;
+    private final BranchRepository branchRepository;
+    private final TransactionService transactionService;
+    private final TransactionMapper transactionMapper;
 
     @Transactional
     @Override
@@ -98,6 +109,34 @@ public class AccountServiceImpl implements AccountService {
                 ()-> new RuntimeException("Account not found")
         );
         acc.setAccountStatus(status);
+
+        if (status != AccountStatus.ACTIVE){
+            Account updated = accountRepository.save(acc);
+            return accountMapper.toAccountResponse(updated);
+        }
+
+        // Create DEPOSIT transaction for initial deposit
+        BigDecimal depositAmount = acc.getHoldBalance();
+        if (depositAmount != null && depositAmount.compareTo(BigDecimal.ZERO) > 0) {
+            Branch branch = acc.getBranch();
+            if (branch != null) {
+                String vaultAccountNumber = "br-" + branch.getRoutingNumber();
+
+                TransactionRequest depositRequest = new TransactionRequest();
+                depositRequest.setAmount(depositAmount);
+                depositRequest.setRemarks("Initial deposit for account " + acc.getAccountNumber());
+
+                Transaction depositTransaction = transactionMapper.toTransaction(depositRequest);
+                depositTransaction.setTransactionType(TransactionType.DEPOSIT);
+                depositTransaction.setChannel(TransactionChannel.BRANCH);
+
+                transactionService.createTransaction(depositRequest, depositTransaction, vaultAccountNumber, acc.getAccountNumber());
+            }
+        }
+
+
+        acc.setAvailableBalance(depositAmount);
+        acc.setCurrentBalance(depositAmount);
         acc.setHoldBalance(BigDecimal.ZERO);
         Account updated = accountRepository.save(acc);
         return accountMapper.toAccountResponse(updated);
@@ -109,8 +148,36 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Optional<AccountResponse> getAccountsByBranchId(Long branchId) {
-        return accountRepository.findAccountByBranchId(branchId).map(accountMapper::toAccountResponse);
+    public List<AccountResponse> getAccountsByBranchId(Long branchId) {
+        return accountRepository.findAllByBranchId(branchId)
+                .stream()
+                .map(accountMapper::toAccountResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AccountResponse> getAccountsByBranchIds(List<Long> branchIds) {
+        return branchIds.stream()
+                .flatMap(branchId -> accountRepository.findAllByBranchId(branchId).stream())
+                .distinct()
+                .map(accountMapper::toAccountResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Long> resolveBranchAndChildIds(Long branchId) {
+        List<Long> result = new java.util.ArrayList<>();
+        result.add(branchId);
+        collectChildBranchIds(branchId, result);
+        return result;
+    }
+
+    private void collectChildBranchIds(Long parentId, List<Long> result) {
+        List<Branch> children = branchRepository.findByParentBranch_Id(parentId);
+        for (Branch child : children) {
+            result.add(child.getId());
+            collectChildBranchIds(child.getId(), result);
+        }
     }
 
     @Override

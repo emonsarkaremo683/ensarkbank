@@ -10,6 +10,7 @@ public class CardRequest {
     private CardNetwork cardNetwork;
     private CardType cardType;
     private String pin;
-    private double dailyLimit;
-    private double monthlyLimit;
+    private boolean isInternationalEnabled;
+    private boolean isOnlineTransactionEnabled;
+
 }

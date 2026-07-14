@@ -45,6 +45,7 @@ public class EmployeeMapper {
                 .dob(emp.getDob())
                 .profile(emp.getProfilePhoto())
                 .branchName(emp.getBranch().getName())
+                .branchId(emp.getBranch().getId())
                 .addresses(addresses)
                 .build();
     }
@@ -136,6 +137,7 @@ public class EmployeeMapper {
 
         AddressResponse response = new AddressResponse();
 
+        response.setId(address.getId());
         response.setHoldingNo(address.getHoldingNo());
         response.setArea(address.getArea());
         response.setPostalCode(address.getPostalCode());

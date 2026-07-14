@@ -186,7 +186,7 @@
             <button class="btn btn-primary" (click)="confirmLoanAction(selectedLoan()!, 'disburse')">Disburse</button>
           }
           @if (selectedLoan()!.status === 'ACTIVE' || selectedLoan()!.status === 'DISBURSED') {
-            <button class="btn btn-primary" (click)="openRepay(selectedLoan()!); closeDetail()">Make Repayment</button>
+            <button class="btn btn-primary" (click)="openRepay(selectedLoan()!); closeDetail()">Pay EMI</button>
           }
         </div>
       </div>
@@ -195,33 +195,75 @@
 
   @if (showRepayModal() && selectedLoan()) {
     <div class="modal-overlay" (click)="closeRepay()">
-      <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>Loan Repayment</h2>
+          <h2>EMI Payment - Loan #{{ selectedLoan()!.loanId }}</h2>
           <button class="modal-close" (click)="closeRepay()">&times;</button>
         </div>
         <div class="modal-body">
-          <p class="modal-info">Loan #{{ selectedLoan()!.loanId }} - {{ selectedLoan()!.accountNumber }}</p>
-          <div class="repay-info">
+          <div class="repay-summary">
+            <div class="repay-row">
+              <span>Loan ID</span>
+              <span class="value">#{{ selectedLoan()!.loanId }}</span>
+            </div>
+            <div class="repay-row">
+              <span>Account</span>
+              <span class="value">{{ selectedLoan()!.accountNumber }}</span>
+            </div>
             <div class="repay-row">
               <span>Monthly EMI</span>
               <span class="emi">{{ formatCurrency(selectedLoan()!.emiAmount) }}</span>
             </div>
+            <div class="repay-row">
+              <span>Outstanding Balance</span>
+              <span class="value">{{ formatCurrency(selectedLoan()!.outstandingBalance || selectedLoan()!.principalAmount) }}</span>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Payment Amount</label>
-            <input type="number" [(ngModel)]="repayAmount" class="form-control" [min]="1" step="0.01">
-          </div>
+
+          <h3 class="schedule-title">Repayment Schedule</h3>
+          @if (repayments().length > 0) {
+            <div class="installment-table">
+              <div class="installment-header">
+                <span>#</span>
+                <span>Due Date</span>
+                <span>EMI</span>
+                <span>Principal</span>
+                <span>Interest</span>
+                <span>Status</span>
+                <span>Action</span>
+              </div>
+              @for (r of repayments(); track r.id) {
+                <div class="installment-row" [class.paid]="r.status === 'PAID' || r.status === 'LATE'" [class.overdue]="r.status === 'LATE'">
+                  <span>{{ r.installmentNumber }}</span>
+                  <span>{{ r.dueDate | date:'mediumDate' }}</span>
+                  <span>{{ formatCurrency(r.emiAmount) }}</span>
+                  <span>{{ formatCurrency(r.principalComponent) }}</span>
+                  <span>{{ formatCurrency(r.interestComponent) }}</span>
+                  <span><span class="badge" [class]="getRepaymentStatusClass(r.status)">{{ r.status }}</span></span>
+                  <span>
+                    @if (r.status === 'PENDING') {
+                      <button class="btn btn-primary btn-sm" (click)="payRepayment(r)" [disabled]="submitting()">
+                        @if (submitting()) {
+                          <span class="spinner"></span>
+                        } @else {
+                          Pay
+                        }
+                      </button>
+                    } @else if (r.transactionRef) {
+                      <span class="ref-text">{{ r.transactionRef }}</span>
+                    }
+                  </span>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-schedule">
+              <p>Loading repayment schedule...</p>
+            </div>
+          }
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeRepay()">Cancel</button>
-          <button class="btn btn-primary" (click)="submitRepay()" [disabled]="submitting() || repayAmount <= 0">
-            @if (submitting()) {
-              <span class="spinner"></span> Processing...
-            } @else {
-              Pay {{ formatCurrency(repayAmount) }}
-            }
-          </button>
+          <button class="btn btn-secondary" (click)="closeRepay()">Close</button>
         </div>
       </div>
     </div>

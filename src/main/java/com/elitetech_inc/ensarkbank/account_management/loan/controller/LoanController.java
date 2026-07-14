@@ -59,10 +59,16 @@ public class LoanController {
         return ResponseEntity.ok(loanService.reject(id, reason));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'LOAN_OFFICER', 'BRANCH_MANAGER', 'ADMIN', 'ACCOUNTANT')")
-    @PostMapping("{id}/disburse")
-    public ResponseEntity<LoanApplicationResponse> disburse(@PathVariable Long id) {
-        return ResponseEntity.ok(loanService.disburse(id));
+//    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'LOAN_OFFICER', 'BRANCH_MANAGER', 'ADMIN', 'ACCOUNTANT')")
+//    @PostMapping("{id}/disburse")
+//    public ResponseEntity<LoanApplicationResponse> disburse(@PathVariable Long id) {
+//        return ResponseEntity.ok(loanService.disburse(id));
+//    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'LOAN_OFFICER', 'BRANCH_MANAGER', 'ADMIN', 'CASHIER') or (hasRole('CUSTOMER') and @customerSecurity.isLoanOwner(#id, authentication))")
+    @GetMapping("{id:\\d+}/repayments")
+    public ResponseEntity<List<LoanRepaymentResponse>> getRepayments(@PathVariable Long id) {
+        return ResponseEntity.ok(loanService.getRepaymentsByLoan(id));
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'LOAN_OFFICER', 'BRANCH_MANAGER', 'ADMIN', 'CASHIER') or (hasRole('CUSTOMER') and @customerSecurity.isLoanRepaymentOwner(#repaymentId, authentication))")

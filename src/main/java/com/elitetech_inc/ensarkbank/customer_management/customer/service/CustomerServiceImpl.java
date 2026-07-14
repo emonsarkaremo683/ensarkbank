@@ -142,6 +142,14 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional
+    public List<CustomerResponse> getCustomersByBranchIds(List<Long> branchIds) {
+        return customerRepository.findCustomersByBranchIds(branchIds).stream()
+                .map(customerMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
     public Optional<CustomerResponse> findById(Long id) {
         return customerRepository.findById(id).map(customerMapper::toResponse);
     }

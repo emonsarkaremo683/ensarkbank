@@ -326,7 +326,9 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="closeDetail()">Close</button>
-          <button class="btn btn-outline" (click)="openStatusModal(selectedAccount()!); closeDetail()">Update Status</button>
+          @if (!auth.isCustomer()) {
+            <button class="btn btn-outline" (click)="openStatusModal(selectedAccount()!); closeDetail()">Update Status</button>
+          }
         </div>
       </div>
     </div>

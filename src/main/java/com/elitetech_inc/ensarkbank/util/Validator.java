@@ -1,15 +1,21 @@
 package com.elitetech_inc.ensarkbank.util;
 
+import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
+import com.elitetech_inc.ensarkbank.account_management.card.dto.request.CardRequest;
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepository;
 import com.elitetech_inc.ensarkbank.common.enums.AccountType;
+import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
 import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
 import com.elitetech_inc.ensarkbank.common.exception.BadRequestException;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
+import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.KycDocuments;
+import com.elitetech_inc.ensarkbank.customer_management.kyc.repository.KycDocumentsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -19,6 +25,7 @@ public class Validator {
     private final CustomerRepository customerRepository;
     private final AccountRepository accountRepository;
     private final CardRepository cardRepository;
+    private final KycDocumentsRepository kycDocumentsRepository;
 
 
     public void checkKycStatus(Long customerId) {
@@ -79,6 +86,20 @@ public class Validator {
         accountRepository.findAccountByAccountNumber(accountNumber)
                 .filter(acc -> !VAULT_TYPES.contains(acc.getAccountType()))
                 .orElseThrow(()-> new RuntimeException((" Invalid Account")));
+    }
+
+    public void checkPassportAvailable(Long id){
+
+        List<KycDocuments> list = kycDocumentsRepository.findKycDocumentsByCustomerId(id);
+
+        boolean hasPassport = list.stream()
+                .anyMatch(kd -> kd.getDoc_type() == DocumentType.PASSPORT);
+
+        if (!hasPassport) {
+            throw new RuntimeException("Need passport");
+        }
+
+
     }
 
 

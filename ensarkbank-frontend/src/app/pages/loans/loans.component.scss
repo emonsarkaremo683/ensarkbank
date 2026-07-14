@@ -331,10 +331,126 @@
     color: #94a3b8;
   }
 
+  .value {
+    color: #e2e8f0;
+    font-weight: 500;
+  }
+
   .emi {
     color: #c9a84c;
     font-weight: 700;
     font-size: 18px;
+  }
+}
+
+.repay-summary {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.schedule-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #c9a84c;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.installment-table {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.installment-header {
+  display: grid;
+  grid-template-columns: 50px 1fr 1fr 1fr 1fr 100px 90px;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  span {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.installment-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 1fr 1fr 1fr 100px 90px;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  align-items: center;
+  transition: background 0.2s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  &.paid {
+    opacity: 0.6;
+  }
+
+  &.overdue {
+    background: rgba(239, 68, 68, 0.03);
+  }
+
+  span {
+    font-size: 13px;
+    color: #e2e8f0;
+  }
+}
+
+.ref-text {
+  font-size: 11px !important;
+  color: #64748b !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 80px;
+  display: inline-block;
+}
+
+.empty-schedule {
+  text-align: center;
+  padding: 32px;
+  color: #64748b;
+}
+
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .installment-header {
+    display: none;
+  }
+
+  .installment-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 12px 16px;
+
+    span:nth-child(1) {
+      font-weight: 600;
+      color: #c9a84c;
+    }
   }
 }
 

@@ -89,7 +89,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
             throw new IllegalArgumentException("Account transaction request is required");
         }
 
-        Account sender = accountRepository.findById(atr.getSenderId())
+        Account sender = accountRepository.findById(atr.getSenderAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
 
         validator.checkAccountStatus(sender.getAccountNumber());
@@ -102,8 +102,8 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
             }
         }
 
-        if(atr.getReceiverId() != null){
-            receiver = accountRepository.findById(atr.getReceiverId()).orElseThrow(() -> new IllegalArgumentException("Receiver account not found"));
+        if(atr.getReceiverAccountId() != null){
+            receiver = accountRepository.findById(atr.getReceiverAccountId()).orElseThrow(() -> new IllegalArgumentException("Receiver account not found"));
         }
 
         Transaction transaction = new Transaction();
@@ -126,6 +126,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
         accountTransaction.setReceiverAccountNumber(receiver != null ? receiver.getAccountNumber() : atr.getReceiverAccountNumber());
         accountTransaction.setReceiverName(receiver != null ? receiver.getHolders().getFirst().getCustomer().getName() :  atr.getReceiverName());
         accountTransaction.setBankName(receiver != null ? "Ensark Bank" :atr.getBankName());
+        accountTransaction.setRoutingNumber(receiver != null ? receiver.getBranch().getRoutingNumber() :atr.getRoutingNumber());
 
         JoinHelper jh = new JoinHelper();
         jh.setAccountTransaction(accountTransaction);
@@ -188,6 +189,15 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
 
     @Override
     @Transactional(readOnly = true)
+    public List<AccountTransactionResponse> findByBranchIds(List<Long> branchIds) {
+        return accountTransactionRepository.findByBranchIds(branchIds)
+                .stream()
+                .map(at -> accountTransactionMapper.toResponse(at, null))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<AccountTransactionResponse> findByAccountId(Long accountId) {
         if (accountId == null) {
             return List.of();
@@ -208,7 +218,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
             throw new IllegalArgumentException("Account transaction request is required");
         }
 
-        Account sender = accountRepository.findById(atr.getSenderId())
+        Account sender = accountRepository.findById(atr.getSenderAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
 
         validator.checkAccountStatus(sender.getAccountNumber());

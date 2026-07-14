@@ -39,7 +39,7 @@ export class DataTableComponent implements OnChanges {
     if (query) {
       result = result.filter(row =>
         this.columns.some(col => {
-          const value = row[col.key];
+          const value = this.resolveValue(row, col.key);
           return value !== null && value !== undefined && String(value).toLowerCase().includes(query);
         })
       );
@@ -49,8 +49,8 @@ export class DataTableComponent implements OnChanges {
     if (key) {
       const dir = this.sortDirection() === 'asc' ? 1 : -1;
       result.sort((a, b) => {
-        const aVal = a[key];
-        const bVal = b[key];
+        const aVal = this.resolveValue(a, key);
+        const bVal = this.resolveValue(b, key);
         if (aVal == null) return 1;
         if (bVal == null) return -1;
         if (typeof aVal === 'string') return aVal.localeCompare(bVal) * dir;
@@ -128,8 +128,12 @@ export class DataTableComponent implements OnChanges {
     this.action.emit({ type, row });
   }
 
+  resolveValue(row: any, key: string): any {
+    return key.split('.').reduce((obj, k) => obj?.[k], row);
+  }
+
   getCellValue(row: any, column: TableColumn): string {
-    const value = row[column.key];
+    const value = this.resolveValue(row, column.key);
     if (value === null || value === undefined) return '-';
 
     switch (column.type) {

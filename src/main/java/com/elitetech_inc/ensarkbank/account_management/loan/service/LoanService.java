@@ -10,9 +10,9 @@ public interface LoanService {
     LoanApplicationResponse applyLoan(LoanApplicationRequest loanApplicationRequest);
     LoanApplicationResponse approve(Long loanId);
     LoanApplicationResponse reject(Long loanId, String reason);
-    LoanApplicationResponse disburse(Long loanId);
     LoanApplicationResponse getLoanById(Long loanId);
     List<LoanApplicationResponse> getLoansByAccount(Long accountId);
     List<LoanApplicationResponse> getLoans();
     LoanRepaymentResponse payInstallment(Long loanRepaymentId);
+    List<LoanRepaymentResponse> getRepaymentsByLoan(Long loanId);
 }

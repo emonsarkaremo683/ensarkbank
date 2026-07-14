@@ -73,8 +73,10 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalArgumentException("Transaction amount must be positive");
         }
 
-        Account receiverAccount = resolveReceiver(receiver);
-
+        Account receiverAccount = null;
+        if(accountRepository.existsByAccountNumber(receiver)){
+            receiverAccount = resolveReceiver(receiver);
+        }
 
         Transaction transaction = t != null ? t : new Transaction();
         transaction.setAmount(tr.getAmount());

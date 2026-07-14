@@ -139,11 +139,7 @@ public class RequestValidator {
         if (req.getPin() != null && req.getPin().length() != 4) {
             throw new IllegalArgumentException("Card PIN must be exactly 4 digits");
         }
-        ValidationUtils.positiveOrZero(req.getDailyLimit(), "Daily limit");
-        ValidationUtils.positiveOrZero(req.getMonthlyLimit(), "Monthly limit");
-        if (req.getMonthlyLimit() < req.getDailyLimit()) {
-            throw new IllegalArgumentException("Monthly limit cannot be less than daily limit");
-        }
+
     }
 
     /* --------------------------- Transaction ---------------------------- */
@@ -162,23 +158,24 @@ public class RequestValidator {
         validateTransactionRequest(req.getRequest());
 
         boolean hasReceiverAccount = !ValidationUtils.isBlank(req.getReceiverAccountNumber());
-        boolean hasReceiverId = req.getReceiverId() != null;
+        boolean hasReceiverId = req.getReceiverAccountId() != null;
         boolean hasBeneficiary = req.getBeneficiaryId() != null;
+        boolean isExternalTransfer = !ValidationUtils.isBlank(req.getBankName());
 
         if (!hasReceiverAccount && !hasReceiverId && !hasBeneficiary) {
             throw new IllegalArgumentException(
-                    "A receiver must be specified (receiverAccountNumber, receiverId or beneficiaryId)");
+                    "A receiver must be specified (receiverAccountNumber, receiverAccountId or beneficiaryId)");
         }
-        if (hasReceiverAccount &&
+        if (hasReceiverAccount && !isExternalTransfer &&
                 !accountRepository.existsByAccountNumber(req.getReceiverAccountNumber())) {
             throw new IllegalArgumentException("Receiver account not found: " + req.getReceiverAccountNumber());
         }
-        if (req.getSenderId() != null &&
-                !customerRepository.existsById(req.getSenderId())) {
-            throw new IllegalArgumentException("Sender not found: " + req.getSenderId());
+        if (req.getSenderAccountId() != null &&
+                !accountRepository.existsById(req.getSenderAccountId())) {
+            throw new IllegalArgumentException("Sender account not found: " + req.getSenderAccountId());
         }
-        if (hasReceiverId && !customerRepository.existsById(req.getReceiverId())) {
-            throw new IllegalArgumentException("Receiver customer not found: " + req.getReceiverId());
+        if (hasReceiverId && !accountRepository.existsById(req.getReceiverAccountId())) {
+            throw new IllegalArgumentException("Receiver account not found: " + req.getReceiverAccountId());
         }
         if (hasBeneficiary && !beneficiaryRepository.existsById(req.getBeneficiaryId())) {
             throw new IllegalArgumentException("Beneficiary not found: " + req.getBeneficiaryId());

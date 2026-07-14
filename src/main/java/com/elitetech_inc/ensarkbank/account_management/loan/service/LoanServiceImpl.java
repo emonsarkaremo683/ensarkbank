@@ -87,13 +87,8 @@ public class LoanServiceImpl implements LoanService{
         requireStatus(loan, LoanStatus.PENDING);
         loan.setStatus(LoanStatus.APPROVED);
         loan.setApprovalDate(LocalDate.now());
-
-        Account account = accountRepository.findById(loan.getAccount().getId()).orElseThrow(
-                () -> new IllegalArgumentException("Account does not exist")
-        );
-        account.setAvailableBalance(account.getAvailableBalance().add(loan.getPrincipalAmount().setScale(SCALE, RM)));
-        accountRepository.save(account);
-        return loanMapper.toResponse(loanRepository.save(loan));
+        loanRepository.save(loan);
+        return disburse(loanId);
     }
 
     @Override
@@ -105,15 +100,15 @@ public class LoanServiceImpl implements LoanService{
         return loanMapper.toResponse(loanRepository.save(loan));
     }
 
-    @Override
-    public LoanApplicationResponse disburse(Long loanId) {
+
+    private LoanApplicationResponse disburse(Long loanId) {
         Loan loan = getLoanOrThrow(loanId);
         requireStatus(loan, LoanStatus.APPROVED);
 
         Account loanControlAccount = getAccountOrThrow(loan);
 
         TransactionRequest request = new TransactionRequest();
-        request.setAmount(loan.getEmiAmount().setScale(SCALE, RM));
+        request.setAmount(loan.getPrincipalAmount().setScale(SCALE, RM));
         request.setRemarks("Loan disbursement - Loan #" + loan.getId());
 
 
@@ -229,6 +224,32 @@ public class LoanServiceImpl implements LoanService{
         dto.setPaidDate(repayment.getPaidDate());
         dto.setTransactionRef(repayment.getTransactionRef());
         return dto;
+    }
+
+
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<LoanRepaymentResponse> getRepaymentsByLoan(Long loanId) {
+        Loan loan = getLoanOrThrow(loanId);
+        return repaymentRepository.findByLoanIdOrderByInstallmentNumberAsc(loan.getId())
+                .stream()
+                .map(r -> {
+                    LoanRepaymentResponse dto = new LoanRepaymentResponse();
+                    dto.setId(r.getId());
+                    dto.setLoanId(loan.getId());
+                    dto.setInstallmentNumber(r.getInstallmentNumber());
+                    dto.setDueDate(r.getDueDate());
+                    dto.setPrincipalComponent(r.getPrincipalComponent());
+                    dto.setInterestComponent(r.getInterestComponent());
+                    dto.setEmiAmount(r.getEmiAmount());
+                    dto.setRemainingBalanceAfter(r.getRemainingBalanceAfter());
+                    dto.setStatus(r.getStatus());
+                    dto.setPaidDate(r.getPaidDate());
+                    dto.setTransactionRef(r.getTransactionRef());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
 

@@ -10,11 +10,12 @@ import java.util.Optional;
 
 public interface CardService {
 
-    CardResponse createCard(CardRequest cr);
+    CardResponse createCard(CardRequest cr, Long id);
     Optional<CardResponse> findCardByAccountId(Long accountId);
     List<CardResponse> getAll();
     Optional<CardResponse> findCardsByCustomerId(Long customerId);
-    CardResponse updateCardStatus(Long cardId, CardStatus cr);
+    CardResponse updateCardStatus(Long cardId, CardStatus cr, double dailyLimit, double monthlyLimit);
+
     CardResponse updateCardType(Long cardId, CardType cr);
     CardResponse updateCardPin(Long cardId, String pin);
     CardResponse enableInternationalTransaction(Long cardId, boolean isInternationalEnabled);

@@ -1,246 +1,600 @@
-<div class="page-container">
-  <div class="page-header">
-    <div class="header-left">
-      <h1 class="page-title">Cards Management</h1>
-      <p class="page-subtitle">Issue, manage, and monitor bank cards</p>
+<div class="cards-page">
+  <!-- HEADER -->
+  <div class="cp-header">
+    <div class="cp-header__text">
+      <h1 class="cp-title">{{ auth.isCustomer() ? 'My Cards' : 'Cards Management' }}</h1>
+      <p class="cp-sub">{{ auth.isCustomer() ? 'View and manage your bank cards' : 'Issue, monitor, and manage bank cards' }}</p>
     </div>
-    <button class="btn btn-primary" (click)="openIssue()">
-      <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
-      Issue New Card
+    <button class="btn-gold" (click)="openIssue()">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+      {{ auth.isCustomer() ? 'Apply for Card' : 'Issue New Card' }}
     </button>
   </div>
 
-  <div class="stats-grid">
-    <app-stats-card title="Total Cards" [value]="totalCards()" icon="&#128179;" color="#c9a84c"></app-stats-card>
-    <app-stats-card title="Active Cards" [value]="activeCards()" icon="&#9989;" color="#22c55e"></app-stats-card>
-    <app-stats-card title="Blocked Cards" [value]="blockedCards()" icon="&#128683;" color="#ef4444"></app-stats-card>
-    <app-stats-card title="Debit Cards" [value]="debitCards()" icon="&#128176;" color="#3b82f6"></app-stats-card>
-  </div>
-
-  <div class="cards-visual-grid">
-    @for (card of cards(); track card.cardId) {
-      <div class="card-visual" [class]="getCardNetworkClass(card.cardNetwork)" (click)="viewDetail(card)">
-        <div class="card-top">
-          <span class="card-type-label">{{ card.cardType }}</span>
-          <span class="card-network-label">{{ card.cardNetwork }}</span>
-        </div>
-        <div class="card-chip">
-          <div class="chip-pattern"></div>
-        </div>
-        <div class="card-number">{{ maskCardNumber(card.cardNumber) }}</div>
-        <div class="card-bottom">
-          <div class="card-holder">
-            <span class="label">Card Holder</span>
-            <span class="name">{{ card.cardHolderName }}</span>
-          </div>
-          <div class="card-expiry">
-            <span class="label">Expires</span>
-            <span class="date">{{ card.expiryDate }}</span>
-          </div>
-          <div class="card-status-badge">
-            <span class="badge" [class]="getStatusClass(card.status)">{{ card.status }}</span>
-          </div>
-        </div>
-        <div class="card-actions-overlay">
-          @if (card.status === 'ACTIVE') {
-            <button class="card-action-btn danger" (click)="confirmStatusChange(card, 'BLOCK'); $event.stopPropagation()">Block</button>
-          }
-          @if (card.status === 'BLOCKED') {
-            <button class="card-action-btn success" (click)="confirmStatusChange(card, 'UNBLOCK'); $event.stopPropagation()">Unblock</button>
-          }
-          <button class="card-action-btn" (click)="openPinChange(card); $event.stopPropagation()">Change PIN</button>
-        </div>
+  <!-- STATS ROW -->
+  <div class="cp-stats">
+    <div class="stat-chip">
+      <span class="stat-chip__num">{{ totalCards() }}</span>
+      <span class="stat-chip__label">Total</span>
+    </div>
+    <div class="stat-chip stat-chip--active">
+      <span class="stat-chip__num">{{ activeCards() }}</span>
+      <span class="stat-chip__label">Active</span>
+    </div>
+    <div class="stat-chip stat-chip--blocked">
+      <span class="stat-chip__num">{{ blockedCards() }}</span>
+      <span class="stat-chip__label">Blocked</span>
+    </div>
+    @if (auth.isCustomer()) {
+      <div class="stat-chip stat-chip--pending">
+        <span class="stat-chip__num">{{ pendingCards() }}</span>
+        <span class="stat-chip__label">Pending</span>
+      </div>
+    } @else {
+      <div class="stat-chip stat-chip--debit">
+        <span class="stat-chip__num">{{ debitCards() }}</span>
+        <span class="stat-chip__label">Debit</span>
       </div>
     }
   </div>
 
-  @if (cards().length === 0 && !loading()) {
-    <div class="empty-state">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64">
-        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-      </svg>
-      <p>No cards found</p>
-    </div>
-  }
-
+  <!-- CARDS LIST -->
   @if (loading()) {
     <app-loading message="Loading cards..."></app-loading>
-  }
-
-  @if (showModal()) {
-    <div class="modal-overlay" (click)="closeModal()">
-      <div class="modal-container" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Issue New Card</h2>
-          <button class="modal-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label>Select Account *</label>
-              <select [(ngModel)]="form.accountId" class="form-control">
-                <option [value]="0">Select Account</option>
-                @for (acc of accounts(); track acc.id) {
-                  <option [value]="acc.id">{{ acc.accountNumber }} - {{ acc.accountType }}</option>
-                }
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Card Type *</label>
-              <select [(ngModel)]="form.cardType" class="form-control">
-                <option value="">Select Type</option>
-                @for (type of cardTypes; track type) {
-                  <option [value]="type">{{ type }}</option>
-                }
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Card Network *</label>
-              <select [(ngModel)]="form.network" class="form-control">
-                <option value="">Select Network</option>
-                @for (net of cardNetworks; track net) {
-                  <option [value]="net">{{ net }}</option>
-                }
-              </select>
-            </div>
-            <div class="form-group">
-              <label>PIN *</label>
-              <input type="password" [(ngModel)]="form.pin" class="form-control" placeholder="Enter PIN" maxlength="6">
-            </div>
-            <div class="form-group">
-              <label>Confirm PIN *</label>
-              <input type="password" [(ngModel)]="form.confirmPin" class="form-control" placeholder="Confirm PIN" maxlength="6">
-            </div>
-            <div class="form-group">
-              <label>Daily Limit</label>
-              <input type="number" [(ngModel)]="form.dailyLimit" class="form-control" min="0">
-            </div>
-            <div class="form-group">
-              <label>Monthly Limit</label>
-              <input type="number" [(ngModel)]="form.monthlyLimit" class="form-control" min="0">
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-          <button class="btn btn-primary" (click)="submitCard()" [disabled]="submitting()">
-            @if (submitting()) {
-              <span class="spinner"></span> Issuing...
-            } @else {
-              Issue Card
-            }
-          </button>
-        </div>
+  } @else if (cards().length === 0) {
+    <div class="cp-empty">
+      <div class="cp-empty__icon">
+        <svg viewBox="0 0 48 48" fill="none" width="64" height="64">
+          <rect x="4" y="10" width="40" height="28" rx="4" stroke="#475569" stroke-width="2" fill="none"/>
+          <line x1="4" y1="20" x2="44" y2="20" stroke="#475569" stroke-width="2"/>
+          <rect x="8" y="28" width="12" height="3" rx="1" fill="#334155"/>
+        </svg>
       </div>
+      <h3>No cards yet</h3>
+      <p>Apply for a new card to get started.</p>
     </div>
-  }
+  } @else if (auth.isCustomer()) {
+    <div class="cp-grid">
+      @for (card of cards(); track card.cardId) {
+        <div class="card-slot">
+          <!-- CARD VISUAL -->
+          <div class="card-visual" [class.card-visual--flipped]="isFlipped(card.cardId)" [class.card-visual--disabled]="isCardDisabled(card.status)" (click)="toggleFlip(card.cardId, $event)">
+            <!-- FRONT -->
+            <div class="cv-face cv-front" [attr.data-network]="card.cardNetwork">
+              <div class="cv-noise"></div>
 
-  @if (showDetailModal() && selectedCard()) {
-    <div class="modal-overlay" (click)="closeDetail()">
-      <div class="modal-container" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Card Details</h2>
-          <button class="modal-close" (click)="closeDetail()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="detail-card-visual" [class]="getCardNetworkClass(selectedCard()!.cardNetwork)">
-            <div class="card-top">
-              <span class="card-type-label">{{ selectedCard()!.cardType }}</span>
-              <span class="card-network-label">{{ selectedCard()!.cardNetwork }}</span>
-            </div>
-            <div class="card-chip"><div class="chip-pattern"></div></div>
-            <div class="card-number">{{ selectedCard()!.cardNumber }}</div>
-            <div class="card-bottom">
-              <div class="card-holder">
-                <span class="label">Card Holder</span>
-                <span class="name">{{ selectedCard()!.cardHolderName }}</span>
+              <div class="cv-top">
+                <span class="cv-bank">ENSARK<em>BANK</em></span>
+                <span class="cv-type">{{ card.cardType }}</span>
               </div>
-              <div class="card-expiry">
-                <span class="label">Expires</span>
-                <span class="date">{{ selectedCard()!.expiryDate }}</span>
+
+              <div class="cv-chip-row">
+                <svg class="cv-chip" viewBox="0 0 50 38" width="42" height="30">
+                  <defs>
+                    <linearGradient id="g{{card.cardId}}" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#f0d77e"/>
+                      <stop offset="50%" stop-color="#c9a84c"/>
+                      <stop offset="100%" stop-color="#8b6e32"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="1" y="1" width="48" height="36" rx="5" [attr.fill]="'url(#g' + card.cardId + ')'" stroke="#7a5c1f" stroke-width="0.5"/>
+                  <line x1="0" y1="13" x2="50" y2="13" stroke="#7a5c1f" stroke-width="0.3" opacity="0.5"/>
+                  <line x1="0" y1="19" x2="50" y2="19" stroke="#7a5c1f" stroke-width="0.3" opacity="0.5"/>
+                  <line x1="0" y1="25" x2="50" y2="25" stroke="#7a5c1f" stroke-width="0.3" opacity="0.5"/>
+                  <line x1="17" y1="1" x2="17" y2="37" stroke="#7a5c1f" stroke-width="0.3" opacity="0.5"/>
+                  <line x1="33" y1="1" x2="33" y2="37" stroke="#7a5c1f" stroke-width="0.3" opacity="0.5"/>
+                  <rect x="18" y="13" width="14" height="12" rx="2" fill="none" stroke="#7a5c1f" stroke-width="0.4" opacity="0.6"/>
+                </svg>
+                <svg class="cv-contactless" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M8.5 16.5a5 5 0 0 1 0-9"/>
+                  <path d="M12 19a9 9 0 0 1 0-14"/>
+                  <path d="M5.5 19.5a12 12 0 0 1 0-15"/>
+                </svg>
+              </div>
+
+              <div class="cv-number">
+                <span>{{ getDisplayNumber(card) }}</span>
+                <button class="cv-eye" (click)="toggleRevealNumber(card.cardId, $event)" [title]="isNumberRevealed(card.cardId) ? 'Hide' : 'Show'">
+                  @if (isNumberRevealed(card.cardId)) {
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
+
+              <div class="cv-bottom">
+                <div class="cv-field">
+                  <span class="cv-field__label">Card Holder</span>
+                  <span class="cv-field__val">{{ card.cardHolderName }}</span>
+                </div>
+                <div class="cv-field">
+                  <span class="cv-field__label">Expires</span>
+                  <span class="cv-field__val">{{ formatExpiry(card.expiryDate) }}</span>
+                </div>
+                <div class="cv-network">
+                  @if (card.cardNetwork === 'VISA') {
+                    <svg viewBox="0 0 60 20" width="50" height="16"><text x="0" y="15" fill="#fff" font-size="17" font-weight="800" font-style="italic" font-family="'Inter',sans-serif" letter-spacing="1">VISA</text></svg>
+                  } @else if (card.cardNetwork === 'MASTERCARD') {
+                    <svg viewBox="0 0 36 22" width="34" height="20">
+                      <circle cx="13" cy="11" r="9" fill="#eb001b"/>
+                      <circle cx="23" cy="11" r="9" fill="#f79e1b" opacity="0.85"/>
+                      <circle cx="18" cy="11" r="5" fill="#ff5f00" opacity="0.5"/>
+                    </svg>
+                  } @else {
+                    <span class="cv-network-text">{{ card.cardNetwork }}</span>
+                  }
+                </div>
+              </div>
+
+              @if (card.status !== 'ACTIVE') {
+                <div class="cv-ribbon" [attr.data-status]="card.status.toLowerCase()">
+                  {{ card.status === 'PENDING' ? 'Activating' : card.status }}
+                </div>
+              }
+            </div>
+
+            <!-- BACK -->
+            <div class="cv-face cv-back" [attr.data-network]="card.cardNetwork">
+              <div class="cv-noise"></div>
+              <div class="cv-stripe"></div>
+              <div class="cv-signature">
+                <div class="cv-signature__lines"></div>
+                <div class="cv-cvv">
+                  <span class="cv-cvv__label">CVV</span>
+                  @if (isCvvRevealed(card.cardId)) {
+                    <span class="cv-cvv__val">{{ card.cvv || '***' }}</span>
+                  } @else {
+                    <span class="cv-cvv__dots">&#x25CF;&#x25CF;&#x25CF;</span>
+                  }
+                  <button class="cv-eye cv-eye--dark" (click)="toggleRevealCvv(card.cardId, $event)">
+                    @if (isCvvRevealed(card.cardId)) {
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    }
+                  </button>
+                </div>
+              </div>
+              <div class="cv-back-bottom">
+                @if (card.cardNetwork === 'VISA') {
+                  <svg viewBox="0 0 60 20" width="40" height="14"><text x="0" y="14" fill="#fff" font-size="13" font-weight="800" font-style="italic" font-family="'Inter',sans-serif" letter-spacing="1" opacity="0.5">VISA</text></svg>
+                } @else if (card.cardNetwork === 'MASTERCARD') {
+                  <svg viewBox="0 0 36 22" width="30" height="18">
+                    <circle cx="13" cy="11" r="8" fill="#eb001b" opacity="0.4"/>
+                    <circle cx="23" cy="11" r="8" fill="#f79e1b" opacity="0.35"/>
+                  </svg>
+                }
+                <p class="cv-legal">This card is property of EnSark Bank and may be revoked at any time.</p>
               </div>
             </div>
           </div>
-          <div class="detail-grid" style="margin-top: 20px;">
-            <div class="detail-item">
-              <span class="detail-label">Status</span>
-              <span class="badge" [class]="getStatusClass(selectedCard()!.status)">{{ selectedCard()!.status }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Account</span>
-              <span class="detail-value">{{ selectedCard()!.accountNumber }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Daily Limit</span>
-              <span class="detail-value">{{ formatCurrency(selectedCard()!.dailyLimit) }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Monthly Limit</span>
-              <span class="detail-value">{{ formatCurrency(selectedCard()!.monthlyLimit) }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Issued</span>
-              <span class="detail-value">{{ selectedCard()!.createdAt | date:'medium' }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeDetail()">Close</button>
-          <button class="btn btn-outline" (click)="openPinChange(selectedCard()!); closeDetail()">Change PIN</button>
-          @if (selectedCard()!.status === 'ACTIVE') {
-            <button class="btn btn-danger" (click)="confirmStatusChange(selectedCard()!, 'BLOCK')">Block Card</button>
-          }
-          @if (selectedCard()!.status === 'BLOCKED') {
-            <button class="btn btn-primary" (click)="confirmStatusChange(selectedCard()!, 'UNBLOCK')">Unblock Card</button>
-          }
-        </div>
-      </div>
-    </div>
-  }
 
-  @if (showPinModal() && selectedCard()) {
-    <div class="modal-overlay" (click)="closePinModal()">
-      <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Change PIN</h2>
-          <button class="modal-close" (click)="closePinModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p class="modal-info">Card ending in <strong>{{ selectedCard()!.cardNumber.slice(-4) }}</strong></p>
-          <div class="form-group">
-            <label>Current PIN</label>
-            <input type="password" [(ngModel)]="pinForm.oldPin" class="form-control" placeholder="Enter current PIN" maxlength="6">
+          <!-- INFO BAR -->
+          <div class="card-info">
+            <div class="card-info__left">
+              <span class="card-info__last4">{{ card.cardNumber.slice(-4) }}</span>
+              <span class="card-info__sep">&middot;</span>
+              <span class="card-info__network" [attr.data-network]="card.cardNetwork">{{ card.cardNetwork }}</span>
+              <span class="card-info__sep">&middot;</span>
+              <span class="card-info__type">{{ card.cardType }}</span>
+            </div>
+            <span class="card-info__badge" [attr.data-status]="card.status.toLowerCase()">{{ card.status }}</span>
           </div>
-          <div class="form-group">
-            <label>New PIN</label>
-            <input type="password" [(ngModel)]="pinForm.newPin" class="form-control" placeholder="Enter new PIN" maxlength="6">
+
+          <!-- DETAILS ROW -->
+          <div class="card-details">
+            <div class="cd-item">
+              <span class="cd-item__k">Daily Limit</span>
+              <span class="cd-item__v">{{ formatCurrency(card.dailyLimit) }}</span>
+            </div>
+            <div class="cd-item">
+              <span class="cd-item__k">Monthly Limit</span>
+              <span class="cd-item__v">{{ formatCurrency(card.monthlyLimit) }}</span>
+            </div>
+            <div class="cd-chips">
+              <span class="cd-chip" [class.cd-chip--on]="card.isInternationalEnabled">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                Intl
+              </span>
+              <span class="cd-chip" [class.cd-chip--on]="card.isOnlineTransactionEnabled">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                Online
+              </span>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Confirm New PIN</label>
-            <input type="password" [(ngModel)]="pinForm.confirmPin" class="form-control" placeholder="Confirm new PIN" maxlength="6">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closePinModal()">Cancel</button>
-          <button class="btn btn-primary" (click)="changePin()" [disabled]="submitting()">
-            @if (submitting()) {
-              <span class="spinner"></span> Changing...
-            } @else {
-              Change PIN
+
+          <!-- ACTIONS -->
+          <div class="card-actions">
+            @if (card.status === 'PENDING' && !auth.isCustomer()) {
+              <button class="ca-btn ca-btn--green" (click)="confirmStatusChange(card, 'UNBLOCK'); $event.stopPropagation()">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Approve
+              </button>
+              <button class="ca-btn ca-btn--red" (click)="confirmStatusChange(card, 'BLOCK'); $event.stopPropagation()">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                Reject
+              </button>
             }
-          </button>
+            @if (card.status === 'ACTIVE' && !auth.isCustomer()) {
+              <button class="ca-btn ca-btn--red" (click)="confirmStatusChange(card, 'BLOCK'); $event.stopPropagation()">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                Block
+              </button>
+            }
+            @if (card.status === 'BLOCKED' && !auth.isCustomer()) {
+              <button class="ca-btn ca-btn--green" (click)="confirmStatusChange(card, 'UNBLOCK'); $event.stopPropagation()">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Unblock
+              </button>
+            }
+            @if (auth.isCustomer() && card.status === 'ACTIVE') {
+              <button class="ca-btn ca-btn--blue" (click)="openRequestModal(card); $event.stopPropagation()">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Request Settings
+              </button>
+            }
+            <button class="ca-btn" (click)="openPinChange(card); $event.stopPropagation()">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              PIN
+            </button>
+            <button class="ca-btn" (click)="viewDetail(card); $event.stopPropagation()">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Details
+            </button>
+          </div>
         </div>
-      </div>
+      }
+    </div>
+  } @else {
+    <!-- STAFF TABLE VIEW -->
+    <div class="staff-table-wrapper">
+      <table class="staff-table">
+        <thead>
+          <tr>
+            <th>Card Number</th>
+            <th>Cardholder</th>
+            <th>Network</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Daily Limit</th>
+            <th>Monthly Limit</th>
+            <th>Intl</th>
+            <th>Online</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (card of cards(); track card.cardId) {
+            <tr>
+              <td class="col-number">**** **** **** {{ card.cardNumber.slice(-4) }}</td>
+              <td>{{ card.cardHolderName }}</td>
+              <td><span class="network-tag" [attr.data-network]="card.cardNetwork">{{ card.cardNetwork }}</span></td>
+              <td>{{ card.cardType }}</td>
+              <td><span class="status-badge" [class]="getStatusClass(card.status)">{{ card.status }}</span></td>
+              <td class="col-currency">{{ formatCurrency(card.dailyLimit) }}</td>
+              <td class="col-currency">{{ formatCurrency(card.monthlyLimit) }}</td>
+              <td>{{ card.isInternationalEnabled ? 'Yes' : 'No' }}</td>
+              <td>{{ card.isOnlineTransactionEnabled ? 'Yes' : 'No' }}</td>
+              <td class="col-actions">
+                @if (card.status === 'PENDING') {
+                  <button class="tbl-btn tbl-btn--green" (click)="confirmStatusChange(card, 'UNBLOCK')" title="Approve">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </button>
+                  <button class="tbl-btn tbl-btn--red" (click)="confirmStatusChange(card, 'BLOCK')" title="Reject">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                  </button>
+                }
+                @if (card.status === 'ACTIVE') {
+                  <button class="tbl-btn tbl-btn--red" (click)="confirmStatusChange(card, 'BLOCK')" title="Block">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                  </button>
+                }
+                @if (card.status === 'BLOCKED') {
+                  <button class="tbl-btn tbl-btn--green" (click)="confirmStatusChange(card, 'UNBLOCK')" title="Unblock">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </button>
+                }
+                <button class="tbl-btn" (click)="openPinChange(card)" title="Change PIN">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </button>
+                <button class="tbl-btn" (click)="viewDetail(card)" title="Details">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
   }
-
-  <app-confirm-dialog
-    [show]="showStatusDialog()"
-    [title]="newStatusAction() === 'BLOCK' ? 'Block Card' : 'Unblock Card'"
-    [message]="newStatusAction() === 'BLOCK' ? 'This card will be blocked and cannot be used for transactions.' : 'This card will be reactivated and can be used again.'"
-    [type]="newStatusAction() === 'BLOCK' ? 'danger' : 'info'"
-    [confirmText]="newStatusAction() === 'BLOCK' ? 'Block' : 'Unblock'"
-    (confirmed)="executeStatusChange()"
-    (cancelled)="showStatusDialog.set(false)"
-  ></app-confirm-dialog>
 </div>
+
+<!-- ============ ISSUE / APPLY MODAL ============ -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-box__head">
+        <h3>{{ auth.isCustomer() ? 'Apply for Card' : 'Issue New Card' }}</h3>
+        <button class="modal-box__x" (click)="closeModal()">&times;</button>
+      </div>
+      <div class="modal-box__body">
+        <div class="f-grid">
+          <div class="f-full">
+            <label class="f-label">Account <span class="f-req">*</span></label>
+            <select [(ngModel)]="form.accountId" class="f-select">
+              <option [value]="0">Select Account</option>
+              @for (acc of accounts(); track acc.id) {
+                <option [value]="acc.id">{{ acc.accountNumber }} - {{ acc.accountType }}</option>
+              }
+            </select>
+          </div>
+          <div class="f-half">
+            <label class="f-label">Card Type <span class="f-req">*</span></label>
+            <select [(ngModel)]="form.cardType" class="f-select">
+              <option value="">Select Type</option>
+              @for (type of cardTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+          </div>
+          <div class="f-half">
+            <label class="f-label">Network <span class="f-req">*</span></label>
+            <select [(ngModel)]="form.network" class="f-select">
+              <option value="">Select Network</option>
+              @for (net of cardNetworks; track net) {
+                <option [value]="net">{{ net }}</option>
+              }
+            </select>
+          </div>
+          <div class="f-half">
+            <label class="f-label">PIN <span class="f-req">*</span></label>
+            <input type="password" [(ngModel)]="form.pin" class="f-input" placeholder="Enter PIN" maxlength="6">
+          </div>
+          <div class="f-half">
+            <label class="f-label">Confirm PIN <span class="f-req">*</span></label>
+            <input type="password" [(ngModel)]="form.confirmPin" class="f-input" placeholder="Confirm PIN" maxlength="6">
+          </div>
+          <div class="f-full f-row">
+            <label class="f-check">
+              <input type="checkbox" [(ngModel)]="form.internationalEnabled">
+              <span>Enable International Transactions</span>
+            </label>
+          </div>
+          <div class="f-full f-row">
+            <label class="f-check">
+              <input type="checkbox" [(ngModel)]="form.onlineTransactionEnabled">
+              <span>Enable Online Transactions</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-box__foot">
+        <button class="btn-cancel" (click)="closeModal()">Cancel</button>
+        <button class="btn-gold" (click)="submitCard()" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="spin-sm"></span> {{ auth.isCustomer() ? 'Submitting...' : 'Issuing...' }}
+          } @else {
+            {{ auth.isCustomer() ? 'Submit Application' : 'Issue Card' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ============ DETAIL MODAL ============ -->
+@if (showDetailModal() && selectedCard()) {
+  <div class="modal-overlay" (click)="closeDetail()">
+    <div class="modal-box modal-box--lg" (click)="$event.stopPropagation()">
+      <div class="modal-box__head">
+        <h3>Card Details</h3>
+        <button class="modal-box__x" (click)="closeDetail()">&times;</button>
+      </div>
+      <div class="modal-box__body">
+        <!-- Card Preview -->
+        <div class="detail-preview">
+          <div class="cv-face cv-front" [attr.data-network]="selectedCard()!.cardNetwork">
+            <div class="cv-noise"></div>
+            <div class="cv-top">
+              <span class="cv-bank">ENSARK<em>BANK</em></span>
+              <span class="cv-type">{{ selectedCard()!.cardType }}</span>
+            </div>
+            <div class="cv-chip-row">
+              <svg class="cv-chip" viewBox="0 0 50 38" width="42" height="30">
+                <defs><linearGradient id="gd" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f0d77e"/><stop offset="50%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#8b6e32"/></linearGradient></defs>
+                <rect x="1" y="1" width="48" height="36" rx="5" fill="url(#gd)" stroke="#7a5c1f" stroke-width="0.5"/>
+                <line x1="0" y1="13" x2="50" y2="13" stroke="#7a5c1f" stroke-width="0.3" opacity="0.5"/>
+                <line x1="0" y1="19" x2="50" y2="19" stroke="#7a5c1f" stroke-width="0.3" opacity="0.5"/>
+                <line x1="0" y1="25" x2="50" y2="25" stroke="#7a5c1f" stroke-width="0.3" opacity="0.5"/>
+                <line x1="17" y1="1" x2="17" y2="37" stroke="#7a5c1f" stroke-width="0.3" opacity="0.5"/>
+                <line x1="33" y1="1" x2="33" y2="37" stroke="#7a5c1f" stroke-width="0.3" opacity="0.5"/>
+                <rect x="18" y="13" width="14" height="12" rx="2" fill="none" stroke="#7a5c1f" stroke-width="0.4" opacity="0.6"/>
+              </svg>
+              <svg class="cv-contactless" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8.5 16.5a5 5 0 0 1 0-9"/><path d="M12 19a9 9 0 0 1 0-14"/><path d="M5.5 19.5a12 12 0 0 1 0-15"/></svg>
+            </div>
+            <div class="cv-number"><span>{{ selectedCard()!.cardNumber }}</span></div>
+            <div class="cv-bottom">
+              <div class="cv-field"><span class="cv-field__label">Card Holder</span><span class="cv-field__val">{{ selectedCard()!.cardHolderName }}</span></div>
+              <div class="cv-field"><span class="cv-field__label">Expires</span><span class="cv-field__val">{{ formatExpiry(selectedCard()!.expiryDate) }}</span></div>
+              <div class="cv-network">
+                @if (selectedCard()!.cardNetwork === 'VISA') {
+                  <svg viewBox="0 0 60 20" width="50" height="16"><text x="0" y="15" fill="#fff" font-size="17" font-weight="800" font-style="italic" font-family="'Inter',sans-serif" letter-spacing="1">VISA</text></svg>
+                } @else if (selectedCard()!.cardNetwork === 'MASTERCARD') {
+                  <svg viewBox="0 0 36 22" width="34" height="20"><circle cx="13" cy="11" r="9" fill="#eb001b"/><circle cx="23" cy="11" r="9" fill="#f79e1b" opacity="0.85"/><circle cx="18" cy="11" r="5" fill="#ff5f00" opacity="0.5"/></svg>
+                } @else {
+                  <span class="cv-network-text">{{ selectedCard()!.cardNetwork }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="detail-grid">
+          <div class="dg-item"><span class="dg-k">Status</span><span class="dg-v"><span class="dg-badge" [attr.data-status]="selectedCard()!.status.toLowerCase()">{{ selectedCard()!.status }}</span></span></div>
+          <div class="dg-item"><span class="dg-k">Account</span><span class="dg-v">{{ selectedCard()!.accountNumber }}</span></div>
+          <div class="dg-item"><span class="dg-k">Daily Limit</span><span class="dg-v">{{ formatCurrency(selectedCard()!.dailyLimit) }}</span></div>
+          <div class="dg-item"><span class="dg-k">Monthly Limit</span><span class="dg-v">{{ formatCurrency(selectedCard()!.monthlyLimit) }}</span></div>
+          <div class="dg-item"><span class="dg-k">International</span><span class="dg-v">{{ selectedCard()!.isInternationalEnabled ? 'Enabled' : 'Disabled' }}</span></div>
+          <div class="dg-item"><span class="dg-k">Online Transactions</span><span class="dg-v">{{ selectedCard()!.isOnlineTransactionEnabled ? 'Enabled' : 'Disabled' }}</span></div>
+          <div class="dg-item"><span class="dg-k">Issued</span><span class="dg-v">{{ selectedCard()!.createdAt | date:'medium' }}</span></div>
+        </div>
+      </div>
+      <div class="modal-box__foot">
+        <button class="btn-cancel" (click)="closeDetail()">Close</button>
+        <button class="btn-outline" (click)="openPinChange(selectedCard()!); closeDetail()">Change PIN</button>
+        @if (selectedCard()!.status === 'ACTIVE' && !auth.isCustomer()) {
+          <button class="btn-red" (click)="confirmStatusChange(selectedCard()!, 'BLOCK')">Block Card</button>
+        }
+        @if (selectedCard()!.status === 'BLOCKED' && !auth.isCustomer()) {
+          <button class="btn-gold" (click)="confirmStatusChange(selectedCard()!, 'UNBLOCK')">Unblock Card</button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ============ PIN CHANGE MODAL ============ -->
+@if (showPinModal() && selectedCard()) {
+  <div class="modal-overlay" (click)="closePinModal()">
+    <div class="modal-box modal-box--sm" (click)="$event.stopPropagation()">
+      <div class="modal-box__head">
+        <h3>Change PIN</h3>
+        <button class="modal-box__x" (click)="closePinModal()">&times;</button>
+      </div>
+      <div class="modal-box__body">
+        <p class="pin-card-hint">Card ending in <strong>{{ selectedCard()!.cardNumber.slice(-4) }}</strong></p>
+        @if (auth.isCustomer()) {
+          <div class="f-group">
+            <label class="f-label">Current PIN</label>
+            <input type="password" [(ngModel)]="pinForm.oldPin" class="f-input" placeholder="Enter current PIN" maxlength="6">
+          </div>
+        }
+        <div class="f-group">
+          <label class="f-label">New PIN</label>
+          <input type="password" [(ngModel)]="pinForm.newPin" class="f-input" placeholder="Enter new PIN" maxlength="6">
+        </div>
+        <div class="f-group">
+          <label class="f-label">Confirm New PIN</label>
+          <input type="password" [(ngModel)]="pinForm.confirmPin" class="f-input" placeholder="Confirm new PIN" maxlength="6">
+        </div>
+      </div>
+      <div class="modal-box__foot">
+        <button class="btn-cancel" (click)="closePinModal()">Cancel</button>
+        <button class="btn-gold" (click)="changePin()" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="spin-sm"></span> Changing...
+          } @else {
+            Change PIN
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-confirm-dialog
+  [show]="showStatusDialog()"
+  [title]="getStatusDialogTitle()"
+  [message]="getStatusDialogMessage()"
+  [type]="getStatusDialogType()"
+  [confirmText]="getStatusDialogConfirmText()"
+  (confirmed)="executeStatusChange()"
+  (cancelled)="showStatusDialog.set(false)"
+></app-confirm-dialog>
+
+<!-- ============ REQUEST SETTINGS MODAL ============ -->
+@if (showRequestModal() && selectedCard()) {
+  <div class="modal-overlay" (click)="closeRequestModal()">
+    <div class="modal-box modal-box--sm" (click)="$event.stopPropagation()">
+      <div class="modal-box__head">
+        <h3>Request Card Settings</h3>
+        <button class="modal-box__x" (click)="closeRequestModal()">&times;</button>
+      </div>
+      <div class="modal-box__body">
+        <p class="pin-card-hint">Card ending in <strong>{{ selectedCard()!.cardNumber.slice(-4) }}</strong></p>
+        <div class="f-group">
+          <label class="f-label">Setting <span class="f-req">*</span></label>
+          <select [(ngModel)]="requestForm.requestType" class="f-select">
+            <option value="">Select Setting</option>
+            @for (type of requestTypes; track type) {
+              <option [value]="type">{{ type === 'INTERNATIONAL_ENABLED' ? 'International Transactions' : 'Online Transactions' }}</option>
+            }
+          </select>
+        </div>
+        <div class="f-group">
+          <label class="f-check">
+            <input type="checkbox" [(ngModel)]="requestForm.requestedValue">
+            <span>Enable</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-box__foot">
+        <button class="btn-cancel" (click)="closeRequestModal()">Cancel</button>
+        <button class="btn-gold" (click)="submitRequest()" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="spin-sm"></span> Submitting...
+          } @else {
+            Submit Request
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ============ REJECT REASON MODAL ============ -->
+@if (showRejectModal() && selectedRequest()) {
+  <div class="modal-overlay" (click)="closeRejectModal()">
+    <div class="modal-box modal-box--sm" (click)="$event.stopPropagation()">
+      <div class="modal-box__head">
+        <h3>Reject Request</h3>
+        <button class="modal-box__x" (click)="closeRejectModal()">&times;</button>
+      </div>
+      <div class="modal-box__body">
+        <div class="f-group">
+          <label class="f-label">Reason for rejection</label>
+          <textarea [(ngModel)]="rejectReason" class="f-input" rows="3" placeholder="Enter rejection reason"></textarea>
+        </div>
+      </div>
+      <div class="modal-box__foot">
+        <button class="btn-cancel" (click)="closeRejectModal()">Cancel</button>
+        <button class="btn-red" (click)="confirmReject()" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="spin-sm"></span> Rejecting...
+          } @else {
+            Reject
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ============ PENDING REQUESTS (STAFF) ============ -->
+@if (!auth.isCustomer() && pendingRequests().length > 0) {
+  <div class="pending-requests-section">
+    <h2 class="pr-title">Pending Card Setting Requests</h2>
+    <div class="pr-grid">
+      @for (request of pendingRequests(); track request.id) {
+        <div class="pr-card">
+          <div class="pr-card__header">
+            <span class="pr-card__type">{{ request.requestType === 'INTERNATIONAL_ENABLED' ? 'International Transactions' : 'Online Transactions' }}</span>
+            <span class="pr-card__badge pr-card__badge--pending">Pending</span>
+          </div>
+          <div class="pr-card__body">
+            <p><strong>Card:</strong> **** **** **** {{ request.cardNumber?.slice(-4) || 'N/A' }}</p>
+            <p><strong>Card Holder:</strong> {{ request.cardHolderName || 'N/A' }}</p>
+            <p><strong>Requested:</strong> {{ request.requestedValue ? 'Enable' : 'Disable' }}</p>
+            <p><strong>Date:</strong> {{ request.createdAt | date:'medium' }}</p>
+          </div>
+          <div class="pr-card__actions">
+            <button class="btn-gold btn-sm" (click)="approveRequest(request)" [disabled]="submitting()">Approve</button>
+            <button class="btn-red btn-sm" (click)="openRejectModal(request)" [disabled]="submitting()">Reject</button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

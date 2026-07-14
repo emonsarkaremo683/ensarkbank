@@ -106,7 +106,7 @@ export class AccountsComponent implements OnInit {
 
   constructor(
     private api: ApiService,
-    private auth: AuthService,
+    public auth: AuthService,
     private notify: NotificationService
   ) {}
 
@@ -116,7 +116,17 @@ export class AccountsComponent implements OnInit {
 
   loadData(): void {
     this.loading.set(true);
-    this.api.getAccounts().subscribe({
+    const isCustomer = this.auth.isCustomer();
+    let call$;
+    if (isCustomer) {
+      call$ = this.api.getAccountsByCustomerId(this.auth.currentUser()?.id ?? 0);
+    } else {
+      const branchId = this.auth.currentUser()?.branchId;
+      call$ = branchId
+        ? this.api.getAccountsByBranchAndChildren(branchId)
+        : this.api.getAccounts();
+    }
+    call$.subscribe({
       next: data => { this.accounts.set(data); this.loading.set(false); },
       error: () => { this.notify.error('Error', 'Failed to load accounts'); this.loading.set(false); }
     });

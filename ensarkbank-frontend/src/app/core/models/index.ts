@@ -14,6 +14,7 @@ import {
   CardNetwork,
   LoanType,
   LoanStatus,
+  RepaymentStatus,
   Designation,
   HolderType,
   EntryType,
@@ -24,6 +25,8 @@ import {
   BranchStatus,
   NomineeRelation,
   KYCStatus,
+  RequestStatus,
+  CardSettingsRequestType,
 } from '../enums/role.enum';
 
 // Auth models
@@ -141,6 +144,7 @@ export interface CustomerResponse {
   occupation: CustomerOccupation;
   dob: string;
   profile?: string;
+  imageUrl?: string;
   addresses: AddressResponse[];
   documents?: KycResponse[];
   kycStatus?: KYCStatus;
@@ -181,8 +185,11 @@ export interface EmployeeResponse {
   designation: Designation;
   dob: string;
   role: Role;
+  isEmailVerified?: boolean;
+  active?: boolean;
   branchName: string;
   profile?: string;
+  imageUrl?: string;
   addresses: AddressResponse[];
 }
 
@@ -263,11 +270,12 @@ export interface TransactionRequest {
 }
 
 export interface AccountTransactionRequest {
-  senderId?: number;
-  receiverId?: number;
+  senderAccountId?: number;
+  receiverAccountId?: number;
   receiverAccountNumber?: string;
   receiverName?: string;
   bankName?: string;
+  routingNumber?: string;
   beneficiaryId?: number;
   request: TransactionRequest;
 }
@@ -301,6 +309,7 @@ export interface TransactionResponse {
   vatAmount?: number;
   remarks?: string;
   createdAt?: string;
+  journals?: JournalEntry[];
 }
 
 export interface OtpVerifyRequest {
@@ -326,9 +335,15 @@ export interface JournalEntry {
   id: number;
   transactionId: string;
   accountNumber: string;
+  counterpartyAccountNumber?: string;
+  counterpartyName?: string;
   entryType: EntryType;
   amount: number;
   particulars?: string;
+  transactionType?: string;
+  channel?: string;
+  status?: string;
+  remarks?: string;
   date: string;
 }
 
@@ -368,7 +383,7 @@ export interface LoanRepayment {
   interestComponent: number;
   emiAmount: number;
   remainingBalanceAfter: number;
-  status: string;
+  status: RepaymentStatus;
   paidDate?: string;
   transactionRef?: string;
 }
@@ -379,8 +394,8 @@ export interface CardRequest {
   cardNetwork: CardNetwork;
   cardType: CardType;
   pin: string;
-  dailyLimit?: number;
-  monthlyLimit?: number;
+  internationalEnabled?: boolean;
+  onlineTransactionEnabled?: boolean;
 }
 
 export interface CardResponse {
@@ -400,13 +415,27 @@ export interface CardResponse {
   createdAt?: string;
 }
 
+export interface CardSettingsRequest {
+  id: number;
+  cardId: number;
+  cardNumber?: string;
+  cardHolderName?: string;
+  requestType: CardSettingsRequestType;
+  requestedValue: boolean;
+  status: RequestStatus;
+  rejectionReason?: string;
+  requestedById?: number;
+  requestedByName?: string;
+  createdAt?: string;
+}
+
 // ATM
 export interface ATMRequest {
   status?: ATMStatus;
   balance: number;
   limit: number;
   address?: string;
-  branchId: number;
+  branchId?: number;
 }
 
 export interface ATMResponse {
@@ -449,6 +478,7 @@ export interface CashierTransactionRequest {
   branchId: number;
   accountNumber: string;
   accountName?: string;
+  type?: TransactionType;
   bankName?: string;
   employeeId?: number;
   routingNumber?: string;
@@ -528,4 +558,41 @@ export interface BalanceSheetSectionLine {
   glCode: string;
   accountName: string;
   amount: number;
+}
+
+export interface DashboardStats {
+  totalAccounts: number;
+  totalCustomers: number;
+  totalTransactions: number;
+  totalLoans: number;
+  totalBalance: number;
+  totalActiveCards: number;
+  transactionTrends: TimeSeriesPoint[];
+  accountTypeDistribution: LabelValue[];
+  loanStatusDistribution: LabelValue[];
+  transactionTypeDistribution: LabelValue[];
+  transactionStatusDistribution: LabelValue[];
+  branchWiseSummary: BranchSummary[];
+}
+
+export interface TimeSeriesPoint {
+  date: string;
+  count: number;
+  totalAmount: number;
+}
+
+export interface LabelValue {
+  label: string;
+  value: number;
+  totalAmount: number;
+}
+
+export interface BranchSummary {
+  branchId: number;
+  branchName: string;
+  accountCount: number;
+  customerCount: number;
+  transactionCount: number;
+  totalBalance: number;
+  loanCount: number;
 }

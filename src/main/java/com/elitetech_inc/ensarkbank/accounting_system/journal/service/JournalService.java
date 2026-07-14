@@ -32,14 +32,21 @@ public class JournalService {
         return journalRepository.findById(journalId).map(journalMapper::toResponse);
     }
 
-    public List<JournalResponse> getJournalByAccountNumber(Long customerId, LocalDateTime startDate, LocalDateTime endDate){
+    public List<JournalResponse> getJournalByAccountId(Long customerId, LocalDateTime startDate, LocalDateTime endDate){
+        LocalDateTime from = startDate != null ? startDate : LocalDateTime.of(1970, 1, 1, 0, 0);
+        LocalDateTime to = endDate != null ? endDate : LocalDateTime.now();
+
         List<String> accountNumbers = accountRepository
                 .findDistinctByHoldersCustomerId(customerId)
                 .stream()
                 .map(Account::getAccountNumber)
                 .toList();
 
-        return journalRepository.findTransactionHistory(accountNumbers, startDate, endDate)
+        if (accountNumbers.isEmpty()) {
+            return List.of();
+        }
+
+        return journalRepository.findTransactionHistory(accountNumbers, from, to)
                 .stream().map(journalMapper::toResponse).toList();
     }
 

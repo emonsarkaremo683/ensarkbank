@@ -3,6 +3,8 @@ package com.elitetech_inc.ensarkbank.common.email;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response.AccountTransactionResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -129,6 +131,56 @@ public class TransactionEmailService {
             javaMailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("Failed to send transaction success email", e);
+        }
+    }
+
+    @Async
+    public void sendMonthlyStatementEmail(String toEmail, String customerName,
+                                           String monthName, int year,
+                                           byte[] pdfAttachment, int transactionCount) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(toEmail);
+            helper.setSubject("Monthly Transaction Statement - " + monthName + " " + year + " - Ensark Bank");
+
+            String body = """
+                <!DOCTYPE html>
+                <html>
+                <head><meta charset="UTF-8"></head>
+                <body style="margin:0;padding:0;background:#f1f5f9;font-family:Segoe UI,Arial,sans-serif;">
+                <table width="100%%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:40px 0;">
+                <tr><td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                <tr><td style="background:#0f172a;padding:30px;text-align:center;">
+                <h1 style="color:#ffffff;margin:0;font-size:28px;">&#127974; Ensark Bank</h1>
+                <p style="color:#cbd5e1;margin-top:8px;">Monthly Transaction Statement</p>
+                </td></tr>
+                <tr><td style="padding:40px;">
+                <h2 style="margin-top:0;color:#0f172a;">Your %s %d Statement is Ready</h2>
+                <p style="color:#475569;font-size:15px;line-height:24px;">Dear %s,</p>
+                <p style="color:#475569;font-size:15px;line-height:24px;">Please find attached your transaction statement for <strong>%s %d</strong>. The statement contains <strong>%d transaction(s)</strong>.</p>
+                <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:15px;border-radius:8px;margin:20px 0;">
+                <p style="margin:0;color:#92400e;font-size:14px;">This PDF is password-protected. Your password is your date of birth in <strong>dd/MM/yyyy</strong> format.</p>
+                </div>
+                <p style="margin-top:25px;color:#64748b;font-size:14px;">If you have any questions about your statement, please contact us.</p>
+                </td></tr>
+                <tr><td style="background:#f8fafc;padding:25px;text-align:center;">
+                <p style="font-size:12px;color:#64748b;margin:0;">&copy; 2026 Ensark Bank. All Rights Reserved.</p>
+                <p style="font-size:12px;color:#94a3b8;">This is an automated monthly statement email.</p>
+                </td></tr>
+                </table>
+                </td></tr></table>
+                </body></html>
+                """.formatted(monthName, year, customerName, monthName, year, transactionCount);
+
+            helper.setText(body, true);
+            helper.addAttachment("Statement_" + monthName + "_" + year + ".pdf",
+                    new org.springframework.core.io.ByteArrayResource(pdfAttachment));
+
+            javaMailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send monthly statement email", e);
         }
     }
 }

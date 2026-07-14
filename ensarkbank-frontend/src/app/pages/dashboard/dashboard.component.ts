@@ -6,14 +6,15 @@ import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Role } from '../../core/enums/role.enum';
+import { AccountResponse, LoanResponse, DashboardStats } from '../../core/models';
 import { LoadingComponent } from '../../shared';
 import { StatsCardComponent } from '../../shared';
-import { DataTableComponent, TableColumn } from '../../shared/components/data-table/data-table.component';
+import { ChartComponent } from '../../shared/components/charts/chart.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, LoadingComponent, StatsCardComponent, DataTableComponent],
+  imports: [CommonModule, LoadingComponent, StatsCardComponent, ChartComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -31,62 +32,86 @@ export class DashboardComponent implements OnInit, OnDestroy {
   totalBalance = signal(0);
   atmCount = signal(0);
 
-  recentTransactions = signal<any[]>([]);
+  customerAccounts = signal<AccountResponse[]>([]);
+  customerLoans = signal<LoanResponse[]>([]);
 
-  transactionColumns: TableColumn[] = [
-    { key: 'transactionId', label: 'Transaction ID', type: 'text', sortable: true },
-    { key: 'type', label: 'Type', type: 'status', sortable: true },
-    { key: 'amount', label: 'Amount', type: 'currency', sortable: true },
-    { key: 'channel', label: 'Channel', type: 'badge', sortable: true },
-    { key: 'status', label: 'Status', type: 'status', sortable: true },
-    { key: 'createdAt', label: 'Date', type: 'date', sortable: true }
-  ];
+  dashboardStats = signal<DashboardStats | null>(null);
 
   currentUser = computed(() => this.auth.currentUser());
+  isCustomer = computed(() => this.auth.isCustomer());
   isSuperAdmin = computed(() => this.auth.hasRole([Role.SUPER_ADMIN]));
   isAdmin = computed(() => this.auth.hasRole([Role.SUPER_ADMIN, Role.ADMIN]));
   isBranchManager = computed(() => this.auth.hasRole([Role.BRANCH_MANAGER]));
+  isAuditor = computed(() => this.auth.hasRole([Role.AUDITOR]));
+  canSeeBranchWise = computed(() => this.isAdmin() || this.isAuditor());
+
+  transactionTrendLabels = signal<string[]>([]);
+  transactionTrendData = signal<number[]>([]);
+  accountTypeLabels = signal<string[]>([]);
+  accountTypeData = signal<number[]>([]);
+  loanStatusLabels = signal<string[]>([]);
+  loanStatusData = signal<number[]>([]);
+  transactionTypeLabels = signal<string[]>([]);
+  transactionTypeData = signal<number[]>([]);
+  branchLabels = signal<string[]>([]);
+  branchAccountData = signal<number[]>([]);
+  branchBalanceData = signal<number[]>([]);
 
   quickActions = computed(() => {
+    const userRole = this.currentUser()?.role as Role;
+    if (this.auth.isCustomer()) {
+      return [
+        { label: 'My Accounts', icon: '🏦', route: '/customer/accounts', color: '#3b82f6' },
+        { label: 'My Transactions', icon: '📝', route: '/customer/transactions', color: '#c9a84c' },
+        { label: 'My Cards', icon: '💳', route: '/customer/cards', color: '#06b6d4' },
+        { label: 'My Loans', icon: '💰', route: '/customer/loans', color: '#8b5cf6' },
+        { label: 'My Beneficiaries', icon: '🤝', route: '/customer/beneficiaries', color: '#22d3ee' },
+        { label: 'My KYC', icon: '📋', route: '/customer/kyc', color: '#f59e0b' }
+      ];
+    }
     const actions = [
+      { label: 'Dashboard', icon: '📊', route: '/dashboard', color: '#64748b', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT, Role.AUDITOR, Role.CASHIER, Role.LOAN_OFFICER, Role.CUSTOMER_SERVICE, Role.ATM_MANAGER] },
       { label: 'New Transaction', icon: '⚡', route: '/transactions/new', color: '#c9a84c', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER] },
-      { label: 'Manage Accounts', icon: '🏦', route: '/accounts', color: '#3b82f6', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER] },
-      { label: 'Customers', icon: '👥', route: '/customers', color: '#22c55e', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CUSTOMER_SERVICE] },
-      { label: 'View Reports', icon: '📊', route: '/reports', color: '#f59e0b', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.ACCOUNTANT, Role.AUDITOR] },
-      { label: 'Loan Applications', icon: '📋', route: '/loans', color: '#8b5cf6', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.LOAN_OFFICER] },
+      { label: 'Manage Accounts', icon: '🏦', route: '/accounts', color: '#3b82f6', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT] },
+      { label: 'Customers', icon: '👥', route: '/customers', color: '#22c55e', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CUSTOMER_SERVICE, Role.AUDITOR] },
+      { label: 'Transactions', icon: '📝', route: '/transactions', color: '#a855f7', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER, Role.ACCOUNTANT, Role.AUDITOR, Role.CUSTOMER_SERVICE, Role.LOAN_OFFICER] },
+      { label: 'Loan Applications', icon: '📋', route: '/loans', color: '#8b5cf6', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.LOAN_OFFICER] },
+      { label: 'Cards', icon: '💳', route: '/cards', color: '#06b6d4', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CASHIER, Role.BRANCH_MANAGER] },
+      { label: 'ATM Management', icon: '🏧', route: '/atm', color: '#f97316', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.ATM_MANAGER] },
+      { label: 'View Reports', icon: '📈', route: '/reports', color: '#f59e0b', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.ACCOUNTANT, Role.AUDITOR] },
       { label: 'Manage Employees', icon: '👤', route: '/employees', color: '#ec4899', roles: [Role.SUPER_ADMIN, Role.ADMIN] },
       { label: 'Manage Branches', icon: '🏛️', route: '/branches', color: '#14b8a6', roles: [Role.SUPER_ADMIN] },
-      { label: 'ATM Management', icon: '🏧', route: '/atm', color: '#f97316', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.ATM_MANAGER] },
-      { label: 'Cards', icon: '💳', route: '/cards', color: '#06b6d4', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CASHIER] },
-      { label: 'Transactions', icon: '📝', route: '/transactions', color: '#a855f7', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER, Role.ACCOUNTANT] },
-      { label: 'Beneficiaries', icon: '🤝', route: '/beneficiaries', color: '#22d3ee', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CUSTOMER_SERVICE] },
+      { label: 'Beneficiaries', icon: '🤝', route: '/beneficiaries', color: '#22d3ee', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CUSTOMER_SERVICE, Role.BRANCH_MANAGER] },
       { label: 'Cashier Operations', icon: '💰', route: '/transactions/cashier', color: '#eab308', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CASHIER] }
     ];
-    const userRole = this.currentUser()?.role as Role;
     return actions.filter(a => a.roles.includes(userRole));
   });
 
   visibleStats = computed(() => {
+    if (this.auth.isCustomer()) {
+      return ['accounts', 'transactions', 'loans', 'balance'];
+    }
     const userRole = this.currentUser()?.role as Role;
-    if (userRole === Role.SUPER_ADMIN || userRole === Role.ADMIN) {
-      return ['customers', 'accounts', 'transactions', 'loans', 'balance', 'atms'];
+    switch (userRole) {
+      case Role.SUPER_ADMIN:
+      case Role.ADMIN:
+        return ['customers', 'accounts', 'transactions', 'loans', 'balance', 'atms'];
+      case Role.BRANCH_MANAGER:
+        return ['customers', 'accounts', 'transactions', 'loans', 'balance'];
+      case Role.ACCOUNTANT:
+      case Role.AUDITOR:
+        return ['customers', 'accounts', 'transactions', 'balance'];
+      case Role.LOAN_OFFICER:
+        return ['loans', 'transactions', 'balance'];
+      case Role.CASHIER:
+        return ['transactions', 'balance', 'accounts'];
+      case Role.CUSTOMER_SERVICE:
+        return ['customers', 'accounts', 'transactions'];
+      case Role.ATM_MANAGER:
+        return ['atms', 'transactions', 'balance'];
+      default:
+        return ['transactions'];
     }
-    if (userRole === Role.BRANCH_MANAGER) {
-      return ['customers', 'accounts', 'transactions', 'balance'];
-    }
-    if (userRole === Role.ACCOUNTANT || userRole === Role.AUDITOR) {
-      return ['transactions', 'balance'];
-    }
-    if (userRole === Role.LOAN_OFFICER) {
-      return ['loans', 'transactions'];
-    }
-    if (userRole === Role.CASHIER) {
-      return ['transactions', 'balance'];
-    }
-    if (userRole === Role.ATM_MANAGER) {
-      return ['atms'];
-    }
-    return ['transactions'];
   });
 
   constructor(
@@ -107,52 +132,93 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   loadDashboardData(): void {
     this.loading.set(true);
-    const userRole = this.currentUser()?.role as Role;
-    const isCustomer = userRole === Role.CUSTOMER;
 
-    if (isCustomer) {
-      forkJoin({
-        accounts: this.api.getAccounts().pipe(catchError(() => of([]))),
-        transactions: this.api.getTransactions().pipe(catchError(() => of([]))),
-        loans: this.api.getLoans().pipe(catchError(() => of([])))
-      }).pipe(takeUntil(this.destroy$)).subscribe({
-        next: (data) => {
-          this.accountCount.set(data.accounts.length);
-          this.transactionCount.set(data.transactions.length);
-          this.loanCount.set(data.loans.length);
-          this.totalBalance.set(data.accounts.reduce((sum: number, acc: any) => sum + (acc.balance || 0), 0));
-          this.recentTransactions.set(data.transactions.slice(0, 10));
-          this.lastRefresh.set(new Date());
-          this.loading.set(false);
-        },
-        error: () => {
-          this.loading.set(false);
-        }
-      });
+    if (this.auth.isCustomer()) {
+      this.loadCustomerData();
     } else {
-      forkJoin({
-        customers: this.api.getCustomers().pipe(catchError(() => of([]))),
-        accounts: this.api.getAccounts().pipe(catchError(() => of([]))),
-        transactions: this.api.getTransactions().pipe(catchError(() => of([]))),
-        loans: this.api.getLoans().pipe(catchError(() => of([]))),
-        atms: this.api.getATMs().pipe(catchError(() => of([])))
-      }).pipe(takeUntil(this.destroy$)).subscribe({
-        next: (data) => {
-          this.customerCount.set(data.customers.length);
-          this.accountCount.set(data.accounts.length);
-          this.transactionCount.set(data.transactions.length);
-          this.loanCount.set(data.loans.length);
-          this.totalBalance.set(data.accounts.reduce((sum: number, acc: any) => sum + (acc.balance || 0), 0));
-          this.atmCount.set(data.atms.length);
-          this.recentTransactions.set(data.transactions.slice(0, 10));
-          this.lastRefresh.set(new Date());
-          this.loading.set(false);
-        },
-        error: () => {
-          this.loading.set(false);
-        }
-      });
+      this.loadStaffData();
     }
+  }
+
+  private loadCustomerData(): void {
+    const customerId = this.currentUser()?.id ?? 0;
+    this.api.getAccountsByCustomerId(customerId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (accounts) => {
+        this.customerAccounts.set(accounts);
+        this.accountCount.set(accounts.length);
+        this.totalBalance.set(accounts.reduce((sum, acc) => sum + (acc.availableBalance || 0), 0));
+
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const startDate = thirtyDaysAgo.toISOString();
+        const endDate = new Date().toISOString();
+
+        this.api.getTransactionHistory(customerId, startDate, endDate).pipe(
+          takeUntil(this.destroy$)
+        ).subscribe({
+          next: (journals) => {
+            this.transactionCount.set(journals.length);
+            this.lastRefresh.set(new Date());
+            this.loading.set(false);
+          },
+          error: (err) => {
+            console.error('Dashboard: Failed to load transaction history', err);
+            this.loading.set(false);
+          }
+        });
+
+        const loanObservables = accounts.map(a =>
+          this.api.getLoansByAccount(a.id).pipe(catchError(() => of([] as LoanResponse[])))
+        );
+        forkJoin(loanObservables).pipe(takeUntil(this.destroy$)).subscribe({
+          next: (results) => {
+            const allLoans = results.flat();
+            this.customerLoans.set(allLoans);
+            this.loanCount.set(allLoans.length);
+          }
+        });
+      },
+      error: () => this.loading.set(false)
+    });
+  }
+
+  private loadStaffData(): void {
+    this.api.getDashboardStats().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (stats) => {
+        this.dashboardStats.set(stats);
+        this.customerCount.set(stats.totalCustomers);
+        this.accountCount.set(stats.totalAccounts);
+        this.transactionCount.set(stats.totalTransactions);
+        this.loanCount.set(stats.totalLoans);
+        this.totalBalance.set(stats.totalBalance);
+        this.atmCount.set(stats.totalActiveCards);
+
+        this.transactionTrendLabels.set(stats.transactionTrends.map((t: any) => t.date));
+        this.transactionTrendData.set(stats.transactionTrends.map((t: any) => t.count));
+
+        this.accountTypeLabels.set(stats.accountTypeDistribution.map((a: any) => a.label));
+        this.accountTypeData.set(stats.accountTypeDistribution.map((a: any) => a.value));
+
+        this.loanStatusLabels.set(stats.loanStatusDistribution.map((l: any) => l.label));
+        this.loanStatusData.set(stats.loanStatusDistribution.map((l: any) => l.value));
+
+        this.transactionTypeLabels.set(stats.transactionTypeDistribution.map((t: any) => t.label));
+        this.transactionTypeData.set(stats.transactionTypeDistribution.map((t: any) => t.value));
+
+        if (stats.branchWiseSummary && stats.branchWiseSummary.length > 0) {
+          this.branchLabels.set(stats.branchWiseSummary.map((b: any) => b.branchName));
+          this.branchAccountData.set(stats.branchWiseSummary.map((b: any) => b.accountCount));
+          this.branchBalanceData.set(stats.branchWiseSummary.map((b: any) => b.totalBalance));
+        }
+
+        this.lastRefresh.set(new Date());
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.notify.error('Error', 'Failed to load dashboard data');
+      }
+    });
   }
 
   toggleAutoRefresh(): void {
@@ -164,10 +230,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       });
     }
-  }
-
-  onTransactionAction(row: any): void {
-    this.router.navigate(['/transactions', row.transactionId]);
   }
 
   navigate(route: string): void {

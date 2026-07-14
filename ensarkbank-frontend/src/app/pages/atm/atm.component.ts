@@ -159,11 +159,12 @@ export class AtmComponent implements OnInit {
     if (!atm || this.refillAmount <= 0) return;
     this.submitting.set(true);
     const request: ATMRequest = {
-      branchId: 0,
       balance: (atm.availableBalance || 0) + this.refillAmount,
       limit: atm.limit || 0,
+      address: atm.address,
+      status: atm.status
     };
-    this.api.createATM(request).subscribe({
+    this.api.updateATM(atm.atmId, request).subscribe({
       next: () => {
         this.notify.success('Success', `ATM refilled with ${this.formatCurrency(this.refillAmount)}`);
         this.loadData();

@@ -100,6 +100,10 @@ export const routes: Routes = [
         path: 'beneficiaries',
         loadComponent: () => import('./pages/beneficiaries/beneficiaries.component').then(m => m.BeneficiariesComponent),
         canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER, Role.CUSTOMER_SERVICE])]
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent)
       }
     ]
   },
@@ -144,6 +148,10 @@ export const routes: Routes = [
         path: 'kyc',
         loadComponent: () => import('./pages/customer-kyc/customer-kyc.component').then(m => m.CustomerKycComponent),
         canActivate: [roleGuard([Role.CUSTOMER])]
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent)
       }
     ]
   },

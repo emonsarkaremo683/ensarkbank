@@ -24,6 +24,5 @@ public class CardResponse {
     private String accountNumber;
     private boolean isInternationalEnabled;
     private boolean isOnlineTransactionEnabled;
-
-
+    private Date createdAt;
 }

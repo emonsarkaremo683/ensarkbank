@@ -45,4 +45,7 @@ public interface AccountTransactionRepository extends JpaRepository<AccountTrans
         AND (sh.customer.id = :customerId OR rh.customer.id = :customerId)
     """)
     boolean existsByTransactionIdAndCustomerId(@Param("transactionId") Long transactionId, @Param("customerId") Long customerId);
+
+    @Query("SELECT DISTINCT at FROM AccountTransaction at JOIN at.account a WHERE a.branch.id IN :branchIds ORDER BY at.createdAt DESC")
+    List<AccountTransaction> findByBranchIds(@Param("branchIds") List<Long> branchIds);
 }

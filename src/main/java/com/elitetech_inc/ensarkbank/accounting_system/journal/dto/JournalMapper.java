@@ -28,14 +28,24 @@ public class JournalMapper {
     private final JournalRepository journalRepository;
 
     public JournalResponse toResponse(Journal journal) {
+        Transaction transaction = journal.getTransaction();
+        String transactionId = transaction.getTransactionId();
+        String counterpartyAccountNumber = getAccountNumber(journal.getEntryType(), transactionId);
+
         JournalResponse jr = new JournalResponse();
         jr.setId(journal.getId());
         jr.setDate(journal.getCreatedAt());
-        jr.setTransactionId(journal.getTransaction().getTransactionId());
+        jr.setTransactionId(transactionId);
         jr.setParticulars(getParticulars(journal));
         jr.setAmount(journal.getAmount());
-        jr.setAccountNumber(getAccountNumber(journal.getEntryType(), journal.getTransaction().getTransactionId()));
+        jr.setAccountNumber(journal.getAccountNumber());
+        jr.setCounterpartyAccountNumber(counterpartyAccountNumber);
+        jr.setCounterpartyName(getName(counterpartyAccountNumber, transaction.getId()));
         jr.setEntryType(journal.getEntryType());
+        jr.setTransactionType(transaction.getTransactionType());
+        jr.setChannel(transaction.getChannel());
+        jr.setStatus(transaction.getStatus());
+        jr.setRemarks(transaction.getRemarks());
 
         return jr;
     }

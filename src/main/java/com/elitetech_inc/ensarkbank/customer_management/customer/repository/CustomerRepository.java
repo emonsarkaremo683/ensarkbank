@@ -20,4 +20,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByUserEmail(@Param("email") String email);
 
     Optional<Customer> findCustomerByUser_Id(Long userId);
+
+    @Query("SELECT DISTINCT c FROM Customer c WHERE c.id IN (SELECT ah.customer.id FROM AccountHolder ah JOIN ah.account a WHERE a.branch.id IN :branchIds)")
+    List<Customer> findCustomersByBranchIds(@Param("branchIds") List<Long> branchIds);
 }

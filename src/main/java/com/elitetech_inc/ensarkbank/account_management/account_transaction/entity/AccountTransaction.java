@@ -28,6 +28,7 @@ public class AccountTransaction extends BaseEntity {
     private String receiverAccountNumber;
     private String receiverName;
     private String bankName;
+    private String routingNumber;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JsonIgnore

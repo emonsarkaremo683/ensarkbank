@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class AddressResponse {
 
+    private Long id;
     private String holdingNo;
     private String area;
     private String postalCode;

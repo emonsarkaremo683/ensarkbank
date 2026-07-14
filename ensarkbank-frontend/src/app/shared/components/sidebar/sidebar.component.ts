@@ -16,10 +16,14 @@ interface NavItem {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.scss']
+  styleUrls: ['./sidebar.component.scss'],
+  host: {
+    '[class.sidebar-mobile-open]': 'mobileOpen'
+  }
 })
 export class SidebarComponent {
   @Input() collapsed = false;
+  @Input() mobileOpen = false;
 
   private authService = inject(AuthService);
 
@@ -40,6 +44,7 @@ export class SidebarComponent {
     { label: 'ATM', route: '/atm', icon: 'atm', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.ATM_MANAGER, Role.BRANCH_MANAGER] },
     { label: 'KYC', route: '/kyc', icon: 'kyc', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CUSTOMER_SERVICE] },
     { label: 'Reports', route: '/reports', icon: 'reports', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT, Role.AUDITOR] },
+    { label: 'Profile', route: '/profile', icon: 'profile', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT, Role.CASHIER, Role.LOAN_OFFICER, Role.CUSTOMER_SERVICE, Role.ATM_MANAGER, Role.AUDITOR] },
     
 
     { label: 'Dashboard', route: '/customer/dashboard', icon: 'dashboard', roles: [Role.CUSTOMER] },
@@ -49,6 +54,7 @@ export class SidebarComponent {
     { label: 'My Loans', route: '/customer/loans', icon: 'loans', roles: [Role.CUSTOMER] },
     { label: 'My Beneficiaries', route: '/customer/beneficiaries', icon: 'beneficiaries', roles: [Role.CUSTOMER] },
     { label: 'My KYC', route: '/customer/kyc', icon: 'kyc', roles: [Role.CUSTOMER] },
+    { label: 'My Profile', route: '/customer/profile', icon: 'profile', roles: [Role.CUSTOMER] },
   ];
 
   user = this.authService.currentUser;

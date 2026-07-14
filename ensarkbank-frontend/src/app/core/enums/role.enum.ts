@@ -493,3 +493,31 @@ export const DesignationMap: Record<Designation, DesignationInfo> = {
   [Designation.OFFICE_ASSISTANT]: { displayName: 'Office Assistant', defaultRole: Role.CUSTOMER_SERVICE },
   [Designation.INTERN]: { displayName: 'Intern', defaultRole: Role.CUSTOMER_SERVICE }
 };
+
+// ===========================
+// RequestStatus
+// ===========================
+export enum RequestStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
+}
+
+export const RequestStatusLabels: Record<RequestStatus, string> = {
+  [RequestStatus.PENDING]: 'Pending',
+  [RequestStatus.APPROVED]: 'Approved',
+  [RequestStatus.REJECTED]: 'Rejected'
+};
+
+// ===========================
+// CardSettingsRequestType
+// ===========================
+export enum CardSettingsRequestType {
+  INTERNATIONAL_ENABLED = 'INTERNATIONAL_ENABLED',
+  ONLINE_TRANSACTION_ENABLED = 'ONLINE_TRANSACTION_ENABLED'
+}
+
+export const CardSettingsRequestTypeLabels: Record<CardSettingsRequestType, string> = {
+  [CardSettingsRequestType.INTERNATIONAL_ENABLED]: 'International Transactions',
+  [CardSettingsRequestType.ONLINE_TRANSACTION_ENABLED]: 'Online Transactions'
+};

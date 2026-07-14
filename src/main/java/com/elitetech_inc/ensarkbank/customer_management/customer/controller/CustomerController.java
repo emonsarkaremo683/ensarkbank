@@ -7,6 +7,7 @@ import com.elitetech_inc.ensarkbank.accounting_system.journal.dto.JournalRespons
 import com.elitetech_inc.ensarkbank.accounting_system.journal.service.JournalService;
 import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
 import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
+import com.elitetech_inc.ensarkbank.common.security.BranchAccessService;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.request.CustomerRequest;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.response.CustomerResponse;
 import com.elitetech_inc.ensarkbank.customer_management.customer.service.CustomerService;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -33,6 +35,7 @@ public class CustomerController {
     private final ObjectMapper objectMapper;
     private final AccountService accountService;
     private final JournalService journalService;
+    private final BranchAccessService branchAccessService;
 
     /**
      * POST /api/customer/
@@ -73,8 +76,12 @@ public class CustomerController {
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'ACCOUNTANT', 'AUDITOR')")
     @GetMapping
-    public List<CustomerResponse> getAll() {
-        return customerService.getAll();
+    public List<CustomerResponse> getAll(Authentication auth) {
+        List<Long> branchIds = branchAccessService.getAccessibleBranchIds(auth);
+        if (branchIds == null) {
+            return customerService.getAll();
+        }
+        return customerService.getCustomersByBranchIds(branchIds);
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CASHIER')")
@@ -153,13 +160,13 @@ public class CustomerController {
     @GetMapping("/history/customer/{id}")
     public ResponseEntity<List<JournalResponse>> getHistory(
             @PathVariable Long id,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             LocalDateTime endDate) {
 
         return ResponseEntity.ok(
-                journalService.getJournalByAccountNumber(id, startDate, endDate)
+                journalService.getJournalByAccountId(id, startDate, endDate)
         );
     }
 

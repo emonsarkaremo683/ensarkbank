@@ -8,7 +8,6 @@ import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepos
 import com.elitetech_inc.ensarkbank.common.enums.CardStatus;
 import com.elitetech_inc.ensarkbank.common.enums.CardType;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
-import com.elitetech_inc.ensarkbank.util.Utils;
 import com.elitetech_inc.ensarkbank.util.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,8 +29,9 @@ public class CardServiceImpl implements CardService{
 
 
     @Override
-    public CardResponse createCard(CardRequest cr) {
+    public CardResponse createCard(CardRequest cr, Long id) {
         requestValidator.validateCard(cr);
+        validator.checkPassportAvailable(id);
         Card card = cardMapper.toCard(cr);
         return cardMapper.toCardResponse(cardRepository.save(card));
     }
@@ -56,9 +56,11 @@ public class CardServiceImpl implements CardService{
     }
 
     @Override
-    public CardResponse updateCardStatus(Long cardId, CardStatus cr) {
+    public CardResponse updateCardStatus(Long cardId, CardStatus cr,double dailyLimit, double monthlyLimit) {
         Card card = cardRepository.findById(cardId).orElseThrow(()-> new RuntimeException("not found"));
-        card.setStatus(CardStatus.ACTIVE);
+        card.setStatus(cr);
+        card.setDailyLimit(card.getCardType() != CardType.DEBIT? dailyLimit: 0.0);
+        card.setMonthlyLimit(card.getCardType() != CardType.DEBIT? monthlyLimit: 0.0);
         return cardMapper.toCardResponse(cardRepository.save(card));
     }
 
@@ -74,7 +76,6 @@ public class CardServiceImpl implements CardService{
     @Override
     public CardResponse updateCardPin(Long cardId, String pin) {
         Card card = cardRepository.findById(cardId).orElseThrow(()-> new RuntimeException("not found"));
-        validator.checkCardStatus(card.getCardNumber());
         card.setPinHash(encoder.encode(pin));
         return cardMapper.toCardResponse(cardRepository.save(card));
     }

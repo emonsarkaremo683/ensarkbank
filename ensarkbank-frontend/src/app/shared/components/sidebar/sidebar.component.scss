@@ -199,3 +199,28 @@
     color: #475569;
   }
 }
+
+// ============================
+// RESPONSIVE: MOBILE
+// ============================
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 260px;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+
+    &.collapsed {
+      transform: translateX(-100%);
+    }
+  }
+
+  :host(.sidebar-mobile-open) .sidebar {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  }
+}

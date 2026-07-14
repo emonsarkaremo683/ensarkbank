@@ -3,131 +3,217 @@
 }
 
 <div class="dashboard">
-  <div class="dashboard-header">
-    <div class="header-left">
-      <h1 class="page-title">Dashboard</h1>
-      <p class="page-subtitle">Welcome back, {{ currentUser()?.name }}</p>
+  <!-- Header -->
+  <header class="dash-header">
+    <div class="dash-header__left">
+      @if (isCustomer() && currentUser()?.imageUrl) {
+        <img [src]="currentUser()?.imageUrl" [alt]="currentUser()?.name" class="dash-avatar" />
+      } @else if (isCustomer()) {
+        <div class="dash-avatar dash-avatar--initials">{{ currentUser()?.name?.charAt(0) || '?' }}</div>
+      }
+      <div class="dash-header__text">
+        <h1 class="dash-header__title">Dashboard</h1>
+        <p class="dash-header__sub">Welcome back, {{ currentUser()?.name }}</p>
+      </div>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-outline" (click)="toggleAutoRefresh()" [class.active]="autoRefresh()">
+    <div class="dash-header__actions">
+      <button class="btn btn--outline" (click)="toggleAutoRefresh()" [class.btn--active]="autoRefresh()">
         <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
           <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
         </svg>
-        {{ autoRefresh() ? 'Auto-refresh On' : 'Auto-refresh Off' }}
+        <span class="btn__label">{{ autoRefresh() ? 'Auto-refresh On' : 'Auto-refresh Off' }}</span>
       </button>
-      <button class="btn btn-primary" (click)="refresh()">
+      <button class="btn btn--primary" (click)="refresh()">
         <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
           <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
         </svg>
-        Refresh
+        <span class="btn__label">Refresh</span>
       </button>
     </div>
-  </div>
+  </header>
 
-  <div class="stats-grid">
+  <!-- Stats -->
+  <section class="stats-row">
     @if (visibleStats().includes('customers')) {
-      <app-stats-card
-        title="Total Customers"
-        [value]="customerCount()"
-        icon="👥"
-        color="#22c55e"
-      />
+      <app-stats-card title="Total Customers" [value]="customerCount()" icon="👥" color="#22c55e" />
     }
     @if (visibleStats().includes('accounts')) {
-      <app-stats-card
-        title="Total Accounts"
-        [value]="accountCount()"
-        icon="🏦"
-        color="#3b82f6"
-      />
+      <app-stats-card title="Total Accounts" [value]="accountCount()" icon="🏦" color="#3b82f6" />
     }
     @if (visibleStats().includes('transactions')) {
-      <app-stats-card
-        title="Total Transactions"
-        [value]="transactionCount()"
-        icon="📝"
-        color="#c9a84c"
-      />
+      <app-stats-card title="Total Transactions" [value]="transactionCount()" icon="📝" color="#c9a84c" />
     }
     @if (visibleStats().includes('loans')) {
-      <app-stats-card
-        title="Active Loans"
-        [value]="loanCount()"
-        icon="📋"
-        color="#8b5cf6"
-      />
+      <app-stats-card title="Total Loans" [value]="loanCount()" icon="📋" color="#8b5cf6" />
     }
     @if (visibleStats().includes('balance')) {
-      <app-stats-card
-        title="Total Balance"
-        [value]="formatCurrency(totalBalance())"
-        icon="💰"
-        color="#f59e0b"
-      />
+      <app-stats-card title="Total Balance" [value]="formatCurrency(totalBalance())" icon="💰" color="#f59e0b" />
     }
     @if (visibleStats().includes('atms')) {
-      <app-stats-card
-        title="ATM Count"
-        [value]="atmCount()"
-        icon="🏧"
-        color="#f97316"
-      />
+      <app-stats-card title="Active Cards" [value]="atmCount()" icon="💳" color="#f97316" />
     }
-  </div>
+  </section>
 
-  <div class="content-grid">
-    <div class="main-content">
-      <div class="section-card">
-        <div class="section-header">
-          <h2 class="section-title">Recent Transactions</h2>
-          <button class="btn btn-link" (click)="navigate('/transactions')">View All →</button>
+  <!-- Body -->
+  <div class="dash-body">
+    <!-- Main -->
+    <div class="dash-main">
+      <!-- Charts for Staff -->
+      @if (!isCustomer()) {
+        <!-- Transaction Trends (Line Chart) -->
+        @if (transactionTrendLabels().length > 0) {
+          <div class="chart-card">
+            <app-chart
+              title="Transaction Trends (Last 7 Days)"
+              chartType="line"
+              [labels]="transactionTrendLabels()"
+              [datasets]="[{ label: 'Transactions', data: transactionTrendData(), color: 'rgba(201, 168, 76, 0.8)' }]"
+            />
+          </div>
+        }
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+          <!-- Transaction Types (Bar Chart) -->
+          @if (transactionTypeLabels().length > 0) {
+            <div class="chart-card chart-card--half">
+              <app-chart
+                title="Transactions by Type"
+                chartType="bar"
+                [labels]="transactionTypeLabels()"
+                [datasets]="[{ label: 'Count', data: transactionTypeData(), color: 'rgba(59, 130, 246, 0.8)' }]"
+              />
+            </div>
+          }
+
+          <!-- Account Types (Doughnut) -->
+          @if (accountTypeLabels().length > 0) {
+            <div class="chart-card chart-card--half">
+              <app-chart
+                title="Account Types"
+                chartType="doughnut"
+                [labels]="accountTypeLabels()"
+                [datasets]="[{ label: 'Accounts', data: accountTypeData() }]"
+              />
+            </div>
+          }
         </div>
-        <app-data-table
-          [columns]="transactionColumns"
-          [data]="recentTransactions()"
-          [searchable]="false"
-          [paginated]="true"
-          [pageSize]="5"
-          emptyMessage="No transactions found"
-          (rowClick)="onTransactionAction($event)"
-        />
-      </div>
+
+        <!-- Charts Row 2 -->
+        <div class="charts-row">
+          <!-- Loan Status (Pie) -->
+          @if (loanStatusLabels().length > 0 && (isAdmin() || isBranchManager())) {
+            <div class="chart-card chart-card--half">
+              <app-chart
+                title="Loan Status"
+                chartType="pie"
+                [labels]="loanStatusLabels()"
+                [datasets]="[{ label: 'Loans', data: loanStatusData() }]"
+              />
+            </div>
+          }
+
+          <!-- Branch Wise (Bar) -->
+          @if (canSeeBranchWise() && branchLabels().length > 0) {
+            <div class="chart-card chart-card--half">
+              <app-chart
+                title="Branch-wise Accounts"
+                chartType="bar"
+                [labels]="branchLabels()"
+                [datasets]="[{ label: 'Accounts', data: branchAccountData(), color: 'rgba(34, 197, 94, 0.8)' }]"
+              />
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Customer Accounts -->
+      @if (isCustomer() && customerAccounts().length > 0) {
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__title">My Accounts</h2>
+            <button class="btn btn--link" (click)="navigate('/customer/accounts')">View All →</button>
+          </div>
+          <div class="accounts">
+            @for (acc of customerAccounts(); track acc.id) {
+              <div class="account">
+                <div class="account__left">
+                  <span class="account__number">{{ acc.accountNumber }}</span>
+                  <span class="account__type">{{ acc.accountType }}</span>
+                </div>
+                <div class="account__right">
+                  <span class="account__label">Available</span>
+                  <span class="account__balance">{{ formatCurrency(acc.availableBalance) }}</span>
+                </div>
+                <span class="badge" [class]="'badge--' + acc.accountStatus.toLowerCase()">{{ acc.accountStatus }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
     </div>
 
-    <div class="side-content">
-      <div class="section-card">
-        <div class="section-header">
-          <h2 class="section-title">Quick Actions</h2>
+    <!-- Sidebar -->
+    <aside class="dash-side">
+      <div class="card">
+        <div class="card__head">
+          <h2 class="card__title">Quick Actions</h2>
         </div>
-        <div class="quick-actions">
+        <div class="actions">
           @for (action of quickActions(); track action.label) {
-            <button class="action-item" (click)="navigate(action.route)" [style.--action-color]="action.color">
-              <span class="action-icon">{{ action.icon }}</span>
-              <span class="action-label">{{ action.label }}</span>
+            <button class="action" (click)="navigate(action.route)" [style.--action-color]="action.color">
+              <span class="action__icon">{{ action.icon }}</span>
+              <span class="action__label">{{ action.label }}</span>
             </button>
           }
         </div>
       </div>
 
-      <div class="section-card">
-        <div class="section-header">
-          <h2 class="section-title">System Overview</h2>
+      <div class="card">
+        <div class="card__head">
+          <h2 class="card__title">System Overview</h2>
         </div>
-        <div class="system-info">
-          <div class="info-row">
-            <span class="info-label">Last Refresh</span>
-            <span class="info-value">{{ lastRefresh() | date:'medium' }}</span>
+        <div class="sysinfo">
+          <div class="sysinfo__row">
+            <span class="sysinfo__label">Last Refresh</span>
+            <span class="sysinfo__value">{{ lastRefresh() | date:'medium' }}</span>
           </div>
-          <div class="info-row">
-            <span class="info-label">Your Role</span>
-            <span class="info-badge">{{ currentUser()?.role }}</span>
+          <div class="sysinfo__row">
+            <span class="sysinfo__label">Your Role</span>
+            <span class="sysinfo__badge">{{ currentUser()?.role }}</span>
           </div>
-          <div class="info-row">
-            <span class="info-label">User</span>
-            <span class="info-value">{{ currentUser()?.email }}</span>
+          <div class="sysinfo__row">
+            <span class="sysinfo__label">User</span>
+            <span class="sysinfo__value">{{ currentUser()?.email }}</span>
           </div>
+          @if (isCustomer()) {
+            <div class="sysinfo__row">
+              <span class="sysinfo__label">Phone</span>
+              <span class="sysinfo__value">{{ currentUser()?.phone || 'N/A' }}</span>
+            </div>
+          }
         </div>
       </div>
-    </div>
+
+      @if (isCustomer() && customerLoans().length > 0) {
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__title">My Loans</h2>
+            <button class="btn btn--link" (click)="navigate('/customer/loans')">View →</button>
+          </div>
+          <div class="loans">
+            @for (loan of customerLoans().slice(0, 3); track loan.loanId) {
+              <div class="loan">
+                <div class="loan__left">
+                  <span class="loan__id">Loan #{{ loan.loanId }}</span>
+                  <span class="loan__amount">{{ formatCurrency(loan.principalAmount) }}</span>
+                </div>
+                <span class="badge" [class]="'badge--' + loan.status.toLowerCase()">{{ loan.status }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </aside>
   </div>
 </div>

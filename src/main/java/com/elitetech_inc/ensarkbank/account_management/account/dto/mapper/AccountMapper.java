@@ -7,6 +7,7 @@ import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.mapper
 import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.response.AccountHolderResponse;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
 import com.elitetech_inc.ensarkbank.account_management.nominee.entity.Nominee;
+import com.elitetech_inc.ensarkbank.account_management.nominee.repository.NomineeRepository;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.common.address.address.dto.response.AddressResponse;
 import com.elitetech_inc.ensarkbank.common.enums.HolderType;
@@ -25,6 +26,7 @@ public class AccountMapper {
     private final AccountHolderMapper accountHolderMapper;
     private final AccountNumberGenerator  accountNumberGenerator;
     private final BranchRepository branchRepository;
+    private final NomineeRepository nomineeRepository;
 
     public AccountResponse toAccountResponse(Account acc) {
         AccountResponse ar = new AccountResponse();
@@ -44,6 +46,16 @@ public class AccountMapper {
                 .map(accountHolderMapper::toAccountHolderResponse)
                 .toList();
 
+        nomineeRepository.findNomineeByAccount_id(acc.getId()).ifPresent(nominee -> {
+            ar.setN_email(nominee.getEmail());
+            ar.setN_name(nominee.getName());
+            ar.setN_photo(nominee.getPhoto());
+            ar.setN_nid_front(nominee.getNid_front());
+            ar.setN_nid_back(nominee.getNid_back());
+            ar.setN_phone(nominee.getPhone());
+            ar.setRelation(nominee.getRelation());
+        });
+
         ar.setHolderResponses(holders);
 
         return ar;
@@ -54,8 +66,8 @@ public class AccountMapper {
         Account acc = new Account();
         acc.setAccountNumber("acc-"+accountNumberGenerator.generateAccountNumber(ar.getBranchId(), ar.getAccountType()));
         acc.setAccountType(ar.getAccountType());
-        acc.setAvailableBalance(ar.getAvailableBalance());
-        acc.setCurrentBalance(ar.getAvailableBalance());
+        acc.setAvailableBalance(BigDecimal.ZERO);
+        acc.setCurrentBalance(BigDecimal.ZERO);
         acc.setHoldBalance(ar.getAvailableBalance());
         acc.setBranch(branchRepository.findById(ar.getBranchId()).orElse(null));
 
@@ -71,6 +83,8 @@ public class AccountMapper {
                 .relation(ar.getRelation())
                 .build();
     }
+
+
 
 
 

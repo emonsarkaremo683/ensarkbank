@@ -5,9 +5,11 @@ import com.elitetech_inc.ensarkbank.account_management.card.dto.response.CardRes
 import com.elitetech_inc.ensarkbank.account_management.card.service.CardService;
 import com.elitetech_inc.ensarkbank.common.enums.CardStatus;
 import com.elitetech_inc.ensarkbank.common.enums.CardType;
+import com.elitetech_inc.ensarkbank.common.security.CustomerSecurity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,11 +20,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CardController {
     private final CardService cardService;
+    private final CustomerSecurity customerSecurity;
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
     @PostMapping
-    public ResponseEntity<CardResponse> createCard(@RequestBody CardRequest cr) {
-        return ResponseEntity.ok(cardService.createCard(cr));
+    public ResponseEntity<CardResponse> createCard(@RequestBody CardRequest cr, Authentication auth) {
+        Long customerId = customerSecurity.getAuthenticatedCustomerId(auth);
+        return ResponseEntity.ok(cardService.createCard(cr, customerId));
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CUSTOMER_SERVICE', 'AUDITOR')")
@@ -45,8 +49,8 @@ public class CardController {
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")
     @PatchMapping("{id}/status")
-    public ResponseEntity<CardResponse> updateCardStatus(@PathVariable Long id, @RequestParam CardStatus status) {
-        return ResponseEntity.ok(cardService.updateCardStatus(id, status));
+    public ResponseEntity<CardResponse> updateCardStatus(@PathVariable Long id, @RequestParam CardStatus status,@RequestParam double dailyLimit, @RequestParam double monthlyLimit) {
+        return ResponseEntity.ok(cardService.updateCardStatus(id, status, dailyLimit, monthlyLimit));
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE')")

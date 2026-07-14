@@ -9,9 +9,10 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
   imports: [RouterOutlet, HeaderComponent, SidebarComponent],
   template: `
     <div class="app-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
-      <app-sidebar [collapsed]="sidebarCollapsed()" />
+      <div class="sidebar-overlay" [class.visible]="mobileSidebarOpen()" (click)="mobileSidebarOpen.set(false)"></div>
+      <app-sidebar [collapsed]="sidebarCollapsed()" [mobileOpen]="mobileSidebarOpen()" />
       <div class="main-area">
-        <app-header (sidebarToggle)="sidebarCollapsed.set(!sidebarCollapsed())" />
+        <app-header (sidebarToggle)="toggleSidebar()" />
         <main class="content">
           <router-outlet />
         </main>
@@ -23,6 +24,17 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
       display: flex;
       min-height: 100vh;
       background: #0a1628;
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      backdrop-filter: blur(2px);
+    }
+    .sidebar-overlay.visible {
+      display: block;
     }
     .main-area {
       flex: 1;
@@ -43,9 +55,21 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
       .main-area {
         margin-left: 0 !important;
       }
+      .content {
+        padding: 16px;
+      }
     }
   `]
 })
 export class MainLayoutComponent {
   sidebarCollapsed = signal(false);
+  mobileSidebarOpen = signal(false);
+
+  toggleSidebar(): void {
+    if (window.innerWidth <= 768) {
+      this.mobileSidebarOpen.update(v => !v);
+    } else {
+      this.sidebarCollapsed.update(v => !v);
+    }
+  }
 }

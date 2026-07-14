@@ -127,6 +127,7 @@ public class CustomerMapper {
 
         AddressResponse response = new AddressResponse();
 
+        response.setId(address.getId());
         response.setHoldingNo(address.getHoldingNo());
         response.setArea(address.getArea());
         response.setPostalCode(address.getPostalCode());

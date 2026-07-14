@@ -8,6 +8,7 @@ import com.elitetech_inc.ensarkbank.account_management.account.service.AccountSe
 import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
 import com.elitetech_inc.ensarkbank.common.enums.Role;
+import com.elitetech_inc.ensarkbank.common.security.BranchAccessService;
 import com.elitetech_inc.ensarkbank.common.security.CustomerSecurity;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.request.CustomerRequest;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class AccountController {
     private final AccountService accountService;
     private final ObjectMapper objectMapper;
     private final CustomerSecurity customerSecurity;
+    private final BranchAccessService branchAccessService;
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CASHIER', 'CUSTOMER')")
     @PostMapping("create")
@@ -60,10 +62,14 @@ public class AccountController {
         return new ResponseEntity<>(accountService.createAccount(dto, nominees), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @GetMapping("all/")
-    public ResponseEntity<List<AccountResponse>> getAllAccounts() {
-        return new ResponseEntity<>(accountService.getAccounts(), HttpStatus.OK);
+    public ResponseEntity<List<AccountResponse>> getAllAccounts(Authentication auth) {
+        List<Long> branchIds = branchAccessService.getAccessibleBranchIds(auth);
+        if (branchIds == null) {
+            return new ResponseEntity<>(accountService.getAccounts(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(accountService.getAccountsByBranchIds(branchIds), HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.isOwner(#id, authentication))")
@@ -80,7 +86,7 @@ public class AccountController {
         return ResponseEntity.ok(accountService.updateAccountStatus(id, status));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE') or (hasRole('CUSTOMER') and @customerSecurity.isAccountNumberOwner(#accountNumber, authentication))")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
     @GetMapping("account-number/{accountNumber}")
     public ResponseEntity<AccountResponse> getAccountByAccountNumber(@PathVariable String accountNumber) {
         return accountService.getAccountByAccountNumber(accountNumber)
@@ -90,10 +96,18 @@ public class AccountController {
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR')")
     @GetMapping("branch/{branchId}")
-    public ResponseEntity<AccountResponse> getAccountsByBranchId(@PathVariable Long branchId) {
-        return accountService.getAccountsByBranchId(branchId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<List<AccountResponse>> getAccountsByBranchId(@PathVariable Long branchId) {
+        return ResponseEntity.ok(accountService.getAccountsByBranchId(branchId));
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR')")
+    @GetMapping("branch/{branchId}/all")
+    public ResponseEntity<List<AccountResponse>> getAccountsByBranchAndChildren(@PathVariable Long branchId, Authentication auth) {
+        if (branchAccessService.isHeadOffice(auth)) {
+            return ResponseEntity.ok(accountService.getAccounts());
+        }
+        List<Long> branchIds = accountService.resolveBranchAndChildIds(branchId);
+        return ResponseEntity.ok(accountService.getAccountsByBranchIds(branchIds));
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE') or (hasRole('CUSTOMER') and @customerSecurity.isCustomerIdsMatch(#customerId, authentication))")

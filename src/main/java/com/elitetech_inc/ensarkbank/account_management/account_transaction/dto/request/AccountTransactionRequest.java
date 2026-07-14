@@ -8,12 +8,13 @@ import java.math.BigDecimal;
 @Data
 public class AccountTransactionRequest {
 
-    private Long senderId;
+    private Long senderAccountId;
 
-    private Long receiverId;
+    private Long receiverAccountId;
     private String receiverAccountNumber;
     private String receiverName;
     private String bankName;
+    private String routingNumber;
 
     // if beneficiary exists
     private Long beneficiaryId;

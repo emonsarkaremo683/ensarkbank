@@ -16,7 +16,9 @@ public interface AccountService {
     Optional<AccountResponse> getAccount(Long id);
     AccountResponse updateAccountStatus(Long id, AccountStatus ar);
     Optional<AccountResponse> getAccountByAccountNumber(String accountNumber);
-    Optional<AccountResponse> getAccountsByBranchId(Long branchId);
+    List<AccountResponse> getAccountsByBranchId(Long branchId);
+    List<AccountResponse> getAccountsByBranchIds(List<Long> branchIds);
+    List<Long> resolveBranchAndChildIds(Long branchId);
     List<AccountResponse> getAccounts();
     List<AccountResponse> getAccountsByCustomerId(Long customerId);
 

@@ -23,6 +23,8 @@ export class CustomerKycComponent implements OnInit {
   uploading = signal(false);
 
   showUploadModal = signal(false);
+  showPreviewModal = signal(false);
+  previewDocument = signal<KycResponse | null>(null);
   selectedFiles = signal<{ [key: string]: File | null }>({
     NID: null,
     PASSPORT: null,
@@ -145,5 +147,32 @@ export class CustomerKycComponent implements OnInit {
       'BIRTH_CERTIFICATE': 'Birth Certificate'
     };
     return map[type] || type;
+  }
+
+  openPreview(doc: KycResponse): void {
+    this.previewDocument.set(doc);
+    this.showPreviewModal.set(true);
+  }
+
+  closePreview(): void {
+    this.showPreviewModal.set(false);
+    this.previewDocument.set(null);
+  }
+
+  isImageFile(path: string): boolean {
+    if (!path) return false;
+    return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(path);
+  }
+
+  getDocumentUrl(path: string): string {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    const base = 'http://localhost:8085';
+    return path.startsWith('/') ? base + path : base + '/' + path;
+  }
+
+  onPreviewError(): void {
+    this.notify.warning('Preview', 'Unable to load document preview');
+    this.closePreview();
   }
 }

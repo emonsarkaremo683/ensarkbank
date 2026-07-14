@@ -1,6 +1,8 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { ApiService } from '../../core/services/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -35,6 +37,7 @@ export class LoansComponent implements OnInit {
   showRepayModal = signal(false);
   showConfirmDialog = signal(false);
   selectedLoan = signal<LoanResponse | null>(null);
+  repayments = signal<LoanRepayment[]>([]);
   confirmAction = signal<'approve' | 'reject' | 'disburse' | null>(null);
 
   form = {
@@ -84,7 +87,7 @@ export class LoansComponent implements OnInit {
   constructor(
     private api: ApiService,
     private notify: NotificationService,
-    private auth: AuthService
+    public auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -93,14 +96,46 @@ export class LoansComponent implements OnInit {
 
   loadData(): void {
     this.loading.set(true);
-    this.api.getLoans().subscribe({
-      next: data => { this.loans.set(data); this.loading.set(false); },
-      error: () => { this.notify.error('Error', 'Failed to load loans'); this.loading.set(false); }
-    });
-    this.api.getAccounts().subscribe({
-      next: data => this.accounts.set(data),
-      error: () => {}
-    });
+    if (this.auth.isCustomer()) {
+      const userId = this.auth.currentUser()!.id;
+      this.api.getAccountsByCustomerId(userId).subscribe({
+        next: accounts => {
+          this.accounts.set(accounts);
+          if (accounts.length === 0) {
+            this.loans.set([]);
+            this.loading.set(false);
+            return;
+          }
+          forkJoin(
+            accounts.map(acc =>
+              this.api.getLoansByAccount(acc.id).pipe(catchError(() => of([])))
+            )
+          ).subscribe({
+            next: results => {
+              this.loans.set(results.flat());
+              this.loading.set(false);
+            },
+            error: () => {
+              this.notify.error('Error', 'Failed to load loans');
+              this.loading.set(false);
+            }
+          });
+        },
+        error: () => {
+          this.notify.error('Error', 'Failed to load accounts');
+          this.loading.set(false);
+        }
+      });
+    } else {
+      this.api.getLoans().subscribe({
+        next: data => { this.loans.set(data); this.loading.set(false); },
+        error: () => { this.notify.error('Error', 'Failed to load loans'); this.loading.set(false); }
+      });
+      this.api.getAccounts().subscribe({
+        next: data => this.accounts.set(data),
+        error: () => {}
+      });
+    }
   }
 
   openApply(): void {
@@ -150,32 +185,45 @@ export class LoansComponent implements OnInit {
 
   openRepay(loan: LoanResponse): void {
     this.selectedLoan.set(loan);
-    this.repayAmount = loan.emiAmount;
+    this.repayments.set([]);
     this.showRepayModal.set(true);
+    this.api.getLoanRepayments(loan.loanId).subscribe({
+      next: (data) => this.repayments.set(data),
+      error: () => this.notify.error('Error', 'Failed to load repayment schedule')
+    });
   }
 
   closeRepay(): void {
     this.showRepayModal.set(false);
     this.selectedLoan.set(null);
+    this.repayments.set([]);
     this.repayAmount = 0;
   }
 
-  submitRepay(): void {
-    const loan = this.selectedLoan();
-    if (!loan || this.repayAmount <= 0) return;
+  payRepayment(repayment: LoanRepayment): void {
+    if (!repayment || repayment.status === 'PAID' || repayment.status === 'LATE') return;
     this.submitting.set(true);
-    this.api.repayLoan(loan.loanId, this.repayAmount).subscribe({
+    this.api.payInstallment(repayment.id).subscribe({
       next: () => {
-        this.notify.success('Success', `Payment of ${this.formatCurrency(this.repayAmount)} submitted`);
+        this.notify.success('Success', `Installment #${repayment.installmentNumber} paid successfully`);
         this.loadData();
-        this.closeRepay();
+        this.openRepay(this.selectedLoan()!);
         this.submitting.set(false);
       },
       error: (err) => {
-        this.notify.error('Error', err.error?.message || 'Repayment failed');
+        this.notify.error('Error', err.error?.message || 'Payment failed');
         this.submitting.set(false);
       }
     });
+  }
+
+  getRepaymentStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      'PAID': 'badge-success',
+      'PENDING': 'badge-warning',
+      'LATE': 'badge-danger'
+    };
+    return map[status] || 'badge-neutral';
   }
 
   confirmLoanAction(loan: LoanResponse, action: 'approve' | 'reject' | 'disburse'): void {

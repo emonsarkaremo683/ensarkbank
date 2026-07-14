@@ -15,6 +15,7 @@ public interface AccountTransactionService {
     List<AccountTransactionResponse> findAllByAccountNumber(String accountNumber);
     List<AccountTransactionResponse> findByAccountId(Long accountId);
     List<AccountTransactionResponse> findAll();
+    List<AccountTransactionResponse> findByBranchIds(List<Long> branchIds);
     OtpInitiateResponse initiateOnlineTransaction(AccountTransactionRequest atr);
     AccountTransactionResponse verifyOnlineTransaction(OtpVerifyRequest req);
     void markOtpVerified(Long otpId);

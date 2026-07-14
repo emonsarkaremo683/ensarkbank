@@ -19,7 +19,7 @@
       </div>
       @if (!collapsed) {
         <div class="logo-text">
-          <span class="logo-name">Ensar Bank</span>
+          <span class="logo-name">EnSark Bank</span>
           <span class="logo-subtitle">{{ isCustomer() ? 'Customer Portal' : 'Staff Portal' }}</span>
         </div>
       }
@@ -88,6 +88,9 @@
                   }
                   @case ('beneficiaries') {
                     <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zm8-3a3 3 0 11-6 0 3 3 0 016 0zm-4.07 11c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+                  }
+                  @case ('profile') {
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
                   }
                 }
               </span>
