@@ -17,7 +17,6 @@ public class CardResponse {
     private CardNetwork cardNetwork;
     private CardType cardType;
     private CardStatus status;
-    private String cvv;
     private Date expiryDate;
     private double dailyLimit;
     private double monthlyLimit;

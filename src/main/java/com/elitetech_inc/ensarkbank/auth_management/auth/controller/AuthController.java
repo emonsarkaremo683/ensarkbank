@@ -6,11 +6,15 @@ import com.elitetech_inc.ensarkbank.auth_management.auth.dto.request.ResetPasswo
 import com.elitetech_inc.ensarkbank.auth_management.auth.dto.response.LoginResponse;
 import com.elitetech_inc.ensarkbank.auth_management.auth.serviceimpl.AuthService;
 import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
+import com.elitetech_inc.ensarkbank.config.RateLimitConfig;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.request.CustomerRequest;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.response.CustomerResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
@@ -24,11 +28,33 @@ public class AuthController {
 
     private final AuthService authService;
     private final ObjectMapper objectMapper;
+    private final RateLimitConfig rateLimitConfig;
 
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse<?>> login(@RequestBody LoginRequest dto) {
-        return ResponseEntity.ok(authService.login(dto));
+    public ResponseEntity<?> login(@RequestBody LoginRequest dto) {
+        String ip = getClientIp();
+        String key = dto.getEmail() + ":" + ip;
+
+        if (rateLimitConfig.isBlocked(key)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(Map.of("message", "Too many login attempts. Try again later."));
+        }
+
+        try {
+            LoginResponse<?> response = authService.login(dto);
+            rateLimitConfig.resetAttempts(key);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            rateLimitConfig.recordAttempt(key);
+            throw e;
+        }
+    }
+
+    private String getClientIp() {
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs == null) return "unknown";
+        return attrs.getRequest().getRemoteAddr();
     }
 
     @PostMapping("/register")

@@ -169,7 +169,7 @@ public class AuthService {
             throw new RuntimeException("Invalid or expired reset link");
         }
 
-        if (dto.getNewPassword() == null || dto.getNewPassword().length() < 4) {
+        if (dto.getNewPassword() == null || dto.getNewPassword().length() < 8) {
             throw new RuntimeException("Password must be at least 8 characters");
         }
 
@@ -194,14 +194,6 @@ public class AuthService {
         CustomerResponse crs = customerService.saveData(dto, profile, documents);
 
         String token = jwtUtil.generateToken(dto.getEmail(), Role.CUSTOMER);
-
-        try {
-            User user = userRepository.findByEmail(dto.getEmail()).orElseThrow();
-            emailService.sendVerificationEmail(user.getEmail(), crs.getName(),
-                    jwtUtil.generateVerificationToken(user.getEmail()));
-        } catch (Exception e) {
-            log.warn("Failed to send verification email after registration: {}", e.getMessage());
-        }
 
         return LoginResponse.<CustomerResponse>builder()
                 .token(token)

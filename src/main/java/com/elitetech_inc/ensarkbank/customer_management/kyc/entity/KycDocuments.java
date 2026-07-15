@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "kyc_documents")
+@Table(name = "kyc_documents", uniqueConstraints = @UniqueConstraint(columnNames = {"kyc_id", "doc_type"}))
 @Data
 public class KycDocuments extends BaseEntity {
 
@@ -17,7 +17,7 @@ public class KycDocuments extends BaseEntity {
     private String path;
 
     @Enumerated(EnumType.STRING)
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private DocumentType doc_type;
 
 

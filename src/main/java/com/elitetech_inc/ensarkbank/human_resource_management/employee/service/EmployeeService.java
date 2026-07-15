@@ -17,6 +17,7 @@ public interface EmployeeService {
     Optional<EmployeeResponse> findById(Long id);
     List<EmployeeResponse> findByBranchId(Long branchId);
     EmployeeResponse update(Long id, EmployeeRequest emp, MultipartFile file);
+    EmployeeResponse updateProfilePhoto(Long id, MultipartFile file);
 
 
 }

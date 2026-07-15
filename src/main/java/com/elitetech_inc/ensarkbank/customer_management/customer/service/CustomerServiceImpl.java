@@ -107,7 +107,7 @@ public class CustomerServiceImpl implements CustomerService {
 
                 KycDocuments kycDoc = new KycDocuments();
                 kycDoc.setDoc_type(docType);
-                kycDoc.setPath(filePath);
+                kycDoc.setPath("kyc/" + filePath);
                 kycDoc.setKyc(kyc);
 
                 kyc.getDocuments().add(kycDoc);
@@ -195,7 +195,7 @@ public class CustomerServiceImpl implements CustomerService {
 
                 KycDocuments kycDoc = new KycDocuments();
                 kycDoc.setDoc_type(docType);
-                kycDoc.setPath(filePath);
+                kycDoc.setPath("kyc/" + filePath);
                 kycDoc.setKyc(kyc);
 
                 kyc.getDocuments().add(kycDoc);

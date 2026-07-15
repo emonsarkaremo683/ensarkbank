@@ -82,9 +82,9 @@ public class AccountServiceImpl implements AccountService {
 
                 String path = utils.uploadFile(file, "nominee", holders.getFirst().getCustomer().getName());
 
-                if(key.equals("nid_front")) nominee.setNid_front(path);
-                if(key.equals("nid_back")) nominee.setNid_back(path);
-                if(key.equals("photo")) nominee.setPhoto(path);
+                if(key.equals("nid_front")) nominee.setNid_front("nominee/" + path);
+                if(key.equals("nid_back")) nominee.setNid_back("nominee/" + path);
+                if(key.equals("photo")) nominee.setPhoto("nominee/" + path);
             }
         }
         account.setAccountStatus(AccountStatus.PENDING);

@@ -16,4 +16,16 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     @Query("SELECT COUNT(l) > 0 FROM Loan l JOIN l.account a JOIN a.holders h WHERE l.id = :loanId AND h.customer.id = :customerId")
     boolean existsByLoanIdAndCustomerId(@Param("loanId") Long loanId, @Param("customerId") Long customerId);
+
+    @Query("SELECT COUNT(l) FROM Loan l JOIN l.account a WHERE a.branch.id IN :branchIds")
+    long countByBranchIds(@Param("branchIds") List<Long> branchIds);
+
+    @Query("SELECT COUNT(l) FROM Loan l")
+    long countAll();
+
+    @Query("SELECT l.status, COUNT(l) FROM Loan l JOIN l.account a WHERE a.branch.id IN :branchIds GROUP BY l.status")
+    List<Object[]> countByStatusGrouped(@Param("branchIds") List<Long> branchIds);
+
+    @Query("SELECT l.status, COUNT(l) FROM Loan l JOIN l.account a GROUP BY l.status")
+    List<Object[]> countByStatusGroupedAll();
 }

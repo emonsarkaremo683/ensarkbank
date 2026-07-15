@@ -2,6 +2,7 @@ package com.elitetech_inc.ensarkbank.account_management.card.repository;
 
 import com.elitetech_inc.ensarkbank.account_management.card.dto.response.CardResponse;
 import com.elitetech_inc.ensarkbank.account_management.card.entity.Card;
+import com.elitetech_inc.ensarkbank.common.enums.CardStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,4 +25,9 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
     @Query("SELECT COUNT(c) > 0 FROM Card c JOIN c.account a JOIN a.holders h WHERE c.id = :cardId AND h.customer.id = :customerId")
     boolean existsByCardIdAndCustomerId(@Param("cardId") Long cardId, @Param("customerId") Long customerId);
+
+    long countByStatus(CardStatus status);
+
+    @Query("SELECT COUNT(c) FROM Card c JOIN c.account a WHERE c.status = :status AND a.branch.id IN :branchIds")
+    long countByStatusAndBranchIds(@Param("status") CardStatus status, @Param("branchIds") List<Long> branchIds);
 }

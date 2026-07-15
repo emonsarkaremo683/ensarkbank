@@ -173,7 +173,8 @@ export class KycComponent implements OnInit {
     if (!path) return '';
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
     const base = 'http://localhost:8085';
-    return path.startsWith('/') ? base + path : base + '/' + path;
+    if (path.startsWith('/')) return base + path;
+    return base + '/uploads/' + path;
   }
 
   onPreviewError(): void {

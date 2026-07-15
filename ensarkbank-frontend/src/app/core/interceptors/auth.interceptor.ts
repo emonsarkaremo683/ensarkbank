@@ -10,8 +10,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = authService.getDecryptedToken();
 
   if (!token) {
-    authService.logout();
-    router.navigate(['/login']);
     return next(req);
   }
 

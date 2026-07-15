@@ -56,7 +56,6 @@ public class CardMapper {
         return CardResponse.builder()
                 .cardId(card.getId())
                 .cardNumber(card.getCardNumber())
-                .cvv(card.getCvv())
                 .cardHolderName(card.getAccount().getHolders()
                         .stream()
                         .filter(h -> h.getHolderType() == HolderType.PRIMARY)

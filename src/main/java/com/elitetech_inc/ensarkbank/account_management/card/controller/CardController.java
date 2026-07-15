@@ -17,10 +17,14 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/card/")
-@RequiredArgsConstructor
 public class CardController {
     private final CardService cardService;
     private final CustomerSecurity customerSecurity;
+
+    public CardController(CardService cardService, CustomerSecurity customerSecurity) {
+        this.cardService = cardService;
+        this.customerSecurity = customerSecurity;
+    }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CUSTOMER_SERVICE', 'CUSTOMER')")
     @PostMapping

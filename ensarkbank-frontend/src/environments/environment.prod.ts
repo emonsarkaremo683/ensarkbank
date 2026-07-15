@@ -2,6 +2,6 @@ export const environment = {
   production: true,
   apiUrl: 'https://api.ensarbank.com',
   appName: 'EnsarBank',
-  encryptionKey: 'EnsarBank@SecureKey2024!@#$%^&*()_+',
+  encryptionKey: '',
   wsUrl: 'https://api.ensarbank.com/api/events'
 };

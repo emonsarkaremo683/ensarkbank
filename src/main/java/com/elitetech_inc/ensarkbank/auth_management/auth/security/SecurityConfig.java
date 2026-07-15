@@ -50,7 +50,6 @@ public class SecurityConfig {
                         // ── Public endpoints (no token needed) ────────────
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/uploads/**",
                                 "/api/division/all",
                                 "/api/division/{id}",
                                 "/api/district/all",
@@ -60,11 +59,24 @@ public class SecurityConfig {
                                 "/api/policestation/{id}",
                                 "/api/policestation/district/**"
                         ).permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                        UsernamePasswordAuthenticationFilter.class)
+                .headers(headers -> headers
+                        .contentTypeOptions(contentType -> {})
+                        .frameOptions(frame -> frame.deny())
+                        .xssProtection(xss -> {})
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000)
+                        )
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:8085")
+                        )
+                );
 
         return http.build();
 

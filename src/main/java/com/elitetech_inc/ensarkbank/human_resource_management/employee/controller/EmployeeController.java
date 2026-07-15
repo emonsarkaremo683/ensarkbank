@@ -64,4 +64,12 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeService.update(id, dto, profilePicture), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CASHIER','ACCOUNTANT', 'LOAN_OFFICER', 'CUSTOMER_SERVICE', 'ATM_MANAGER', 'AUDITOR')")
+    @PatchMapping("{id}/updateProfilePicture")
+    public ResponseEntity<EmployeeResponse> updateEmployeeProfilePicture(
+            @PathVariable Long id,
+            @RequestPart(value = "profile", required = true) MultipartFile profilePicture) {
+
+        return new ResponseEntity<>(employeeService.updateProfilePhoto(id, profilePicture), HttpStatus.OK);
+    }
 }

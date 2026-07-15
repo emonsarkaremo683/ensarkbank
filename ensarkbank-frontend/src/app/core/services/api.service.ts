@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 import {
   Branch, CustomerRequest, CustomerResponse, EmployeeRequest, EmployeeResponse,
   AccountRequest, AccountResponse, AccountTransactionRequest, AccountTransactionResponse,
@@ -17,7 +18,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly BASE = 'http://localhost:8085/api';
+  private readonly BASE = `${environment.apiUrl}/api`;
 
   constructor(private http: HttpClient) {}
 
@@ -98,6 +99,7 @@ export class ApiService {
   getEmployeeById(id: number): Observable<EmployeeResponse> { return this.http.get<EmployeeResponse>(`${this.BASE}/employee/${id}`); }
   createEmployee(formData: FormData): Observable<EmployeeResponse> { return this.http.post<EmployeeResponse>(`${this.BASE}/employee/`, formData); }
   updateEmployee(id: number, formData: FormData): Observable<EmployeeResponse> { return this.http.put<EmployeeResponse>(`${this.BASE}/employee/${id}`, formData); }
+  updateEmployeeProfilePicture(id: number, formData: FormData): Observable<EmployeeResponse> { return this.http.patch<EmployeeResponse>(`${this.BASE}/employee/${id}/updateProfilePicture`, formData); }
   deleteEmployee(id: number): Observable<void> { return this.http.delete<void>(`${this.BASE}/employee/${id}`); }
 
   // Branch

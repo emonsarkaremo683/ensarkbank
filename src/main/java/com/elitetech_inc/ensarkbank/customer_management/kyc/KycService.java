@@ -57,6 +57,8 @@ public class KycService {
         Kyc kyc = null;
         if(customer.getKyc() == null) {
             kyc = new Kyc();
+            kyc.setCustomer(customer);
+            kyc.setStatus(KYCStatus.PENDING);
         } else {
             kyc = repository.findById(customer.getKyc().getId()).orElseThrow(
                     ()-> new RuntimeException("not found kyc")
@@ -79,7 +81,9 @@ public class KycService {
 
                 if (doc.getDoc_type() == docType) {
 
-                    utils.deleteFile("kyc",doc.getPath());
+                    String storedPath = doc.getPath();
+                    String deleteName = storedPath.startsWith("kyc/") ? storedPath.substring(4) : storedPath;
+                    utils.deleteFile("kyc", deleteName);
 
                     iterator.remove();
 
@@ -91,7 +95,7 @@ public class KycService {
 
             KycDocuments newDoc = new KycDocuments();
             newDoc.setDoc_type(docType);
-            newDoc.setPath(filePath);
+            newDoc.setPath("kyc/" + filePath);
             newDoc.setKyc(kyc);
 
             kyc.getDocuments().add(newDoc);

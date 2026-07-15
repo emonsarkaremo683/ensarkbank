@@ -80,7 +80,7 @@ export class CustomersComponent implements OnInit {
   }
 
   updateKycStatus(customer: CustomerResponse, newStatus: string): void {
-    this.api.updateCustomer(customer.id, { ...customer as any, kycStatus: newStatus }).subscribe({
+    this.api.updateKycStatus(customer.id, newStatus).subscribe({
       next: () => {
         this.notify.success('Updated', `${customer.name}'s status updated.`);
         this.loadCustomers();

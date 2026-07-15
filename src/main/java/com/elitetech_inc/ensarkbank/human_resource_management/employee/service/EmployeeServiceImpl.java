@@ -106,4 +106,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return employeeMapper.toResponse(employeeRepository.save(existing));
     }
+
+    @Override
+    public EmployeeResponse updateProfilePhoto(Long id, MultipartFile profile) {
+        Employee existing = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+        if (profile != null && !profile.isEmpty()) {
+            existing.setProfilePhoto(utils.uploadFile(profile, "employee", existing.getName()));
+        }
+        return employeeMapper.toResponse(employeeRepository.save(existing));
+    }
 }

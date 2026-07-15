@@ -97,8 +97,8 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
             transactionService.createTransaction(
                     request.getTransactionRequest(),
                     transaction,
-                    branchAcc.getAccountNumber(),
-                    request.getAccountNumber()
+                    request.getAccountNumber(),
+                    branchAcc.getAccountNumber()
             );
         }
 

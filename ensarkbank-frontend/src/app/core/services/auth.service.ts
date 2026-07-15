@@ -2,6 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { LoginRequest, LoginResponse, UserInfo, ForgetPasswordRequest, ResetPasswordRequest } from '../models';
 import { CryptoService } from './crypto.service';
 import { TokenExpirationService } from './token-expiration.service';
@@ -9,7 +10,7 @@ import { Role } from '../enums/role.enum';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:8085/api/auth';
+  private readonly API_URL = `${environment.apiUrl}/api/auth`;
   private readonly TOKEN_KEY = 'bank_token';
   private readonly USER_KEY = 'bank_user';
 
@@ -89,7 +90,7 @@ export class AuthService {
     const user = response.user as any;
     if (user && user.profile && !user.imageUrl) {
       const subfolder = user.role === 'CUSTOMER' ? 'customer' : 'employee';
-      user.imageUrl = 'http://localhost:8085/uploads/' + subfolder + '/' + user.profile;
+      user.imageUrl = `${environment.apiUrl}/uploads/${subfolder}/${user.profile}`;
     }
     localStorage.setItem(this.USER_KEY, this.crypto.encryptObject(user));
     this.currentUser.set(user);
@@ -103,7 +104,7 @@ export class AuthService {
       const user = this.crypto.decryptObject<any>(encryptedUser);
       if (user && user.profile && !user.imageUrl) {
         const subfolder = user.role === 'CUSTOMER' ? 'customer' : 'employee';
-        user.imageUrl = 'http://localhost:8085/uploads/' + subfolder + '/' + user.profile;
+        user.imageUrl = `${environment.apiUrl}/uploads/${subfolder}/${user.profile}`;
       }
       return user;
     } catch {

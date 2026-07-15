@@ -1,8 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
+import { CryptoService } from '../../core/services/crypto.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { UserInfo } from '../../core/models';
 
@@ -23,6 +25,7 @@ export class ProfileComponent implements OnInit {
   constructor(
     public auth: AuthService,
     private api: ApiService,
+    private crypto: CryptoService,
     private notify: NotificationService
   ) {}
 
@@ -43,7 +46,7 @@ export class ProfileComponent implements OnInit {
         next: (data) => {
           const user = this.auth.currentUser();
           if (user && data.profile && !data.imageUrl) {
-            data.imageUrl = 'http://localhost:8085/uploads/customer/' + data.profile;
+            data.imageUrl = `${environment.apiUrl}/uploads/customer/${data.profile}`;
           }
           this.user.set(data as any);
           this.loading.set(false);
@@ -58,7 +61,7 @@ export class ProfileComponent implements OnInit {
         next: (data) => {
           const user = this.auth.currentUser();
           if (user && data.profile && !data.imageUrl) {
-            data.imageUrl = 'http://localhost:8085/uploads/employee/' + data.profile;
+            data.imageUrl = `${environment.apiUrl}/uploads/employee/${data.profile}`;
           }
           this.user.set(data as any);
           this.loading.set(false);
@@ -98,9 +101,9 @@ export class ProfileComponent implements OnInit {
       this.api.updateCustomer(currentUser.id, formData).subscribe({
         next: (res: any) => {
           if (res.profile) {
-            const imageUrl = 'http://localhost:8085/uploads/customer/' + res.profile;
+            const imageUrl = `${environment.apiUrl}/uploads/customer/${res.profile}`;
             const updatedUser = { ...this.auth.currentUser(), profile: res.profile, imageUrl };
-            localStorage.setItem('bank_user', JSON.stringify(updatedUser));
+            localStorage.setItem('bank_user', this.crypto.encryptObject(updatedUser));
             this.auth.currentUser.set(updatedUser as any);
             this.user.set({ ...currentUser, profile: res.profile, imageUrl } as any);
           }
@@ -115,12 +118,12 @@ export class ProfileComponent implements OnInit {
         }
       });
     } else {
-      this.api.updateEmployee(currentUser.id, formData).subscribe({
+      this.api.updateEmployeeProfilePicture(currentUser.id, formData).subscribe({
         next: (res: any) => {
           if (res.profile) {
-            const imageUrl = 'http://localhost:8085/uploads/employee/' + res.profile;
+            const imageUrl = `${environment.apiUrl}/uploads/employee/${res.profile}`;
             const updatedUser = { ...this.auth.currentUser(), profile: res.profile, imageUrl };
-            localStorage.setItem('bank_user', JSON.stringify(updatedUser));
+            localStorage.setItem('bank_user', this.crypto.encryptObject(updatedUser));
             this.auth.currentUser.set(updatedUser as any);
             this.user.set({ ...currentUser, profile: res.profile, imageUrl } as any);
           }
