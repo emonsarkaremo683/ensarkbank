@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 @Component
 public class CardGenerator {
 
-    private final Random random = new Random(); // Reuse Random instance for better performance
+    private final Random random = new Random();
 
     // Card number generator
     public String cardGenerator(CardNetwork cd, CardType ct, String acc) {
@@ -27,7 +27,7 @@ public class CardGenerator {
             default -> "00";
         };
 
-        // Ensure we handle substring safely if account string is shorter than expected
+
         String randomPart = acc.length() > 7 ? acc.substring(7) : acc;
 
         String digits = netCode + fixedCode + typeCode + randomPart;
@@ -52,8 +52,7 @@ public class CardGenerator {
         int sum = IntStream.range(0, number.length())
                 .map(i -> {
                     int digit = Character.getNumericValue(number.charAt(i));
-                    // Standard Luhn: double every second digit from the right
-                    // For length 16, this means doubling even indices (0, 2, 4...)
+
                     if ((number.length() - 1 - i) % 2 == 1) {
                         int multiplied = digit * 2;
                         return (multiplied > 9) ? multiplied - 9 : multiplied;
@@ -70,8 +69,6 @@ public class CardGenerator {
         int sum = IntStream.range(0, number.length())
                 .map(i -> {
                     int digit = Character.getNumericValue(number.charAt(i));
-                    // Position calculations relative to the final 16-digit structure
-                    // The 15 input digits need to mimic their eventual 16-digit placement
                     if ((16 - 1 - i) % 2 == 1) {
                         int multiplied = digit * 2;
                         return (multiplied > 9) ? multiplied - 9 : multiplied;
