@@ -4,6 +4,7 @@ import com.elitetech_inc.ensarkbank.common.address.address.dto.response.AddressR
 import com.elitetech_inc.ensarkbank.common.enums.Designation;
 import com.elitetech_inc.ensarkbank.common.enums.Gender;
 import com.elitetech_inc.ensarkbank.common.enums.Role;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
@@ -17,6 +18,7 @@ public class EmployeeResponse {
     private String email;
     private String password;
     private Role role;
+    @JsonProperty("isEmailVerified")
     private boolean isEmailVerified;
     private boolean active;
 

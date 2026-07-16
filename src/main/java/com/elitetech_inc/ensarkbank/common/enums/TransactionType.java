@@ -12,4 +12,5 @@ public enum TransactionType {
     LOAN_REPAYMENT,
     CARD_PURCHASE,
     CARD_REVERSAL,
+    BRANCH_OPENING,
 }

@@ -2,11 +2,13 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import {
-  Branch, ReportRequest, TrialBalanceResponse, LedgerResponse, BalanceSheetResponse
+  Branch, ReportRequest, TrialBalanceResponse, LedgerResponse, LedgerLine, BalanceSheetResponse
 } from '../../core/models';
 import { LoadingComponent } from '../../shared/components/loading/loading.component';
+import { Role } from '../../core/enums/role.enum';
 
 type ReportTab = 'trial-balance' | 'ledger' | 'balance-sheet';
 
@@ -23,15 +25,32 @@ export class ReportsComponent implements OnInit {
   loading = signal(false);
 
   trialBalance = signal<TrialBalanceResponse | null>(null);
-  ledger = signal<LedgerResponse | null>(null);
+  ledgers = signal<LedgerResponse[]>([]);
   balanceSheet = signal<BalanceSheetResponse | null>(null);
 
+  allLedgerEntries = computed(() => {
+    return this.ledgers().flatMap(l => l.entries || []);
+  });
+
   tbForm = { branchId: 0, fromDate: '', toDate: '' };
-  ledgerForm = { branchId: 0, accountNumber: '', fromDate: '', toDate: '' };
+  ledgerForm = { branchId: 0, fromDate: '', toDate: '' };
   bsForm = { branchId: 0, fromDate: '', toDate: '' };
+
+  private headOfficeRoles: Role[] = [Role.SUPER_ADMIN, Role.ADMIN, Role.AUDITOR, Role.ACCOUNTANT];
+  isHeadOfficeUser = computed(() => {
+    const user = this.auth.currentUser();
+    if (!user) return false;
+    const isAllowedRole = this.headOfficeRoles.includes(user.role as Role);
+    // ACCOUNTANT at head office (no branchId) can see all branches
+    // ACCOUNTANT at a branch (has branchId) can only see their branch
+    if (user.role === Role.ACCOUNTANT && user.branchId) return false;
+    return isAllowedRole;
+  });
+  userBranchId = computed(() => this.auth.currentUser()?.branchId ?? 0);
 
   constructor(
     private api: ApiService,
+    private auth: AuthService,
     private notify: NotificationService
   ) {}
 
@@ -44,15 +63,30 @@ export class ReportsComponent implements OnInit {
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     const dateStr = this.formatDate(firstDay);
     const todayStr = this.formatDate(today);
-    this.tbForm = { branchId: 0, fromDate: dateStr, toDate: todayStr };
-    this.ledgerForm = { branchId: 0, accountNumber: '', fromDate: dateStr, toDate: todayStr };
-    this.bsForm = { branchId: 0, fromDate: dateStr, toDate: todayStr };
+
+    const user = this.auth.currentUser();
+    const branchId = this.isHeadOfficeUser() ? 0 : (user?.branchId ?? 0);
+
+    this.tbForm = { branchId, fromDate: dateStr, toDate: todayStr };
+    this.ledgerForm = { branchId, fromDate: dateStr, toDate: todayStr };
+    this.bsForm = { branchId, fromDate: dateStr, toDate: todayStr };
+  }
+
+  private buildRequest(branchId: number, fromDate: string, toDate: string): ReportRequest {
+    const user = this.auth.currentUser();
+    return {
+      branchId: branchId || undefined,
+      fromDate,
+      toDate,
+      role: user?.role,
+      userBranchId: user?.branchId
+    };
   }
 
   setTab(tab: ReportTab): void {
     this.activeTab.set(tab);
     this.trialBalance.set(null);
-    this.ledger.set(null);
+    this.ledgers.set([]);
     this.balanceSheet.set(null);
   }
 
@@ -63,11 +97,7 @@ export class ReportsComponent implements OnInit {
     }
     this.loading.set(true);
     this.trialBalance.set(null);
-    const request: ReportRequest = {
-      branchId: this.tbForm.branchId || undefined,
-      fromDate: this.tbForm.fromDate,
-      toDate: this.tbForm.toDate
-    };
+    const request = this.buildRequest(this.tbForm.branchId, this.tbForm.fromDate, this.tbForm.toDate);
     this.api.getTrialBalance(request).subscribe({
       next: data => { this.trialBalance.set(data); this.loading.set(false); },
       error: (err) => {
@@ -78,20 +108,15 @@ export class ReportsComponent implements OnInit {
   }
 
   generateLedger(): void {
-    if (!this.ledgerForm.accountNumber || !this.ledgerForm.fromDate || !this.ledgerForm.toDate) {
-      this.notify.warning('Validation', 'Please fill all required fields');
+    if (!this.ledgerForm.fromDate || !this.ledgerForm.toDate) {
+      this.notify.warning('Validation', 'Please select date range');
       return;
     }
     this.loading.set(true);
-    this.ledger.set(null);
-    const request = {
-      branchId: this.ledgerForm.branchId || undefined,
-      accountNumber: this.ledgerForm.accountNumber,
-      fromDate: this.ledgerForm.fromDate,
-      toDate: this.ledgerForm.toDate
-    };
+    this.ledgers.set([]);
+    const request = this.buildRequest(this.ledgerForm.branchId, this.ledgerForm.fromDate, this.ledgerForm.toDate);
     this.api.getLedger(request).subscribe({
-      next: data => { this.ledger.set(data); this.loading.set(false); },
+      next: data => { this.ledgers.set(data); this.loading.set(false); },
       error: (err) => {
         this.notify.error('Error', err.error?.message || 'Failed to generate ledger');
         this.loading.set(false);
@@ -106,11 +131,7 @@ export class ReportsComponent implements OnInit {
     }
     this.loading.set(true);
     this.balanceSheet.set(null);
-    const request: ReportRequest = {
-      branchId: this.bsForm.branchId || undefined,
-      fromDate: this.bsForm.fromDate,
-      toDate: this.bsForm.toDate || this.bsForm.fromDate
-    };
+    const request = this.buildRequest(this.bsForm.branchId, this.bsForm.fromDate, this.bsForm.toDate || this.bsForm.fromDate);
     this.api.getBalanceSheet(request).subscribe({
       next: data => { this.balanceSheet.set(data); this.loading.set(false); },
       error: (err) => {

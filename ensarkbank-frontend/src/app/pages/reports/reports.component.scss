@@ -329,6 +329,26 @@
   }
 }
 
+.ledger-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 16px;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
+.ledger-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #c9a84c;
+  margin: 0 0 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
 .balance-sheet-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

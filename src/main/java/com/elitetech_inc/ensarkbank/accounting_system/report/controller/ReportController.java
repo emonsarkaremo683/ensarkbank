@@ -34,13 +34,13 @@ public class ReportController {
         return ResponseEntity.ok(reportService.getLedgers(normalize(request)));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @PostMapping("trial-balance")
     public ResponseEntity<TrialBalanceResponse> trialBalance(@RequestBody(required = false) ReportRequest request) {
         return ResponseEntity.ok(reportService.getTrialBalance(normalize(request)));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
     @PostMapping("balance-sheet")
     public ResponseEntity<BalanceSheetResponse> balanceSheet(@RequestBody(required = false) ReportRequest request) {
         return ResponseEntity.ok(reportService.getBalanceSheet(normalize(request)));

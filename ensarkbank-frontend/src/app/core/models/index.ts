@@ -516,6 +516,8 @@ export interface ReportRequest {
   branchId?: number;
   fromDate: string;
   toDate: string;
+  role?: string;
+  userBranchId?: number;
 }
 
 export interface TrialBalanceResponse {

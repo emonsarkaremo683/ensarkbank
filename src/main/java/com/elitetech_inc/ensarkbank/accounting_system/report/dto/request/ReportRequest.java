@@ -2,11 +2,13 @@ package com.elitetech_inc.ensarkbank.accounting_system.report.dto.request;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class ReportRequest {
     private Long branchId;
-    private LocalDateTime fromDate;
-    private LocalDateTime toDate;
+    private LocalDate fromDate;
+    private LocalDate toDate;
+    private String role;
+    private Long userBranchId;
 }

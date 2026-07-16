@@ -213,7 +213,7 @@ export class ApiService {
 
   // Reports
   getTrialBalance(data: ReportRequest): Observable<TrialBalanceResponse> { return this.http.post<TrialBalanceResponse>(`${this.BASE}/reports/trial-balance`, data); }
-  getLedger(data: ReportRequest & { accountNumber: string }): Observable<LedgerResponse> { return this.http.post<LedgerResponse>(`${this.BASE}/reports/ledger`, data); }
+  getLedger(data: ReportRequest): Observable<LedgerResponse[]> { return this.http.post<LedgerResponse[]>(`${this.BASE}/reports/ledger`, data); }
   getBalanceSheet(data: ReportRequest): Observable<BalanceSheetResponse> { return this.http.post<BalanceSheetResponse>(`${this.BASE}/reports/balance-sheet`, data); }
 
   // Journal

@@ -11,6 +11,7 @@ import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class BranchService {
     private final AccountRepository accountRepository;
     private final RequestValidator requestValidator;
 
+    @Transactional
     public Branch createBranch(Branch branch) {
         requestValidator.validateBranch(branch);
         branch.setBranchCode(generateBranchCode(branch.getName()));
@@ -42,19 +44,20 @@ public class BranchService {
 
         Branch br = branchRepository.save(branch);
 
-        // create settlement Account for the branch / agent bank
+        boolean isAgentBank = br.getType() == BranchType.AGENT_BANK;
+        BigDecimal initialBalance = isAgentBank
+                ? BigDecimal.valueOf(1000000.00)
+                : BigDecimal.valueOf(5000000.00);
+
         Account ar = new Account();
         ar.setBranch(br);
         ar.setAccountStatus(AccountStatus.ACTIVE);
-        boolean isAgentBank = br.getType() == BranchType.AGENT_BANK;
         ar.setAccountType(isAgentBank ? AccountType.AGENT_BANK_VAULT : AccountType.BRANCH_VAULT);
-        ar.setAvailableBalance(isAgentBank
-                ? BigDecimal.valueOf(1000000.00)
-                : BigDecimal.valueOf(5000000.00));
+        ar.setAvailableBalance(initialBalance);
         ar.setAccountNumber(accountNumberGenerator.generateBranchAccountNumber(br.getRoutingNumber(),
                 isAgentBank ? "ag-" : "br-"));
-        ar.setCurrentBalance(ar.getAvailableBalance());
-        ar.setHoldBalance(BigDecimal.valueOf(00.0));
+        ar.setCurrentBalance(initialBalance);
+        ar.setHoldBalance(BigDecimal.ZERO);
 
         AccountHolder ahr = new AccountHolder();
         ahr.setCanWithdraw(true);

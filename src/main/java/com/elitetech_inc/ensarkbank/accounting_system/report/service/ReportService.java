@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -31,25 +32,46 @@ public class ReportService {
 
     private static final BigDecimal ZERO = BigDecimal.ZERO;
 
-    public List<Branch> resolveBranches(Long branchId) {
-        if (branchId != null) {
-            return branchRepository.findById(branchId)
-                    .map(List::of)
-                    .orElseThrow(() -> new IllegalArgumentException("Branch not found: " + branchId));
+    private static final List<String> ALL_BRANCH_ROLES = List.of("SUPER_ADMIN", "ADMIN", "AUDITOR", "ACCOUNTANT");
+
+    public List<Branch> resolveBranches(ReportRequest request) {
+        String role = request.getRole();
+        Long branchId = request.getBranchId();
+        Long userBranchId = request.getUserBranchId();
+
+        boolean canViewAll = role != null && ALL_BRANCH_ROLES.contains(role) && userBranchId == null;
+
+        if (canViewAll) {
+            // Head office staff (no branch assignment) — can view any branch or all branches
+            if (branchId != null) {
+                return branchRepository.findById(branchId)
+                        .map(List::of)
+                        .orElseThrow(() -> new IllegalArgumentException("Branch not found: " + branchId));
+            }
+            return branchRepository.findAll();
         }
-        return branchRepository.findAll();
+
+        // Branch-assigned staff (Branch Manager, Cashier, or Accountant at a branch) — only their branch
+        if (userBranchId != null) {
+            return branchRepository.findById(userBranchId)
+                    .map(List::of)
+                    .orElseThrow(() -> new IllegalArgumentException("Branch not found: " + userBranchId));
+        }
+        return List.of();
     }
 
     private List<Journal> fetchJournals(Branch branch, ReportRequest request) {
-        LocalDateTime from = request.getFromDate();
-        LocalDateTime to = request.getToDate();
+        LocalDate fromDate = request.getFromDate();
+        LocalDate toDate = request.getToDate();
 
-        if (from != null && to != null) {
+        if (fromDate != null && toDate != null) {
+            LocalDateTime from = fromDate.atStartOfDay();
+            LocalDateTime to = toDate.atTime(23, 59, 59);
             return journalRepository.findByBranchIdAndDateRange(branch.getId(), from, to);
         }
-        if (from != null || to != null) {
-            LocalDateTime f = from != null ? from : LocalDateTime.MIN;
-            LocalDateTime t = to != null ? to : LocalDateTime.MAX;
+        if (fromDate != null || toDate != null) {
+            LocalDateTime f = fromDate != null ? fromDate.atStartOfDay() : LocalDateTime.MIN;
+            LocalDateTime t = toDate != null ? toDate.atTime(23, 59, 59) : LocalDateTime.MAX;
             return journalRepository.findByBranchIdAndDateRange(branch.getId(), f, t);
         }
         return journalRepository.findByBranchId(branch.getId());
@@ -109,7 +131,7 @@ public class ReportService {
 
     public List<LedgerResponse> getLedgers(ReportRequest request) {
         List<LedgerResponse> result = new ArrayList<>();
-        for (Branch branch : resolveBranches(request.getBranchId())) {
+        for (Branch branch : resolveBranches(request)) {
             List<Account> accounts = accountRepository.findAllByBranchId(branch.getId());
             for (Account account : accounts) {
                 result.add(getLedger(branch.getId(), account.getAccountNumber(), request));
@@ -124,7 +146,7 @@ public class ReportService {
         BigDecimal totalCredit = ZERO;
         List<TrialBalanceLineResponse> lines = new ArrayList<>();
 
-        for (Branch branch : resolveBranches(request.getBranchId())) {
+        for (Branch branch : resolveBranches(request)) {
             Map<String, TrialBalanceLineResponse> byAccount = new LinkedHashMap<>();
             for (Journal j : fetchJournals(branch, request)) {
                 Account account = j.getAccount();
@@ -173,15 +195,13 @@ public class ReportService {
 
         Map<String, BalanceSheetSectionLine> assetLines = new LinkedHashMap<>();
         Map<String, BalanceSheetSectionLine> liabilityLines = new LinkedHashMap<>();
-        Map<String, BalanceSheetSectionLine> equityLines = new LinkedHashMap<>();
 
-        for (Branch branch : resolveBranches(request.getBranchId())) {
+        for (Branch branch : resolveBranches(request)) {
             List<Account> accounts = accountRepository.findAllByBranchId(branch.getId());
             for (Account account : accounts) {
                 BigDecimal balance = account.getCurrentBalance() != null ? account.getCurrentBalance() : ZERO;
-                if (balance.compareTo(ZERO) == 0) {
-                    continue;
-                }
+                if (balance.compareTo(ZERO) == 0) continue;
+
                 boolean isAsset = isAssetAccount(account);
                 BalanceSheetSectionLine line = new BalanceSheetSectionLine();
                 line.setGlCode("ACC-" + account.getId());
@@ -189,16 +209,16 @@ public class ReportService {
                 line.setAmount(balance.abs());
 
                 if (isAsset) {
-                    if (balance.compareTo(ZERO) < 0) {
+                    if (balance.compareTo(ZERO) > 0) {
+                        put(assetLines, "ACC-" + account.getId(), line);
+                    } else {
+                        put(liabilityLines, "ACC-" + account.getId(), line);
+                    }
+                } else {
+                    if (balance.compareTo(ZERO) > 0) {
                         put(liabilityLines, "ACC-" + account.getId(), line);
                     } else {
                         put(assetLines, "ACC-" + account.getId(), line);
-                    }
-                } else {
-                    if (balance.compareTo(ZERO) < 0) {
-                        put(assetLines, "ACC-" + account.getId(), line);
-                    } else {
-                        put(equityLines, "ACC-" + account.getId(), line);
                     }
                 }
             }
@@ -206,17 +226,27 @@ public class ReportService {
 
         assets.setLines(new ArrayList<>(assetLines.values()));
         liabilities.setLines(new ArrayList<>(liabilityLines.values()));
-        equity.setLines(new ArrayList<>(equityLines.values()));
-
         assets.setTotal(sum(assets.getLines()));
         liabilities.setTotal(sum(liabilities.getLines()));
-        equity.setTotal(sum(equity.getLines()));
+
+        BigDecimal totalAssets = assets.getTotal();
+        BigDecimal totalLiabilities = liabilities.getTotal();
+        BigDecimal equityAmount = totalAssets.subtract(totalLiabilities);
+
+        BalanceSheetSectionLine capitalLine = new BalanceSheetSectionLine();
+        capitalLine.setGlCode("GL-EQ");
+        capitalLine.setAccountName("Capital");
+        capitalLine.setAmount(equityAmount.abs());
+        Map<String, BalanceSheetSectionLine> equityLines = new LinkedHashMap<>();
+        equityLines.put("CAPITAL", capitalLine);
+        equity.setLines(new ArrayList<>(equityLines.values()));
+        equity.setTotal(equityAmount.abs());
 
         response.setAssets(assets);
         response.setLiabilities(liabilities);
         response.setEquity(equity);
-        response.setTotalAssets(assets.getTotal());
-        response.setTotalLiabilitiesAndEquity(liabilities.getTotal().add(equity.getTotal()));
+        response.setTotalAssets(totalAssets);
+        response.setTotalLiabilitiesAndEquity(totalLiabilities.add(equity.getTotal()));
         return response;
     }
 
@@ -251,11 +281,13 @@ public class ReportService {
     }
 
     private List<Journal> filterByDate(List<Journal> journals, ReportRequest request) {
-        LocalDateTime from = request.getFromDate();
-        LocalDateTime to = request.getToDate();
-        if (from == null && to == null) {
+        LocalDate fromDate = request.getFromDate();
+        LocalDate toDate = request.getToDate();
+        if (fromDate == null && toDate == null) {
             return journals;
         }
+        LocalDateTime from = fromDate != null ? fromDate.atStartOfDay() : null;
+        LocalDateTime to = toDate != null ? toDate.atTime(23, 59, 59) : null;
         return journals.stream().filter(j -> {
             LocalDateTime d = j.getCreatedAt();
             if (d == null) return false;

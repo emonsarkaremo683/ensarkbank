@@ -10,7 +10,7 @@
         Print
       </button>
     }
-    @if (activeTab() === 'ledger' && ledger()) {
+    @if (activeTab() === 'ledger' && ledgers().length > 0) {
       <button class="btn btn-outline" (click)="printReport()">
         <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"/></svg>
         Print
@@ -44,12 +44,22 @@
       <div class="form-row">
         <div class="form-group">
           <label>Branch</label>
-          <select [(ngModel)]="tbForm.branchId" class="form-control">
-            <option [value]="0">All Branches</option>
-            @for (branch of branches(); track branch.id) {
-              <option [value]="branch.id">{{ branch.name }}</option>
-            }
-          </select>
+          @if (isHeadOfficeUser()) {
+            <select [(ngModel)]="tbForm.branchId" class="form-control">
+              <option [value]="0">All Branches</option>
+              @for (branch of branches(); track branch.id) {
+                <option [value]="branch.id">{{ branch.name }}</option>
+              }
+            </select>
+          } @else {
+            <select [(ngModel)]="tbForm.branchId" class="form-control" disabled>
+              @for (branch of branches(); track branch.id) {
+                @if (branch.id === userBranchId()) {
+                  <option [value]="branch.id">{{ branch.name }}</option>
+                }
+              }
+            </select>
+          }
         </div>
         <div class="form-group">
           <label>From Date *</label>
@@ -124,16 +134,22 @@
       <div class="form-row">
         <div class="form-group">
           <label>Branch</label>
-          <select [(ngModel)]="ledgerForm.branchId" class="form-control">
-            <option [value]="0">All Branches</option>
-            @for (branch of branches(); track branch.id) {
-              <option [value]="branch.id">{{ branch.name }}</option>
-            }
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Account Number *</label>
-          <input type="text" [(ngModel)]="ledgerForm.accountNumber" class="form-control" placeholder="e.g. 1000001">
+          @if (isHeadOfficeUser()) {
+            <select [(ngModel)]="ledgerForm.branchId" class="form-control">
+              <option [value]="0">All Branches</option>
+              @for (branch of branches(); track branch.id) {
+                <option [value]="branch.id">{{ branch.name }}</option>
+              }
+            </select>
+          } @else {
+            <select [(ngModel)]="ledgerForm.branchId" class="form-control" disabled>
+              @for (branch of branches(); track branch.id) {
+                @if (branch.id === userBranchId()) {
+                  <option [value]="branch.id">{{ branch.name }}</option>
+                }
+              }
+            </select>
+          }
         </div>
         <div class="form-group">
           <label>From Date *</label>
@@ -159,55 +175,62 @@
       <app-loading message="Generating ledger..."></app-loading>
     }
 
-    @if (ledger()) {
+    @if (ledgers().length > 0) {
       <div class="report-content">
         <div class="report-header-info">
-          <h2>Ledger - {{ ledger()!.accountNumber }}</h2>
+          <h2>Ledger</h2>
           <div class="report-meta">
-            <span>Branch: {{ ledger()!.branchName }}</span>
-          </div>
-          <div class="ledger-balances">
-            <div class="balance-item">
-              <span>Opening Balance</span>
-              <span [class.debit]="ledger()!.openingBalance >= 0" [class.credit]="ledger()!.openingBalance < 0">{{ formatCurrency(ledger()!.openingBalance) }}</span>
-            </div>
-            <div class="balance-item">
-              <span>Closing Balance</span>
-              <span [class.debit]="ledger()!.closingBalance >= 0" [class.credit]="ledger()!.closingBalance < 0">{{ formatCurrency(ledger()!.closingBalance) }}</span>
-            </div>
+            <span>Branch: <strong>{{ ledgers()[0]?.branchName || 'All Branches' }}</strong></span>
+            <span>Period: {{ ledgerForm.fromDate | date:'mediumDate' }} - {{ ledgerForm.toDate | date:'mediumDate' }}</span>
           </div>
         </div>
-        <div class="table-wrapper">
-          <table class="report-table">
-            <thead>
-              <tr>
-                <th>Journal ID</th>
-                <th>Date</th>
-                <th>Particulars</th>
-                <th class="text-right">Debit</th>
-                <th class="text-right">Credit</th>
-                <th class="text-right">Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (line of ledger()!.entries; track line.journalId) {
-                <tr>
-                  <td class="mono">#{{ line.journalId }}</td>
-                  <td>{{ line.date | date:'mediumDate' }}</td>
-                  <td>{{ line.particulars || '-' }}</td>
-                  <td class="text-right mono">{{ line.debit > 0 ? formatCurrency(line.debit) : '-' }}</td>
-                  <td class="text-right mono">{{ line.credit > 0 ? formatCurrency(line.credit) : '-' }}</td>
-                  <td class="text-right mono" [class.debit]="line.balance >= 0" [class.credit]="line.balance < 0">{{ formatCurrency(line.balance) }}</td>
-                </tr>
-              }
-              @if (ledger()!.entries.length === 0) {
-                <tr>
-                  <td colspan="6" class="empty-cell">No ledger entries found</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+
+        @for (ledger of ledgers(); track ledger.accountNumber) {
+          <div class="ledger-section">
+            <h3 class="ledger-section-title">{{ ledger.accountNumber }}</h3>
+            <div class="ledger-balances">
+              <div class="balance-item">
+                <span>Opening Balance</span>
+                <span [class.debit]="ledger.openingBalance >= 0" [class.credit]="ledger.openingBalance < 0">{{ formatCurrency(ledger.openingBalance) }}</span>
+              </div>
+              <div class="balance-item">
+                <span>Closing Balance</span>
+                <span [class.debit]="ledger.closingBalance >= 0" [class.credit]="ledger.closingBalance < 0">{{ formatCurrency(ledger.closingBalance) }}</span>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="report-table">
+                <thead>
+                  <tr>
+                    <th>Journal ID</th>
+                    <th>Date</th>
+                    <th>Particulars</th>
+                    <th class="text-right">Debit</th>
+                    <th class="text-right">Credit</th>
+                    <th class="text-right">Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (line of ledger.entries; track line.journalId) {
+                    <tr>
+                      <td class="mono">#{{ line.journalId }}</td>
+                      <td>{{ line.date | date:'mediumDate' }}</td>
+                      <td>{{ line.particulars || '-' }}</td>
+                      <td class="text-right mono">{{ line.debit > 0 ? formatCurrency(line.debit) : '-' }}</td>
+                      <td class="text-right mono">{{ line.credit > 0 ? formatCurrency(line.credit) : '-' }}</td>
+                      <td class="text-right mono" [class.debit]="line.balance >= 0" [class.credit]="line.balance < 0">{{ formatCurrency(line.balance) }}</td>
+                    </tr>
+                  }
+                  @if (ledger.entries.length === 0) {
+                    <tr>
+                      <td colspan="6" class="empty-cell">No ledger entries found</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
       </div>
     }
   }
@@ -217,12 +240,22 @@
       <div class="form-row">
         <div class="form-group">
           <label>Branch</label>
-          <select [(ngModel)]="bsForm.branchId" class="form-control">
-            <option [value]="0">All Branches</option>
-            @for (branch of branches(); track branch.id) {
-              <option [value]="branch.id">{{ branch.name }}</option>
-            }
-          </select>
+          @if (isHeadOfficeUser()) {
+            <select [(ngModel)]="bsForm.branchId" class="form-control">
+              <option [value]="0">All Branches</option>
+              @for (branch of branches(); track branch.id) {
+                <option [value]="branch.id">{{ branch.name }}</option>
+              }
+            </select>
+          } @else {
+            <select [(ngModel)]="bsForm.branchId" class="form-control" disabled>
+              @for (branch of branches(); track branch.id) {
+                @if (branch.id === userBranchId()) {
+                  <option [value]="branch.id">{{ branch.name }}</option>
+                }
+              }
+            </select>
+          }
         </div>
         <div class="form-group">
           <label>As of Date *</label>
