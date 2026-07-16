@@ -14,10 +14,7 @@ import com.elitetech_inc.ensarkbank.atm_management.atm.ATMRepository;
 import com.elitetech_inc.ensarkbank.atm_management.atm_transaction.dto.ATMTransactionMapper;
 import com.elitetech_inc.ensarkbank.atm_management.atm_transaction.dto.ATMTransactionRequest;
 import com.elitetech_inc.ensarkbank.atm_management.atm_transaction.dto.ATMTransactionResponse;
-import com.elitetech_inc.ensarkbank.common.enums.ATMStatus;
-import com.elitetech_inc.ensarkbank.common.enums.CardStatus;
-import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
-import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
+import com.elitetech_inc.ensarkbank.common.enums.*;
 import com.elitetech_inc.ensarkbank.util.BranchValidator;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +72,7 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
                 if (card.getExpiryDate().before(new Date())){
                     throw new RuntimeException("Card is expired");
                 }
-                if(!card.getPinHash().equals(encoder.encode(request.getPin()))){
+                if(!encoder.matches(request.getPin(), card.getPinHash())){
                     throw new RuntimeException("Card pin is Incorrect");
                 }
                 if(card.getStatus() != CardStatus.ACTIVE){
@@ -110,6 +107,7 @@ public class ATMTransactionServiceImpl implements ATMTransactionService {
                 if (atmAccount.getAvailableBalance().compareTo(withdrawAmount) < 0) {
                     throw new RuntimeException("Insufficient ATM balance");
                 }
+
                 if (customerAccount.getAvailableBalance().compareTo(withdrawAmount) < 0) {
                     throw new RuntimeException("Insufficient customer balance");
                 }

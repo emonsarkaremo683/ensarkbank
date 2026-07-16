@@ -1,6 +1,7 @@
 package com.elitetech_inc.ensarkbank.account_management.hold_transaction.entity;
 
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
+import com.elitetech_inc.ensarkbank.account_management.credit_account.entity.CreditAccount;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.common.enums.HoldReason;
 import com.elitetech_inc.ensarkbank.common.enums.HoldStatus;
@@ -18,8 +19,12 @@ import java.time.LocalDateTime;
 public class HoldTransaction extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
+    @JoinColumn(name = "account_id")
     private Account account;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "credit_account_id")
+    private CreditAccount creditAccount;
 
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
@@ -43,5 +48,13 @@ public class HoldTransaction extends BaseEntity {
 
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(this.expiresAt);
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void validateHoldTarget() {
+        if ((account == null && creditAccount == null) || (account != null && creditAccount != null)) {
+            throw new IllegalStateException("Hold must be against either a deposit Account or a CreditAccount, but not both or neither");
+        }
     }
 }

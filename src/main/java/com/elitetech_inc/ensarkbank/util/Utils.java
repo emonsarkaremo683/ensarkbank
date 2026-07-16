@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.annotation.PostConstruct;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +16,18 @@ public class Utils {
 
     @Value("${image.upload.dir}")
     private String uploadDir;
+
+    @PostConstruct
+    public void init() {
+        try {
+            Path dir = Paths.get(uploadDir);
+            if (!Files.exists(dir)) {
+                Files.createDirectories(dir);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create upload directory: " + uploadDir, e);
+        }
+    }
 
     public String generateReference() {
         String uuid = UUID.randomUUID().toString().replace("-", "").toUpperCase();

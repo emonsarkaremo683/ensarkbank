@@ -96,6 +96,7 @@ export class ApiService {
 
   // Employee
   getEmployees(): Observable<EmployeeResponse[]> { return this.http.get<EmployeeResponse[]>(`${this.BASE}/employee/`); }
+  getEmployeesByBranchId(branchId: number): Observable<EmployeeResponse[]> { return this.http.get<EmployeeResponse[]>(`${this.BASE}/employee/branch/${branchId}`); }
   getEmployeeById(id: number): Observable<EmployeeResponse> { return this.http.get<EmployeeResponse>(`${this.BASE}/employee/${id}`); }
   createEmployee(formData: FormData): Observable<EmployeeResponse> { return this.http.post<EmployeeResponse>(`${this.BASE}/employee/`, formData); }
   updateEmployee(id: number, formData: FormData): Observable<EmployeeResponse> { return this.http.put<EmployeeResponse>(`${this.BASE}/employee/${id}`, formData); }
@@ -121,6 +122,8 @@ export class ApiService {
   getCustomerHistory(id: number): Observable<any> { return this.http.get(`${this.BASE}/customer/history/customer/${id}`); }
   updateKycStatus(id: number, status: string): Observable<CustomerResponse> { return this.http.put<CustomerResponse>(`${this.BASE}/customer/${id}/kyc-status`, null, { params: { status } }); }
   uploadKycDocuments(customerId: number, documents: FormData): Observable<CustomerResponse> { return this.http.patch<CustomerResponse>(`${this.BASE}/kyc/customer/${customerId}/upload`, documents); }
+  getKycDocumentUrl(documentId: number): string { return `${this.BASE}/kyc/documents/${documentId}`; }
+  getKycDocumentBlob(documentId: number): Observable<Blob> { return this.http.get(`${this.BASE}/kyc/documents/${documentId}`, { responseType: 'blob' }); }
 
   // Beneficiary
   getBeneficiaries(customerId: number): Observable<BeneficiaryResponse[]> { return this.http.get<BeneficiaryResponse[]>(`${this.BASE}/beneficiary/customer/${customerId}`); }
@@ -205,6 +208,7 @@ export class ApiService {
 
   // Cashier Transactions
   getCashierTransactions(): Observable<CashierTransactionResponse[]> { return this.http.get<CashierTransactionResponse[]>(`${this.BASE}/cashier-transactions`); }
+  getCashierTransactionsByAccount(accountNumber: string): Observable<CashierTransactionResponse[]> { return this.http.get<CashierTransactionResponse[]>(`${this.BASE}/cashier-transactions/account/${accountNumber}`); }
   processCashierTransaction(data: CashierTransactionRequest): Observable<CashierTransactionResponse> { return this.http.post<CashierTransactionResponse>(`${this.BASE}/cashier-transactions`, data); }
 
   // Reports
@@ -215,11 +219,25 @@ export class ApiService {
   // Journal
   getJournalByAccount(accountNumber: string): Observable<JournalEntry[]> { return this.http.get<JournalEntry[]>(`${this.BASE}/history/${accountNumber}`); }
   getJournalById(id: number): Observable<JournalEntry> { return this.http.get<JournalEntry>(`${this.BASE}/history/entry-id/${id}`); }
+  getAllJournals(): Observable<JournalEntry[]> { return this.http.get<JournalEntry[]>(`${this.BASE}/history/all`); }
+  getJournalsByBranchId(branchId: number): Observable<JournalEntry[]> { return this.http.get<JournalEntry[]>(`${this.BASE}/history/branch/${branchId}`); }
   getTransactionHistory(customerId: number, startDate?: string, endDate?: string): Observable<JournalEntry[]> {
     let params = new HttpParams();
     if (startDate) params = params.set('startDate', startDate);
     if (endDate) params = params.set('endDate', endDate);
     return this.http.get<JournalEntry[]>(`${this.BASE}/history/customer/${customerId}`, { params });
+  }
+
+  exportStaffTransactionHistory(format: string, accountNumber?: string, branchId?: number, startDate?: string, endDate?: string): Observable<Blob> {
+    let params = new HttpParams().set('format', format);
+    if (accountNumber) params = params.set('accountNumber', accountNumber);
+    if (branchId) params = params.set('branchId', branchId.toString());
+    if (startDate) params = params.set('startDate', startDate);
+    if (endDate) params = params.set('endDate', endDate);
+    return this.http.get(`${this.BASE}/history/export/staff`, {
+      params,
+      responseType: 'blob'
+    });
   }
 
   exportTransactionHistory(customerId: number, format: string, accountNumber?: string, startDate?: string, endDate?: string): Observable<Blob> {

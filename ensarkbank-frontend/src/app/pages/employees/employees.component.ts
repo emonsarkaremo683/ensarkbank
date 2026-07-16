@@ -6,11 +6,21 @@ import { ApiService } from '../../core/services/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Role, Designation, Gender, DesignationMap, AddressType } from '../../core/enums/role.enum';
 import {
-  EmployeeResponse, EmployeeRequest, Branch, AddressRequest
+  EmployeeResponse, EmployeeRequest, Branch
 } from '../../core/models';
 import { LoadingComponent } from '../../shared';
 import { DataTableComponent, TableColumn } from '../../shared/components/data-table/data-table.component';
 import { ConfirmDialogComponent } from '../../shared';
+
+interface AddressForm {
+  holdingNo: string;
+  area: string;
+  postalCode: string;
+  addressType: AddressType;
+  policeStationId: number;
+  divisionId: string;
+  districtId: string;
+}
 
 @Component({
   selector: 'app-employees',
@@ -30,13 +40,13 @@ export class EmployeesComponent implements OnInit {
   employees = signal<EmployeeResponse[]>([]);
   branches = signal<Branch[]>([]);
   divisions = signal<any[]>([]);
-  districts = signal<any[]>([]);
-  policeStations = signal<any[]>([]);
+  addressDistricts: any[][] = [];
+  addressPoliceStations: any[][] = [];
   selectedProfileFile = signal<File | null>(null);
 
   form = this.getEmptyForm();
 
-  columns: TableColumn[] = [
+  allColumns: TableColumn[] = [
     { key: 'name', label: 'Name', type: 'text', sortable: true },
     { key: 'email', label: 'Email', type: 'text', sortable: true },
     { key: 'phone', label: 'Phone', type: 'text', sortable: true },
@@ -47,12 +57,22 @@ export class EmployeesComponent implements OnInit {
     { key: 'actions', label: 'Actions', type: 'actions', sortable: false },
   ];
 
+  columns = computed(() =>
+    this.canManage()
+      ? this.allColumns
+      : this.allColumns.filter(c => c.key !== 'actions')
+  );
+
   designationOptions = Object.values(Designation);
   genderOptions = Object.values(Gender);
   roleOptions = Object.values(Role).filter(r => r !== Role.CUSTOMER);
 
   canManage = computed(() =>
     this.auth.hasRole([Role.SUPER_ADMIN, Role.ADMIN])
+  );
+
+  isBranchManager = computed(() =>
+    this.auth.hasRole([Role.BRANCH_MANAGER])
   );
 
   constructor(
@@ -62,25 +82,42 @@ export class EmployeesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (!this.canManage()) {
-      this.notify.warning('Access Denied', 'You do not have permission to manage employees.');
-      return;
-    }
     this.loadData();
   }
 
   loadData(): void {
     this.loading.set(true);
-    this.api.getEmployees().subscribe({
-      next: (data) => {
-        this.employees.set(data);
+
+    if (this.isBranchManager()) {
+      const user = this.auth.currentUser();
+      const branchId = user?.branchId;
+      if (!branchId) {
         this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.notify.error('Error', 'Failed to load employees.');
+        this.notify.error('Error', 'No branch assigned.');
+        return;
       }
-    });
+      this.api.getEmployeesByBranchId(branchId).subscribe({
+        next: (data) => {
+          this.employees.set(data);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.notify.error('Error', 'Failed to load employees.');
+        }
+      });
+    } else {
+      this.api.getEmployees().subscribe({
+        next: (data) => {
+          this.employees.set(data);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.notify.error('Error', 'Failed to load employees.');
+        }
+      });
+    }
 
     this.api.getBranches().subscribe({
       next: (data) => this.branches.set(data),
@@ -138,9 +175,13 @@ export class EmployeesComponent implements OnInit {
         area: a.area || '',
         postalCode: a.postalCode || '',
         addressType: a.addressType || AddressType.PERMANENT,
-        policeStation: { id: 0 }
+        policeStationId: 0,
+        divisionId: '',
+        districtId: ''
       })) || []
     };
+    this.addressDistricts = this.form.addresses.map(() => []);
+    this.addressPoliceStations = this.form.addresses.map(() => []);
     this.selectedEmployee.set(employee);
     this.showModal.set(true);
   }
@@ -192,7 +233,13 @@ export class EmployeesComponent implements OnInit {
       branchId: this.form.branchId,
       role: this.form.role ? (this.form.role as Role) : undefined,
       dob: this.form.dateOfBirth,
-      addresses: this.form.addresses.length > 0 ? this.form.addresses : []
+      addresses: this.form.addresses.map(a => ({
+        holdingNo: a.holdingNo || '',
+        area: a.area || '',
+        postalCode: a.postalCode || '',
+        addressType: a.addressType,
+        policeStation: { id: a.policeStationId || 0 }
+      }))
     };
 
     const formData = new FormData();
@@ -235,6 +282,8 @@ export class EmployeesComponent implements OnInit {
     this.editMode.set(false);
     this.selectedEmployee.set(null);
     this.selectedProfileFile.set(null);
+    this.addressDistricts = [];
+    this.addressPoliceStations = [];
     this.form = this.getEmptyForm();
   }
 
@@ -244,12 +293,18 @@ export class EmployeesComponent implements OnInit {
       area: '',
       postalCode: '',
       addressType: AddressType.PERMANENT,
-      policeStation: { id: 0 }
+      policeStationId: 0,
+      divisionId: '',
+      districtId: ''
     });
+    this.addressDistricts.push([]);
+    this.addressPoliceStations.push([]);
   }
 
   removeAddress(index: number): void {
     this.form.addresses.splice(index, 1);
+    this.addressDistricts.splice(index, 1);
+    this.addressPoliceStations.splice(index, 1);
   }
 
   onProfileSelected(event: Event): void {
@@ -266,6 +321,32 @@ export class EmployeesComponent implements OnInit {
     }
   }
 
+  onAddressDivisionChange(index: number, divisionId: string): void {
+    const id = Number(divisionId);
+    this.form.addresses[index].districtId = '';
+    this.form.addresses[index].policeStationId = 0;
+    this.addressDistricts[index] = [];
+    this.addressPoliceStations[index] = [];
+    if (id) {
+      this.api.getDistrictsByDivisionId(id).subscribe({
+        next: (data) => { this.addressDistricts[index] = data; },
+        error: () => {}
+      });
+    }
+  }
+
+  onAddressDistrictChange(index: number, districtId: string): void {
+    const id = Number(districtId);
+    this.form.addresses[index].policeStationId = 0;
+    this.addressPoliceStations[index] = [];
+    if (id) {
+      this.api.getPoliceStationByDistrictId(id).subscribe({
+        next: (data) => { this.addressPoliceStations[index] = data; },
+        error: () => {}
+      });
+    }
+  }
+
   private getEmptyForm() {
     return {
       email: '',
@@ -277,7 +358,7 @@ export class EmployeesComponent implements OnInit {
       branchId: 0,
       role: '',
       dateOfBirth: '',
-      addresses: [] as AddressRequest[]
+      addresses: [] as AddressForm[]
     };
   }
 }

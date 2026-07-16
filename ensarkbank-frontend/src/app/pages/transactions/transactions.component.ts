@@ -8,7 +8,7 @@ import {
   AccountResponse, AccountTransactionRequest, AccountTransactionResponse,
   OtpInitiateResponse, JournalEntry, BeneficiaryResponse
 } from '../../core/models';
-import { TransactionType, TransactionChannel, TransactionStatus } from '../../core/enums/role.enum';
+import { TransactionType, TransactionChannel, TransactionStatus, Role } from '../../core/enums/role.enum';
 import { DataTableComponent, TableColumn } from '../../shared/components/data-table/data-table.component';
 import { StatsCardComponent } from '../../shared/components/stats-card/stats-card.component';
 import { LoadingComponent } from '../../shared/components/loading/loading.component';
@@ -44,6 +44,9 @@ export class TransactionsComponent implements OnInit {
   receiverAccountLookupLoading = signal(false);
   receiverAccountAutoFilled = signal(false);
 
+  accountSearchQuery = signal('');
+  searchLoading = signal(false);
+
   form = {
     senderAccountNumber: '',
     receiverAccountNumber: '',
@@ -59,6 +62,7 @@ export class TransactionsComponent implements OnInit {
   showExportModal = signal(false);
   exportForm = {
     accountNumber: '',
+    branchId: 0,
     dateFrom: '',
     dateTo: '',
     format: 'PDF' as 'PDF' | 'EXCEL' | 'CSV'
@@ -94,74 +98,32 @@ export class TransactionsComponent implements OnInit {
   transactionTypes = Object.values(TransactionType);
   transactionChannels = Object.values(TransactionChannel);
 
+  canSearchByAccount = computed(() =>
+    this.auth.hasRole([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER, Role.CUSTOMER_SERVICE])
+  );
+
+  canExportStaff = computed(() =>
+    this.auth.hasRole([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT, Role.CASHIER, Role.CUSTOMER_SERVICE, Role.AUDITOR])
+  );
+
   filteredTransactions = computed(() => {
-    let result = this.transactions();
-    const type = this.filterType();
-    const status = this.filterStatus();
-    const dateFrom = this.filterDateFrom();
-    const dateTo = this.filterDateTo();
-    if (type) {
-      result = result.filter(t => t.response?.transactionType === type);
-    }
-    if (status) {
-      result = result.filter(t => t.response?.status === status);
-    }
-    if (dateFrom) {
-      const from = new Date(dateFrom);
-      result = result.filter(t => {
-        const d = new Date(t.response?.createdAt || '');
-        return d >= from;
-      });
-    }
-    if (dateTo) {
-      const to = new Date(dateTo);
-      to.setHours(23, 59, 59, 999);
-      result = result.filter(t => {
-        const d = new Date(t.response?.createdAt || '');
-        return d <= to;
-      });
-    }
-    return result;
+    const query = this.accountSearchQuery().toLowerCase().trim();
+    if (!query) return this.journalHistory();
+    return this.journalHistory().filter(t =>
+      t.accountNumber?.toLowerCase().includes(query) ||
+      t.counterpartyAccountNumber?.toLowerCase().includes(query) ||
+      t.transactionId?.toLowerCase().includes(query) ||
+      t.particulars?.toLowerCase().includes(query)
+    );
   });
 
-  filteredJournal = computed(() => {
-    let result = this.journalHistory();
-    const type = this.filterType();
-    const status = this.filterStatus();
-    const dateFrom = this.filterDateFrom();
-    const dateTo = this.filterDateTo();
-    if (type) {
-      result = result.filter(j => j.transactionType === type);
-    }
-    if (status) {
-      result = result.filter(j => j.status === status);
-    }
-    if (dateFrom) {
-      const from = new Date(dateFrom);
-      result = result.filter(j => new Date(j.date) >= from);
-    }
-    if (dateTo) {
-      const to = new Date(dateTo);
-      to.setHours(23, 59, 59, 999);
-      result = result.filter(j => new Date(j.date) <= to);
-    }
-    return result;
-  });
-
-  totalTransactions = computed(() =>
-    this.isCustomerView() ? this.journalHistory().length : this.transactions().length);
+  totalTransactions = computed(() => this.journalHistory().length);
   successCount = computed(() =>
-    this.isCustomerView()
-      ? this.journalHistory().filter(j => j.status === 'SUCCESS').length
-      : this.transactions().filter(t => t.response?.status === 'SUCCESS').length);
+    this.journalHistory().filter(j => j.status === 'SUCCESS').length);
   totalAmount = computed(() =>
-    this.isCustomerView()
-      ? this.journalHistory().reduce((s, j) => s + (j.amount || 0), 0)
-      : this.transactions().reduce((s, t) => s + (t.response?.amount || 0), 0));
+    this.journalHistory().reduce((s, j) => s + (j.amount || 0), 0));
   pendingCount = computed(() =>
-    this.isCustomerView()
-      ? this.journalHistory().filter(j => j.status === 'PENDING').length
-      : this.transactions().filter(t => t.response?.status === 'PENDING').length);
+    this.journalHistory().filter(j => j.status === 'PENDING').length);
 
   constructor(
     private api: ApiService,
@@ -197,8 +159,11 @@ export class TransactionsComponent implements OnInit {
         error: () => { this.notify.error('Error', 'Failed to load transaction history'); this.loading.set(false); }
       });
     } else {
-      this.api.getTransactions().subscribe({
-        next: data => { this.transactions.set(data); this.loading.set(false); },
+      this.api.getAllJournals().subscribe({
+        next: (data) => {
+          this.journalHistory.set(data);
+          this.loading.set(false);
+        },
         error: () => { this.notify.error('Error', 'Failed to load transactions'); this.loading.set(false); }
       });
       this.api.getAccounts().subscribe({
@@ -206,6 +171,30 @@ export class TransactionsComponent implements OnInit {
         error: () => {}
       });
     }
+  }
+
+  searchByAccount(): void {
+    const query = this.accountSearchQuery().trim();
+    if (!query) {
+      this.loadData();
+      return;
+    }
+    this.searchLoading.set(true);
+    this.api.getJournalByAccount(query).subscribe({
+      next: (data) => {
+        this.journalHistory.set(data);
+        this.searchLoading.set(false);
+      },
+      error: () => {
+        this.notify.error('Error', 'Failed to search transactions');
+        this.searchLoading.set(false);
+      }
+    });
+  }
+
+  clearSearch(): void {
+    this.accountSearchQuery.set('');
+    this.loadData();
   }
 
   resetForm(): void {
@@ -390,7 +379,7 @@ export class TransactionsComponent implements OnInit {
   }
 
   openExportModal(): void {
-    this.exportForm = { accountNumber: '', dateFrom: '', dateTo: '', format: 'PDF' };
+    this.exportForm = { accountNumber: '', branchId: 0, dateFrom: '', dateTo: '', format: 'PDF' };
     this.showExportModal.set(true);
   }
 
@@ -399,14 +388,8 @@ export class TransactionsComponent implements OnInit {
   }
 
   exportTransactions(): void {
-    const customerId = this.auth.currentUser()?.id ?? 0;
-    if (!customerId) {
-      this.notify.warning('Validation', 'User not authenticated');
-      return;
-    }
-
     this.exporting.set(true);
-    const { accountNumber, dateFrom, dateTo, format } = this.exportForm;
+    const { accountNumber, branchId, dateFrom, dateTo, format } = this.exportForm;
 
     let startDate: string | undefined;
     let endDate: string | undefined;
@@ -417,29 +400,53 @@ export class TransactionsComponent implements OnInit {
       endDate = d.toISOString();
     }
 
-    this.api.exportTransactionHistory(customerId, format, accountNumber || undefined, startDate, endDate).subscribe({
-      next: (blob) => {
-        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-        const ext = format === 'PDF' ? 'pdf' : format === 'EXCEL' ? 'xlsx' : 'csv';
-        const accountLabel = accountNumber || 'all_accounts';
-        const filename = `TransactionHistory_${accountLabel}_${timestamp}.${ext}`;
-
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        window.URL.revokeObjectURL(url);
-
-        this.notify.success('Downloaded', `${filename} downloaded successfully`);
+    if (this.isCustomerView()) {
+      const customerId = this.auth.currentUser()?.id ?? 0;
+      if (!customerId) {
+        this.notify.warning('Validation', 'User not authenticated');
         this.exporting.set(false);
-        this.closeExportModal();
-      },
-      error: (err) => {
-        this.notify.error('Error', err.error?.message || 'Failed to export transaction history');
-        this.exporting.set(false);
+        return;
       }
-    });
+      this.api.exportTransactionHistory(customerId, format, accountNumber || undefined, startDate, endDate).subscribe({
+        next: (blob) => this.handleDownload(blob, accountNumber || 'all_accounts', format),
+        error: (err) => {
+          this.notify.error('Error', err.error?.message || 'Failed to export transaction history');
+          this.exporting.set(false);
+        }
+      });
+    } else {
+      this.api.exportStaffTransactionHistory(
+        format,
+        accountNumber || undefined,
+        branchId || undefined,
+        startDate,
+        endDate
+      ).subscribe({
+        next: (blob) => this.handleDownload(blob, accountNumber || (branchId ? `branch_${branchId}` : 'all'), format),
+        error: (err) => {
+          this.notify.error('Error', err.error?.message || 'Failed to export transaction history');
+          this.exporting.set(false);
+        }
+      });
+    }
+  }
+
+  private handleDownload(blob: Blob, label: string, format: string): void {
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+    const ext = format === 'PDF' ? 'pdf' : format === 'EXCEL' ? 'xlsx' : 'csv';
+    const safeLabel = label.replace(/[^a-zA-Z0-9]/g, '_');
+    const filename = `TransactionHistory_${safeLabel}_${timestamp}.${ext}`;
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    this.notify.success('Downloaded', `${filename} downloaded successfully`);
+    this.exporting.set(false);
+    this.closeExportModal();
   }
 
   onTableAction(event: { type: string; row: any }): void {

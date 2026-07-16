@@ -1,0 +1,166 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Cashier Transactions</h1>
+      <p class="page-subtitle">Process deposit and withdrawal transactions for customers</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="newTransaction()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+        New Transaction
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <app-stats-card title="Total Transactions" [value]="totalTransactions()" icon="&#128200;" color="#c9a84c"></app-stats-card>
+    <app-stats-card title="Successful" [value]="successCount()" icon="&#9989;" color="#22c55e"></app-stats-card>
+    <app-stats-card title="Total Amount" [value]="formatCurrency(totalAmount())" icon="&#128176;" color="#3b82f6"></app-stats-card>
+    <app-stats-card title="Pending" [value]="pendingCount()" icon="&#9203;" color="#f59e0b"></app-stats-card>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <h2 class="section-heading">Cashier Transactions</h2>
+
+  <!-- Account Number Filters -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Sender Account Number</label>
+      <input
+        type="text"
+        class="form-control-sm"
+        placeholder="Type sender account number..."
+        [ngModel]="senderFilter()"
+        (ngModelChange)="senderFilter.set($event)"
+      />
+    </div>
+    <div class="filter-group">
+      <label>Receiver Account Number</label>
+      <input
+        type="text"
+        class="form-control-sm"
+        placeholder="Type receiver account number..."
+        [ngModel]="receiverFilter()"
+        (ngModelChange)="receiverFilter.set($event)"
+      />
+    </div>
+    @if (senderFilter() || receiverFilter()) {
+      <div class="filter-group">
+        <button class="btn btn-secondary btn-sm" (click)="clearFilters()">Clear Filters</button>
+      </div>
+    }
+  </div>
+
+  @if (loading()) {
+    <app-loading message="Loading transactions..."></app-loading>
+  } @else {
+    <app-data-table
+      [columns]="columns"
+      [data]="filteredTransactions()"
+      [searchable]="true"
+      [pageSize]="10"
+      emptyMessage="No cashier transactions found"
+      (rowClick)="viewDetail($event)"
+    ></app-data-table>
+  }
+
+  <!-- Transaction Detail Modal -->
+  @if (showDetailModal() && selectedTransaction()) {
+    <div class="modal-overlay" (click)="closeDetail()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Transaction Details</h2>
+          <button class="modal-close" (click)="closeDetail()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-grid">
+            <div class="detail-item"><span class="detail-label">Transaction ID</span><span class="detail-value highlight">{{ selectedTransaction()!.id }}</span></div>
+            <div class="detail-item"><span class="detail-label">Check No</span><span class="detail-value">{{ selectedTransaction()!.checkNo || '-' }}</span></div>
+            <div class="detail-item"><span class="detail-label">Cashier</span><span class="detail-value">{{ selectedTransaction()!.cashierName }}</span></div>
+            <div class="detail-item"><span class="detail-label">Branch</span><span class="detail-value">{{ selectedTransaction()!.branchName }}</span></div>
+            <div class="detail-item"><span class="detail-label">Amount</span><span class="detail-value balance">{{ formatCurrency(selectedTransaction()!.transaction?.amount || 0) }}</span></div>
+            <div class="detail-item"><span class="detail-label">Type</span><span class="detail-value">{{ selectedTransaction()!.transaction?.transactionType }}</span></div>
+            <div class="detail-item"><span class="detail-label">Status</span><span class="badge" [class]="getStatusClass(selectedTransaction()!.transaction?.status || '')">{{ selectedTransaction()!.transaction?.status }}</span></div>
+            <div class="detail-item"><span class="detail-label">Channel</span><span class="detail-value">{{ selectedTransaction()!.transaction?.channel }}</span></div>
+            @if (selectedTransaction()!.transaction?.remarks) {
+              <div class="detail-item full-width"><span class="detail-label">Remarks</span><span class="detail-value">{{ selectedTransaction()!.transaction?.remarks }}</span></div>
+            }
+            @if (selectedTransaction()!.journals && selectedTransaction()!.journals!.length > 0) {
+              <div class="detail-item full-width">
+                <span class="detail-label">Journal Entries</span>
+                <div class="journal-entries">
+                  @for (journal of selectedTransaction()!.journals!; track journal.id) {
+                    <div class="journal-entry">
+                      <span>{{ journal.accountNumber }} - {{ journal.entryType }} - {{ formatCurrency(journal.amount) }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeDetail()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Cashier Transaction Form Modal -->
+  @if (showFormModal()) {
+    <div class="modal-overlay" (click)="closeFormModal()">
+      <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>New Cashier Transaction</h2>
+          <button class="modal-close" (click)="closeFormModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Customer Account *</label>
+              <select [(ngModel)]="form.accountNumber" class="form-control">
+                <option value="">Select Account</option>
+                @for (acc of accounts(); track acc.id) {
+                  <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.branchName }} ({{ formatCurrency(acc.availableBalance) }})</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Transaction Type *</label>
+              <select [(ngModel)]="form.type" class="form-control">
+                <option value="">Select Type</option>
+                @for (type of transactionTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Check Number</label>
+              <input type="text" [(ngModel)]="form.checkNo" class="form-control" placeholder="Optional check number">
+            </div>
+            <div class="form-group">
+              <label>Amount *</label>
+              <input type="number" [(ngModel)]="form.amount" class="form-control" min="0.01" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group full-width">
+              <label>Remarks</label>
+              <input type="text" [(ngModel)]="form.remarks" class="form-control" placeholder="Transaction remarks (optional)">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeFormModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="submitTransaction()" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner"></span> Processing...
+            } @else {
+              <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"/></svg>
+              Process Transaction
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

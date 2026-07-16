@@ -37,7 +37,7 @@ public class DashboardService {
             response.setTotalCustomers(accountRepository.countDistinctCustomersAll());
             response.setTotalTransactions(transactionRepository.countAll());
             response.setTotalLoans(loanRepository.countAll());
-            response.setTotalBalance(accountRepository.sumBalanceByBranchIds(null));
+            response.setTotalBalance(accountRepository.sumBalanceAll());
             response.setTotalActiveCards(cardRepository.countByStatus(CardStatus.ACTIVE));
             response.setTransactionTrends(buildTransactionTrends(null));
             response.setAccountTypeDistribution(buildAccountTypeDistribution(null));

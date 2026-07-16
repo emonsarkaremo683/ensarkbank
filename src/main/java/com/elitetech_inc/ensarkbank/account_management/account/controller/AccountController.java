@@ -62,7 +62,7 @@ public class AccountController {
         return new ResponseEntity<>(accountService.createAccount(dto, nominees), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CASHIER')")
     @GetMapping("all/")
     public ResponseEntity<List<AccountResponse>> getAllAccounts(Authentication auth) {
         List<Long> branchIds = branchAccessService.getAccessibleBranchIds(auth);
@@ -72,7 +72,7 @@ public class AccountController {
         return new ResponseEntity<>(accountService.getAccountsByBranchIds(branchIds), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.isOwner(#id, authentication))")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CASHIER') or (hasRole('CUSTOMER') and @customerSecurity.isOwner(#id, authentication))")
     @GetMapping("{id:\\d+}")
     public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long id) {
         return accountService.getAccount(id)

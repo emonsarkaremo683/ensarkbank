@@ -158,6 +158,7 @@ public class CustomerMapper {
 
         KycRequest response = new KycRequest();
 
+        response.setId(document.getId());
         response.setPath(document.getPath());
         response.setDoc_type(document.getDoc_type());
 

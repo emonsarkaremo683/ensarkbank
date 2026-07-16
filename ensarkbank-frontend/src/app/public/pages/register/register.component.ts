@@ -135,10 +135,6 @@ export class RegisterComponent implements OnInit {
       next: (data: Division[]) => {
         this.divisions = data;
         this.cdr.markForCheck();
-
-      },
-      error: (err: any) => {
-        console.log(err);
       }
     });
   }
@@ -158,9 +154,6 @@ export class RegisterComponent implements OnInit {
       next: (data: District[]) => {
         this.presentDistricts = data;
         this.cdr.markForCheck();
-      },
-      error: (err: any) => {
-        console.log(err);
       }
     });
   }
@@ -169,9 +162,6 @@ export class RegisterComponent implements OnInit {
       next: (data: PoliceStation[]) => {
         this.presentPoliceStations = data;
         this.cdr.markForCheck();
-      },
-      error: (err: any) => {
-        console.log(err);
       }
     });
   }
@@ -183,9 +173,6 @@ export class RegisterComponent implements OnInit {
         this.permanentAddressForm.patchValue({ districtId: '', policeStationId: '' });
         this.permanentPoliceStations = [];
         this.cdr.markForCheck();
-      },
-      error: (err: any) => {
-        console.log(err);
       }
     });
   }
@@ -196,9 +183,6 @@ export class RegisterComponent implements OnInit {
         this.permanentPoliceStations = data;
         this.permanentAddressForm.patchValue({ policeStationId: '' });
         this.cdr.markForCheck();
-      },
-      error: (err: any) => {
-        console.log(err);
       }
     });
   }
@@ -210,9 +194,6 @@ export class RegisterComponent implements OnInit {
         this.presentAddressForm.patchValue({ districtId: '', policeStationId: '' });
         this.presentPoliceStations = [];
         this.cdr.markForCheck();
-      },
-      error: (err: any) => {
-        console.log(err);
       }
     });
   }
@@ -223,9 +204,6 @@ export class RegisterComponent implements OnInit {
         this.presentPoliceStations = data;
         this.presentAddressForm.patchValue({ policeStationId: '' });
         this.cdr.markForCheck();
-      },
-      error: (err: any) => {
-        console.log(err);
       }
     });
   }

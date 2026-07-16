@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class KycRequest {
+    private Long id;
     private String path;
     private DocumentType doc_type;
 

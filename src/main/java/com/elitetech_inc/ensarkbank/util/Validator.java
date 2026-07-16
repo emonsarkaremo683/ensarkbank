@@ -88,7 +88,7 @@ public class Validator {
                 .orElseThrow(()-> new RuntimeException((" Invalid Account")));
     }
 
-    public void checkPassportAvailable(Long id){
+    public void checkPassportAvailable(Long id) {
 
         List<KycDocuments> list = kycDocumentsRepository.findKycDocumentsByCustomerId(id);
 
@@ -101,6 +101,7 @@ public class Validator {
 
 
     }
+
 
 
 

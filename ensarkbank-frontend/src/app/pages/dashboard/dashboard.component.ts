@@ -74,14 +74,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
       { label: 'New Transaction', icon: '⚡', route: '/transactions/new', color: '#c9a84c', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER] },
       { label: 'Manage Accounts', icon: '🏦', route: '/accounts', color: '#3b82f6', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT] },
       { label: 'Customers', icon: '👥', route: '/customers', color: '#22c55e', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CUSTOMER_SERVICE, Role.AUDITOR] },
-      { label: 'Transactions', icon: '📝', route: '/transactions', color: '#a855f7', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER, Role.ACCOUNTANT, Role.AUDITOR, Role.CUSTOMER_SERVICE, Role.LOAN_OFFICER] },
+      // { label: 'Transactions', icon: '📝', route: '/transactions', color: '#a855f7', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER, Role.ACCOUNTANT, Role.AUDITOR, Role.CUSTOMER_SERVICE, Role.LOAN_OFFICER] },
       { label: 'Loan Applications', icon: '📋', route: '/loans', color: '#8b5cf6', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.LOAN_OFFICER] },
       { label: 'Cards', icon: '💳', route: '/cards', color: '#06b6d4', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CASHIER, Role.BRANCH_MANAGER] },
       { label: 'ATM Management', icon: '🏧', route: '/atm', color: '#f97316', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.ATM_MANAGER] },
       { label: 'View Reports', icon: '📈', route: '/reports', color: '#f59e0b', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.ACCOUNTANT, Role.AUDITOR] },
       { label: 'Manage Employees', icon: '👤', route: '/employees', color: '#ec4899', roles: [Role.SUPER_ADMIN, Role.ADMIN] },
       { label: 'Manage Branches', icon: '🏛️', route: '/branches', color: '#14b8a6', roles: [Role.SUPER_ADMIN] },
-      { label: 'Beneficiaries', icon: '🤝', route: '/beneficiaries', color: '#22d3ee', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CUSTOMER_SERVICE, Role.BRANCH_MANAGER] },
+      // { label: 'Beneficiaries', icon: '🤝', route: '/beneficiaries', color: '#22d3ee', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CUSTOMER_SERVICE, Role.BRANCH_MANAGER] },
       { label: 'Cashier Operations', icon: '💰', route: '/transactions/cashier', color: '#eab308', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CASHIER] }
     ];
     return actions.filter(a => a.roles.includes(userRole));
@@ -161,8 +161,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.lastRefresh.set(new Date());
             this.loading.set(false);
           },
-          error: (err) => {
-            console.error('Dashboard: Failed to load transaction history', err);
+          error: () => {
             this.loading.set(false);
           }
         });

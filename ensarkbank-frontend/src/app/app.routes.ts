@@ -68,8 +68,17 @@ export const routes: Routes = [
       },
       {
         path: 'transactions',
-        loadComponent: () => import('./pages/transactions/transactions.component').then(m => m.TransactionsComponent),
-        canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT, Role.CASHIER])]
+        canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT, Role.CASHIER])],
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./pages/transactions/transactions.component').then(m => m.TransactionsComponent)
+          },
+          {
+            path: 'cashier',
+            loadComponent: () => import('./pages/transactions/cashier-transaction/cashier-transaction.component').then(m => m.CashierTransactionComponent)
+          }
+        ]
       },
       {
         path: 'loans',

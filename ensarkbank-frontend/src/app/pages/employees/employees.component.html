@@ -20,7 +20,7 @@
 
   <div class="table-card">
     <app-data-table
-      [columns]="columns"
+      [columns]="columns()"
       [data]="filteredEmployees()"
       [searchable]="true"
       [paginated]="true"
@@ -136,6 +136,33 @@
                   <option value="PERMANENT">Permanent</option>
                   <option value="PRESENT">Present</option>
                   <option value="OFFICE">Office</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Division *</label>
+                <select class="form-select" [(ngModel)]="form.addresses[i].divisionId" (ngModelChange)="onAddressDivisionChange(i, $event)">
+                  <option value="">Select Division</option>
+                  @for (div of divisions(); track div.id) {
+                    <option [value]="div.id">{{ div.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">District *</label>
+                <select class="form-select" [(ngModel)]="form.addresses[i].districtId" (ngModelChange)="onAddressDistrictChange(i, $event)">
+                  <option value="">Select District</option>
+                  @for (dist of addressDistricts[i]; track dist.id) {
+                    <option [value]="dist.id">{{ dist.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Police Station *</label>
+                <select class="form-select" [(ngModel)]="form.addresses[i].policeStationId">
+                  <option [value]="0">Select Police Station</option>
+                  @for (ps of addressPoliceStations[i]; track ps.id) {
+                    <option [ngValue]="ps.id">{{ ps.name }}</option>
+                  }
                 </select>
               </div>
               <div class="form-group">

@@ -51,7 +51,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         // set user and save
         User user = employeeMapper.toUser(emp);
+        user.setActive(true);
+        user.setEmailVerified(true);
         employee.setUser(userRepository.save(user));
+
 
         return employeeMapper.toResponse(employeeRepository.save(employee));
 

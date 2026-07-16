@@ -156,6 +156,7 @@ export interface KycRequest {
 }
 
 export interface KycResponse {
+  id: number;
   path: string;
   doc_type: DocumentType;
 }
@@ -309,7 +310,7 @@ export interface TransactionResponse {
   vatAmount?: number;
   remarks?: string;
   createdAt?: string;
-  journals?: JournalEntry[];
+  journals?: JournalResponse[];
 }
 
 export interface OtpVerifyRequest {
@@ -485,13 +486,29 @@ export interface CashierTransactionRequest {
   transactionRequest: TransactionRequest;
 }
 
+export interface JournalResponse {
+  id: number;
+  date?: string;
+  transactionId: string;
+  particulars?: string;
+  accountNumber: string;
+  counterpartyAccountNumber?: string;
+  counterpartyName?: string;
+  entryType: EntryType;
+  amount: number;
+  transactionType?: TransactionType;
+  channel?: TransactionChannel;
+  status?: TransactionStatus;
+  remarks?: string;
+}
+
 export interface CashierTransactionResponse {
   id: number;
   checkNo?: string;
   cashierName: string;
   branchName: string;
   transaction?: TransactionResponse;
-  journals?: JournalEntry[];
+  journals?: JournalResponse[];
 }
 
 // Reports

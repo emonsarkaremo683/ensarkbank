@@ -3,6 +3,7 @@ package com.elitetech_inc.ensarkbank.accounting_system.journal.controller;
 import com.elitetech_inc.ensarkbank.accounting_system.journal.dto.JournalResponse;
 import com.elitetech_inc.ensarkbank.accounting_system.journal.service.JournalService;
 import com.elitetech_inc.ensarkbank.accounting_system.journal.service.TransactionHistoryExportService;
+import com.elitetech_inc.ensarkbank.common.security.BranchAccessService;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -33,6 +33,7 @@ public class JournalController {
     private final JournalService journalService;
     private final TransactionHistoryExportService exportService;
     private final CustomerRepository customerRepository;
+    private final BranchAccessService branchAccessService;
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR') or (hasRole('CUSTOMER') and @customerSecurity.isAccountNumberOwner(#accountNumber, authentication))")
     @GetMapping("{accountNumber}")
@@ -55,6 +56,99 @@ public class JournalController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate){
         return ResponseEntity.ok(journalService.getJournalByAccountId(id, startDate, endDate));
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR')")
+    @GetMapping("all")
+    public ResponseEntity<List<JournalResponse>> getAllJournals(Authentication auth) {
+        List<Long> branchIds = branchAccessService.getAccessibleBranchIds(auth);
+        if (branchIds == null) {
+            return ResponseEntity.ok(journalService.getAllJournals());
+        }
+        return ResponseEntity.ok(journalService.getJournalsByBranchIds(branchIds));
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR')")
+    @GetMapping("branch/{branchId}")
+    public ResponseEntity<List<JournalResponse>> getJournalsByBranchId(@PathVariable Long branchId) {
+        return ResponseEntity.ok(journalService.getJournalsByBranchId(branchId));
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR')")
+    @GetMapping("export/staff")
+    public void exportStaffTransactionHistory(
+            @RequestParam(required = false) String accountNumber,
+            @RequestParam(required = false) Long branchId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(defaultValue = "PDF") String format,
+            HttpServletResponse response,
+            Authentication auth) throws Exception {
+
+        List<Long> accessibleBranchIds = branchAccessService.getAccessibleBranchIds(auth);
+        List<JournalResponse> entries;
+        String displayName = "All Transactions";
+        String displayAccount = accountNumber;
+
+        if (accountNumber != null && !accountNumber.isBlank()) {
+            entries = journalService.getByAccountNumber(accountNumber);
+            if (accessibleBranchIds != null) {
+                entries = entries.stream()
+                        .filter(e -> true)
+                        .toList();
+            }
+            displayName = "Account: " + accountNumber;
+        } else if (branchId != null) {
+            entries = journalService.getJournalsByBranchId(branchId);
+            displayName = "Branch ID: " + branchId;
+        } else if (accessibleBranchIds != null) {
+            entries = journalService.getJournalsByBranchIds(accessibleBranchIds);
+            displayName = "My Branch";
+        } else {
+            entries = journalService.getAllJournals();
+            displayName = "All Branches";
+        }
+
+        if (startDate != null || endDate != null) {
+            LocalDateTime from = startDate != null ? startDate : LocalDateTime.of(1970, 1, 1, 0, 0);
+            LocalDateTime to = endDate != null ? endDate : LocalDateTime.now();
+            entries = entries.stream()
+                    .filter(e -> e.getDate() != null && !e.getDate().isBefore(from) && !e.getDate().isAfter(to))
+                    .toList();
+        }
+
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String safeLabel = displayName.replaceAll("[^a-zA-Z0-9]", "_");
+
+        switch (format.toUpperCase()) {
+            case "EXCEL": {
+                String filename = "TransactionHistory_" + safeLabel + "_" + timestamp + ".xlsx";
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+                byte[] excelBytes = exportService.generateExcel(entries, displayAccount, displayName, startDate, endDate);
+                response.getOutputStream().write(excelBytes);
+                response.getOutputStream().flush();
+                break;
+            }
+            case "CSV": {
+                String filename = "TransactionHistory_" + safeLabel + "_" + timestamp + ".csv";
+                response.setContentType("text/csv");
+                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+                PrintWriter writer = response.getWriter();
+                exportService.generateCsv(entries, writer);
+                writer.flush();
+                break;
+            }
+            default: {
+                String filename = "TransactionHistory_" + safeLabel + "_" + timestamp + ".pdf";
+                response.setContentType("application/pdf");
+                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+                byte[] pdfBytes = exportService.generatePdf(entries, displayAccount, displayName, startDate, endDate);
+                response.getOutputStream().write(pdfBytes);
+                response.getOutputStream().flush();
+                break;
+            }
+        }
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER_SERVICE', 'AUDITOR') or (hasRole('CUSTOMER') and @customerSecurity.isCustomerIdsMatch(#customerId, authentication))")

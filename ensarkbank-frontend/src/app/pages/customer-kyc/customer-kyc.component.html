@@ -143,7 +143,11 @@
         </div>
         <div class="modal-body preview-body">
           @if (previewDocument()!.path && isImageFile(previewDocument()!.path)) {
-            <img [src]="getDocumentUrl(previewDocument()!.path)" [alt]="previewDocument()!.doc_type" class="preview-image" (error)="onPreviewError()">
+            @if (previewUrl()) {
+              <img [src]="previewUrl()" [alt]="previewDocument()!.doc_type" class="preview-image">
+            } @else {
+              <app-loading message="Loading document..."></app-loading>
+            }
           } @else {
             <div class="preview-file">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="64" height="64">

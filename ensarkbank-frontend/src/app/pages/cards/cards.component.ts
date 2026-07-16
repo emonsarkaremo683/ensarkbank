@@ -31,10 +31,12 @@ export class CardsComponent implements OnInit, OnDestroy {
   showDetailModal = signal(false);
   showPinModal = signal(false);
   showStatusDialog = signal(false);
+  showLimitDialog = signal(false);
   showRequestModal = signal(false);
   showRejectModal = signal(false);
   selectedCard = signal<CardResponse | null>(null);
   newStatusAction = signal<'BLOCK' | 'UNBLOCK'>('BLOCK');
+  limitForm = { dailyLimit: 0, monthlyLimit: 0 };
 
   pendingRequests = signal<CardSettingsRequest[]>([]);
   selectedRequest = signal<CardSettingsRequest | null>(null);
@@ -421,7 +423,15 @@ export class CardsComponent implements OnInit, OnDestroy {
   confirmStatusChange(card: CardResponse, action: 'BLOCK' | 'UNBLOCK'): void {
     this.selectedCard.set(card);
     this.newStatusAction.set(action);
-    this.showStatusDialog.set(true);
+    if (card.status === 'PENDING' && action === 'UNBLOCK' && card.cardType === 'CREDIT') {
+      this.limitForm = {
+        dailyLimit: card.dailyLimit || 0,
+        monthlyLimit: card.monthlyLimit || 0
+      };
+      this.showLimitDialog.set(true);
+    } else {
+      this.showStatusDialog.set(true);
+    }
   }
 
   getStatusDialogTitle(): string {
@@ -466,16 +476,14 @@ export class CardsComponent implements OnInit, OnDestroy {
     let monthlyLimit = 0;
     if (card.status === 'PENDING' && this.newStatusAction() === 'UNBLOCK') {
       status = 'ACTIVE';
-      dailyLimit = card.dailyLimit || 0;
-      monthlyLimit = card.monthlyLimit || 0;
+      if (card.cardType === 'CREDIT') {
+        dailyLimit = this.limitForm.dailyLimit;
+        monthlyLimit = this.limitForm.monthlyLimit;
+      }
     } else if (card.status === 'PENDING' && this.newStatusAction() === 'BLOCK') {
       status = 'DISABLED';
     } else {
       status = this.newStatusAction() === 'BLOCK' ? 'BLOCKED' : 'ACTIVE';
-      if (this.newStatusAction() === 'UNBLOCK') {
-        dailyLimit = card.dailyLimit || 0;
-        monthlyLimit = card.monthlyLimit || 0;
-      }
     }
     this.submitting.set(true);
     this.api.updateCardStatus(card.cardId, status, dailyLimit, monthlyLimit).subscribe({
@@ -483,11 +491,14 @@ export class CardsComponent implements OnInit, OnDestroy {
         this.notify.success('Success', `Card ${status.toLowerCase()}ed`);
         this.cards.update(list => list.map(c => c.cardId === res.cardId ? res : c));
         this.showStatusDialog.set(false);
+        this.showLimitDialog.set(false);
+        this.selectedCard.set(null);
         this.submitting.set(false);
       },
       error: (err) => {
         this.notify.error('Error', err.error?.message || 'Failed to update status');
         this.showStatusDialog.set(false);
+        this.showLimitDialog.set(false);
         this.submitting.set(false);
       }
     });

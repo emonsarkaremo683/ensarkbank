@@ -2,10 +2,13 @@ package com.elitetech_inc.ensarkbank.account_management.hold_transaction.service
 
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
+import com.elitetech_inc.ensarkbank.account_management.credit_account.entity.CreditAccount;
+import com.elitetech_inc.ensarkbank.account_management.credit_account.repository.CreditAccountRepository;
 import com.elitetech_inc.ensarkbank.account_management.hold_transaction.entity.HoldTransaction;
 import com.elitetech_inc.ensarkbank.account_management.hold_transaction.repository.HoldTransactionRepository;
 import com.elitetech_inc.ensarkbank.common.enums.HoldReason;
 import com.elitetech_inc.ensarkbank.common.enums.HoldStatus;
+import com.elitetech_inc.ensarkbank.common.exception.InsufficientCreditException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,6 +28,7 @@ public class HoldTransactionServiceImpl implements HoldTransactionService {
 
     private final HoldTransactionRepository holdTransactionRepository;
     private final AccountRepository accountRepository;
+    private final CreditAccountRepository creditAccountRepository;
 
     @Override
     public HoldTransaction createHold(Account account, BigDecimal amount, HoldReason reason, int holdDurationMinutes, String authorizationReference, String merchantInfo) {
@@ -60,6 +64,36 @@ public class HoldTransactionServiceImpl implements HoldTransactionService {
     }
 
     @Override
+    public HoldTransaction createHoldOnCredit(CreditAccount creditAccount, BigDecimal amount, HoldReason reason, int holdDurationMinutes, String authorizationReference, String merchantInfo) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Hold amount must be positive");
+        }
+
+        BigDecimal availableCredit = creditAccount.getAvailableCredit();
+        if (availableCredit.compareTo(amount) < 0) {
+            throw new InsufficientCreditException("Insufficient available credit for hold. Available: " + availableCredit + ", Requested: " + amount);
+        }
+
+        String authRef = authorizationReference;
+        if (authRef == null || authRef.isBlank()) {
+            authRef = "HOLD-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase();
+        }
+
+        HoldTransaction hold = new HoldTransaction();
+        hold.setCreditAccount(creditAccount);
+        hold.setAmount(amount);
+        hold.setReason(reason);
+        hold.setStatus(HoldStatus.ACTIVE);
+        hold.setExpiresAt(LocalDateTime.now().plusMinutes(holdDurationMinutes));
+        hold.setAuthorizationReference(authRef);
+        hold.setMerchantInfo(merchantInfo);
+
+        HoldTransaction saved = holdTransactionRepository.save(hold);
+        log.info("Credit hold created: id={}, creditAccount={}, amount={}, reason={}, authRef={}", saved.getId(), creditAccount.getId(), amount, reason, authRef);
+        return saved;
+    }
+
+    @Override
     public HoldTransaction releaseHold(HoldTransaction hold) {
         if (hold.getStatus() != HoldStatus.ACTIVE) {
             throw new IllegalStateException("Hold is not active, cannot release");
@@ -68,12 +102,16 @@ public class HoldTransactionServiceImpl implements HoldTransactionService {
         hold.setStatus(HoldStatus.RELEASED);
         holdTransactionRepository.save(hold);
 
-        Account account = hold.getAccount();
-        account.setAvailableBalance(account.getAvailableBalance().add(hold.getAmount()));
-        account.setHoldBalance(zeroIfNull(account.getHoldBalance()).subtract(hold.getAmount()));
-        accountRepository.save(account);
+        if (hold.getAccount() != null) {
+            Account account = hold.getAccount();
+            account.setAvailableBalance(account.getAvailableBalance().add(hold.getAmount()));
+            account.setHoldBalance(zeroIfNull(account.getHoldBalance()).subtract(hold.getAmount()));
+            accountRepository.save(account);
+            log.info("Hold released: id={}, account={}, amount={}, authRef={}", hold.getId(), account.getAccountNumber(), hold.getAmount(), hold.getAuthorizationReference());
+        } else if (hold.getCreditAccount() != null) {
+            log.info("Credit hold released: id={}, creditAccount={}, amount={}, authRef={}", hold.getId(), hold.getCreditAccount().getId(), hold.getAmount(), hold.getAuthorizationReference());
+        }
 
-        log.info("Hold released: id={}, account={}, amount={}, authRef={}", hold.getId(), account.getAccountNumber(), hold.getAmount(), hold.getAuthorizationReference());
         return hold;
     }
 
@@ -87,11 +125,15 @@ public class HoldTransactionServiceImpl implements HoldTransactionService {
         hold.setRelatedTransactionId(relatedTransactionId);
         holdTransactionRepository.save(hold);
 
-        Account account = hold.getAccount();
-        account.setHoldBalance(zeroIfNull(account.getHoldBalance()).subtract(hold.getAmount()));
-        accountRepository.save(account);
+        if (hold.getAccount() != null) {
+            Account account = hold.getAccount();
+            account.setHoldBalance(zeroIfNull(account.getHoldBalance()).subtract(hold.getAmount()));
+            accountRepository.save(account);
+            log.info("Hold settled: id={}, account={}, amount={}, txnId={}, authRef={}", hold.getId(), account.getAccountNumber(), hold.getAmount(), relatedTransactionId, hold.getAuthorizationReference());
+        } else if (hold.getCreditAccount() != null) {
+            log.info("Credit hold settled: id={}, creditAccount={}, amount={}, txnId={}, authRef={}", hold.getId(), hold.getCreditAccount().getId(), hold.getAmount(), relatedTransactionId, hold.getAuthorizationReference());
+        }
 
-        log.info("Hold settled: id={}, account={}, amount={}, txnId={}, authRef={}", hold.getId(), account.getAccountNumber(), hold.getAmount(), relatedTransactionId, hold.getAuthorizationReference());
         return hold;
     }
 
@@ -120,6 +162,18 @@ public class HoldTransactionServiceImpl implements HoldTransactionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<HoldTransaction> getActiveHoldsByCreditAccount(Long creditAccountId) {
+        return holdTransactionRepository.findByCreditAccountIdAndStatus(creditAccountId, HoldStatus.ACTIVE);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BigDecimal getActiveHoldBalanceOnCredit(Long creditAccountId) {
+        return holdTransactionRepository.sumActiveHoldsByCreditAccountId(creditAccountId);
+    }
+
+    @Override
     @Scheduled(fixedRate = 60000)
     public void releaseExpiredHolds() {
         List<HoldTransaction> expiredHolds = holdTransactionRepository.findByStatusAndExpiresAtBefore(HoldStatus.ACTIVE, LocalDateTime.now());
@@ -127,12 +181,15 @@ public class HoldTransactionServiceImpl implements HoldTransactionService {
             hold.setStatus(HoldStatus.EXPIRED);
             holdTransactionRepository.save(hold);
 
-            Account account = hold.getAccount();
-            account.setAvailableBalance(account.getAvailableBalance().add(hold.getAmount()));
-            account.setHoldBalance(zeroIfNull(account.getHoldBalance()).subtract(hold.getAmount()));
-            accountRepository.save(account);
-
-            log.info("Hold expired and released: id={}, account={}, amount={}, authRef={}", hold.getId(), account.getAccountNumber(), hold.getAmount(), hold.getAuthorizationReference());
+            if (hold.getAccount() != null) {
+                Account account = hold.getAccount();
+                account.setAvailableBalance(account.getAvailableBalance().add(hold.getAmount()));
+                account.setHoldBalance(zeroIfNull(account.getHoldBalance()).subtract(hold.getAmount()));
+                accountRepository.save(account);
+                log.info("Hold expired and released: id={}, account={}, amount={}, authRef={}", hold.getId(), account.getAccountNumber(), hold.getAmount(), hold.getAuthorizationReference());
+            } else if (hold.getCreditAccount() != null) {
+                log.info("Credit hold expired and released: id={}, creditAccount={}, amount={}, authRef={}", hold.getId(), hold.getCreditAccount().getId(), hold.getAmount(), hold.getAuthorizationReference());
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import com.elitetech_inc.ensarkbank.common.enums.Gender;
 import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
 import com.elitetech_inc.ensarkbank.common.enums.Role;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.dto.request.KycRequest;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -17,6 +18,7 @@ public class CustomerResponse{
     private Long id;
     private String email;
     private Role role;
+    @JsonProperty("isEmailVerified")
     private boolean isEmailVerified;
     private boolean active;
 

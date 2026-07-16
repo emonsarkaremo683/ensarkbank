@@ -6,6 +6,7 @@ import com.elitetech_inc.ensarkbank.common.enums.CustomerOccupation;
 import com.elitetech_inc.ensarkbank.common.enums.Gender;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.entity.Beneficiary;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.Kyc;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -45,6 +46,7 @@ public class Customer extends BaseEntity {
     private Kyc kyc;
 
     @OneToMany(mappedBy = "customer")
+    @JsonIgnore
     private List<Beneficiary> beneficiaries = new ArrayList<>();
 
 

@@ -131,6 +131,33 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<CashierTransactionResponse> getByAccountNumber(String accountNumber) {
+        return cashierTransactionRepository.findByAccountNumber(accountNumber)
+                .stream()
+                .map(cashierTransactionMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CashierTransactionResponse> getByBranchId(Long branchId) {
+        return cashierTransactionRepository.findByBranchId(branchId)
+                .stream()
+                .map(cashierTransactionMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CashierTransactionResponse> getByBranchIds(List<Long> branchIds) {
+        return cashierTransactionRepository.findByBranchIds(branchIds)
+                .stream()
+                .map(cashierTransactionMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public CashierTransactionResponse updateTransaction(Long id, CashierTransactionRequest request) {
         CashierTransaction existing = cashierTransactionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("CashierTransaction", id));

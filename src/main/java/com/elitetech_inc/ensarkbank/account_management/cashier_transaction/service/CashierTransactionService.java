@@ -9,6 +9,9 @@ public interface CashierTransactionService {
     CashierTransactionResponse createTransaction(CashierTransactionRequest request);
     CashierTransactionResponse getTransactionById(Long id);
     List<CashierTransactionResponse> getAllTransactions();
+    List<CashierTransactionResponse> getByAccountNumber(String accountNumber);
+    List<CashierTransactionResponse> getByBranchId(Long branchId);
+    List<CashierTransactionResponse> getByBranchIds(List<Long> branchIds);
     CashierTransactionResponse updateTransaction(Long id, CashierTransactionRequest request);
     void deleteTransaction(Long id);
 }

@@ -39,6 +39,9 @@ public interface AccountRepository extends JpaRepository<Account,Long> {
     @Query("SELECT COALESCE(SUM(a.availableBalance), 0) FROM Account a WHERE a.branch.id IN :branchIds")
     java.math.BigDecimal sumBalanceByBranchIds(@Param("branchIds") List<Long> branchIds);
 
+    @Query("SELECT COALESCE(SUM(a.availableBalance), 0) FROM Account a")
+    java.math.BigDecimal sumBalanceAll();
+
     @Query("SELECT a.branch.id, a.branch.name, COUNT(a), COUNT(DISTINCT ah.customer.id), COALESCE(SUM(a.availableBalance), 0) " +
            "FROM Account a LEFT JOIN a.holders ah " +
            "WHERE a.branch.type <> com.elitetech_inc.ensarkbank.common.enums.BranchType.HEAD_OFFICE " +

@@ -37,7 +37,7 @@
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .btn {
@@ -339,13 +339,37 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
   .page-container {
     padding: 20px;
   }
 
+  .page-title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .page-container {
+    padding: 16px;
+  }
+
   .page-header {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  .header-actions {
+    justify-content: stretch;
+
+    .btn {
+      flex: 1;
+      justify-content: center;
+    }
   }
 
   .form-grid,
@@ -355,5 +379,59 @@
 
   .modal-container {
     max-height: 95vh;
+    margin: 10px;
+    border-radius: 12px;
+  }
+
+  .modal-header {
+    padding: 18px 20px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-footer {
+    padding: 16px 20px;
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .section-divider {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .address-card {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 12px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .modal-title {
+    font-size: 17px;
+  }
+
+  .form-label {
+    font-size: 12px;
+  }
+
+  .form-input,
+  .form-select {
+    padding: 9px 12px;
+    font-size: 13px;
   }
 }

@@ -35,4 +35,10 @@ public interface JournalRepository extends JpaRepository<Journal, Long> {
             @Param("accountNumbers") List<String> accountNumbers,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT j FROM Journal j ORDER BY j.createdAt DESC")
+    List<Journal> findAllJournals();
+
+    @Query("SELECT j FROM Journal j WHERE j.accountNumber = :accountNumber ORDER BY j.createdAt DESC")
+    List<Journal> findByAccountNumber(@Param("accountNumber") String accountNumber);
 }

@@ -9,8 +9,11 @@ import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.Kyc;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.KycDocuments;
+import com.elitetech_inc.ensarkbank.customer_management.kyc.repository.KycDocumentsRepository;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.repository.KycRepository;
 import com.elitetech_inc.ensarkbank.util.Utils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +26,18 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KycService {
     private final KycRepository repository;
+    private final KycDocumentsRepository documentsRepository;
     private final CustomerRepository customerRepository;
     private final CustomerMapper mapper;
     private final Utils utils;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public KycDocuments getDocumentById(Long documentId) {
+        return documentsRepository.findByIdWithCustomer(documentId)
+                .orElseThrow(() -> new ResourceNotFoundException("KYC Document", documentId));
+    }
 
     @Transactional
     public CustomerResponse updateKycStatusBYCustomerId(Long id, KYCStatus status) {
@@ -86,6 +98,7 @@ public class KycService {
                     utils.deleteFile("kyc", deleteName);
 
                     iterator.remove();
+                    entityManager.flush();
 
                     break;
                 }

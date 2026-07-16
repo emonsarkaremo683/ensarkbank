@@ -262,9 +262,9 @@ The frontend (Angular 22) and backend (Spring Boot 4) are well-aligned. All fron
 | `processCashierTransaction(data)` | POST `/api/cashier-transactions` | `POST /api/cashier-transactions` | `CashierTransactionRequest` | `CashierTransactionRequest` | ✅ |
 
 **DTO Fields:**
-- Frontend `CashierTransactionRequest`: `{ checkNo, branchId, accountNumber, transactionRequest }`
-- Backend `CashierTransactionRequest`: `{ checkNo, branchId, accountNumber, accountName, bankName, employeeId, routingNumber, transactionRequest }`
-- ⚠️ Backend has extra fields: `accountName`, `bankName`, `employeeId`, `routingNumber`
+- Frontend `CashierTransactionRequest`: `{ checkNo, branchId, accountNumber, accountName, type, bankName, employeeId, routingNumber, transactionRequest }`
+- Backend `CashierTransactionRequest`: `{ checkNo, branchId, accountNumber, accountName, type, bankName, employeeId, routingNumber, transactionRequest }`
+- ✅ Match
 
 ---
 
@@ -342,7 +342,7 @@ The frontend (Angular 22) and backend (Spring Boot 4) are well-aligned. All fron
 |---|---|---|---|---|
 | 1 | `CustomerResponse` | Has `kycStatus` | Missing `kycStatus` | Frontend extra field |
 | 2 | `CardResponse` | Missing `cvv`, `isOnlineTransactionEnabled` | Has `cvv`, `isOnlineTransactionEnabled` | Frontend missing fields |
-| 3 | `CashierTransactionRequest` | Missing `accountName`, `bankName`, `employeeId`, `routingNumber` | Has extra fields | Backend has extra fields |
+| 3 | `CashierTransactionRequest` | Fixed - now includes all fields | All fields present | ✅ Fixed |
 | 4 | `TrialBalanceResponse` | Has `branchCode`, `fromDate`, `toDate` | Has `branchId` | Different fields |
 
 ---
@@ -379,4 +379,4 @@ The frontend (Angular 22) and backend (Spring Boot 4) are well-aligned. All fron
 2. **Fix HTTP method mismatches** (5 issues) - PUT vs PATCH will cause 405 errors
 3. **Update `LoanResponse`** to `LoanApplicationResponse` for consistency
 4. **Add missing fields** to frontend DTOs if needed (CardResponse cvv, etc.)
-5. **Align `CashierTransactionRequest`** fields between frontend and backend
+5. ~~**Align `CashierTransactionRequest`** fields between frontend and backend~~ ✅ Fixed

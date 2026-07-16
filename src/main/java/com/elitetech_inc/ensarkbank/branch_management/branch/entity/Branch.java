@@ -53,6 +53,7 @@ public class Branch extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "policeStationID")
+    @JsonIgnore
     private PoliceStation policeStation;
 
     @OneToMany(mappedBy = "branch", cascade = CascadeType.ALL, orphanRemoval = true)

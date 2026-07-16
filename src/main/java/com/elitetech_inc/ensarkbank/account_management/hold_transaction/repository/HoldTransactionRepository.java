@@ -31,4 +31,12 @@ public interface HoldTransactionRepository extends JpaRepository<HoldTransaction
 
     @Query("SELECT COUNT(h) > 0 FROM HoldTransaction h WHERE h.account.id = :accountId AND h.status = 'ACTIVE' AND h.reason <> 'PENDING_APPROVAL'")
     boolean hasActiveCardHolds(@Param("accountId") Long accountId);
+
+    List<HoldTransaction> findByCreditAccountIdAndStatus(Long creditAccountId, HoldStatus status);
+
+    @Query("SELECT COALESCE(SUM(h.amount), 0) FROM HoldTransaction h WHERE h.creditAccount.id = :creditAccountId AND h.status = 'ACTIVE'")
+    BigDecimal sumActiveHoldsByCreditAccountId(@Param("creditAccountId") Long creditAccountId);
+
+    @Query("SELECT COUNT(h) > 0 FROM HoldTransaction h WHERE h.creditAccount.id = :creditAccountId AND h.status = 'ACTIVE'")
+    boolean hasActiveHoldsByCreditAccountId(@Param("creditAccountId") Long creditAccountId);
 }

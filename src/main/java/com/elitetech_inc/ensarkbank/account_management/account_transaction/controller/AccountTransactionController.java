@@ -32,19 +32,19 @@ public class AccountTransactionController {
         return new ResponseEntity<>(accountTransactionService.save(atr), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.isOwner(#atr.senderAccountId, authentication))")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CASHIER') or (hasRole('CUSTOMER') and @customerSecurity.isOwner(#atr.senderAccountId, authentication))")
     @PostMapping("online/initiate")
     public ResponseEntity<OtpInitiateResponse> initiateOnlineTransaction(@RequestBody AccountTransactionRequest atr, Authentication auth){
         return new ResponseEntity<>(accountTransactionService.initiateOnlineTransaction(atr), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.isOtpOwner(#req.otpReferenceId, authentication))")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CASHIER') or (hasRole('CUSTOMER') and @customerSecurity.isOtpOwner(#req.otpReferenceId, authentication))")
     @PostMapping("online/verify")
     public ResponseEntity<AccountTransactionResponse> verifyOnlineTransaction(@RequestBody OtpVerifyRequest req, Authentication auth){
         return new ResponseEntity<>(accountTransactionService.verifyOnlineTransaction(req), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CASHIER', 'AUDITOR')")
     @GetMapping({"all", "all/"})
     public ResponseEntity<List<AccountTransactionResponse>> getAll(Authentication auth){
         List<Long> branchIds = branchAccessService.getAccessibleBranchIds(auth);

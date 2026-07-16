@@ -19,10 +19,10 @@ public interface CardService {
     CardResponse updateCardStatus(Long cardId, CardStatus cr, double dailyLimit, double monthlyLimit);
 
     CardResponse updateCardType(Long cardId, CardType cr);
-    CardResponse updateCardPin(Long cardId, String pin);
+    CardResponse updateCardPin(Long cardId, String newPin, String oldPin);
     CardResponse enableInternationalTransaction(Long cardId, boolean isInternationalEnabled);
 
-    HoldTransaction authorizeCardPurchase(String cardNumber, BigDecimal amount, String merchantInfo);
+    HoldTransaction authorizeCardPurchase(String cardNumber, BigDecimal amount, String merchantInfo, boolean isCashAdvance);
 
     void settleCardPurchase(String authorizationReference, BigDecimal finalAmount);
 }

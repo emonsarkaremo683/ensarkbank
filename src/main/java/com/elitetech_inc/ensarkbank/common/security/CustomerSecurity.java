@@ -4,6 +4,7 @@ import com.elitetech_inc.ensarkbank.account_management.account.repository.Accoun
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.repository.AccountTransactionRepository;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.repository.TransactionOtpRepository;
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepository;
+import com.elitetech_inc.ensarkbank.account_management.credit_account.repository.CreditAccountRepository;
 import com.elitetech_inc.ensarkbank.account_management.loan.repository.LoanRepository;
 import com.elitetech_inc.ensarkbank.account_management.loan.repository.LoanRepaymentRepository;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.repository.BeneficiaryRepository;
@@ -28,6 +29,7 @@ public class CustomerSecurity {
     private final BeneficiaryRepository beneficiaryRepository;
     private final LoanRepository loanRepository;
     private final LoanRepaymentRepository loanRepaymentRepository;
+    private final CreditAccountRepository creditAccountRepository;
     private final AccountTransactionRepository accountTransactionRepository;
     private final TransactionOtpRepository transactionOtpRepository;
 
@@ -103,5 +105,11 @@ public class CustomerSecurity {
         Optional<Long> customerId = resolveCustomerId(auth);
         if (customerId.isEmpty() || otpId == null) return false;
         return transactionOtpRepository.existsByOtpIdAndCustomerId(otpId, customerId.get());
+    }
+
+    public boolean isCreditAccountOwner(Long creditAccountId, Authentication auth) {
+        Optional<Long> customerId = resolveCustomerId(auth);
+        if (customerId.isEmpty() || creditAccountId == null) return false;
+        return creditAccountRepository.existsByCustomerIdAndCreditAccountId(customerId.get(), creditAccountId);
     }
 }

@@ -50,4 +50,39 @@ public class JournalService {
                 .stream().map(journalMapper::toResponse).toList();
     }
 
+    public List<JournalResponse> getAllJournals() {
+        return journalRepository.findAllJournals()
+                .stream()
+                .map(journalMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<JournalResponse> getJournalsByBranchId(Long branchId) {
+        return journalRepository.findByBranchId(branchId)
+                .stream()
+                .map(journalMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<JournalResponse> getJournalsByAccountNumberAndBranchId(String accountNumber, Long branchId) {
+        return journalRepository.findByBranchId(branchId)
+                .stream()
+                .filter(j -> j.getAccountNumber().equals(accountNumber))
+                .map(journalMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<JournalResponse> getJournalsByBranchIds(List<Long> branchIds) {
+        if (branchIds == null || branchIds.isEmpty()) {
+            return getAllJournals();
+        }
+        return branchIds.stream()
+                .map(journalRepository::findByBranchId)
+                .flatMap(List::stream)
+                .distinct()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .map(journalMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
 }

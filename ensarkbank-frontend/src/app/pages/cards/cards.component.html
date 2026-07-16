@@ -501,8 +501,41 @@
   [type]="getStatusDialogType()"
   [confirmText]="getStatusDialogConfirmText()"
   (confirmed)="executeStatusChange()"
-  (cancelled)="showStatusDialog.set(false)"
+  (cancelled)="showStatusDialog.set(false); selectedCard.set(null)"
 ></app-confirm-dialog>
+
+<!-- ============ CREDIT LIMIT DIALOG (for PENDING CREDIT card approval) ============ -->
+@if (showLimitDialog() && selectedCard() && selectedCard()!.cardType === 'CREDIT') {
+  <div class="modal-overlay" (click)="showLimitDialog.set(false)">
+    <div class="modal-box modal-box--sm" (click)="$event.stopPropagation()">
+      <div class="modal-box__head">
+        <h3>Approve Credit Card</h3>
+        <button class="modal-box__x" (click)="showLimitDialog.set(false)">&times;</button>
+      </div>
+      <div class="modal-box__body">
+        <p class="pin-card-hint">Set spending limits for card ending in <strong>{{ selectedCard()!.cardNumber.slice(-4) }}</strong></p>
+        <div class="f-group">
+          <label class="f-label">Daily Limit ($)</label>
+          <input type="number" class="f-input" [(ngModel)]="limitForm.dailyLimit" min="0" step="0.01" placeholder="0.00">
+        </div>
+        <div class="f-group">
+          <label class="f-label">Monthly Limit ($)</label>
+          <input type="number" class="f-input" [(ngModel)]="limitForm.monthlyLimit" min="0" step="0.01" placeholder="0.00">
+        </div>
+      </div>
+      <div class="modal-box__foot">
+        <button class="btn-cancel" (click)="showLimitDialog.set(false)">Cancel</button>
+        <button class="btn-gold" (click)="executeStatusChange()" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="spin-sm"></span> Approving...
+          } @else {
+            Approve
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
 
 <!-- ============ REQUEST SETTINGS MODAL ============ -->
 @if (showRequestModal() && selectedCard()) {

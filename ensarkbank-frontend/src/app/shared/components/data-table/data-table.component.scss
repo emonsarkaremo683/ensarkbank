@@ -316,7 +316,22 @@
   font-size: 14px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    min-width: 700px;
+
+    th, td {
+      padding: 12px 14px;
+      font-size: 13px;
+    }
+  }
+}
+
+@media (max-width: 900px) {
   .table-toolbar {
     flex-direction: column;
     align-items: stretch;
@@ -327,9 +342,105 @@
   }
 
   .data-table {
-    th, td {
-      padding: 10px 14px;
-      font-size: 13px;
+    min-width: unset;
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    tr {
+      display: flex;
+      flex-direction: column;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 14px 16px;
+      gap: 8px;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      white-space: normal;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &::before {
+        content: attr(data-label);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        min-width: 90px;
+        flex-shrink: 0;
+      }
+
+      .action-buttons {
+        justify-content: flex-end;
+      }
+
+      .status-badge,
+      .cell-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+      }
+    }
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .page-btn {
+    min-width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .data-table-wrapper {
+    border-radius: 12px;
+  }
+
+  .data-table {
+    tbody {
+      padding: 8px;
+      gap: 8px;
+    }
+
+    tr {
+      padding: 12px;
+    }
+
+    td {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      padding: 4px 0;
+      border-bottom: none;
+
+      &::before {
+        min-width: auto;
+      }
     }
   }
 }

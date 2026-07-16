@@ -51,7 +51,7 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
       padding: 24px;
       overflow-y: auto;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 1200px) {
       .main-area {
         margin-left: 0 !important;
       }
@@ -66,7 +66,7 @@ export class MainLayoutComponent {
   mobileSidebarOpen = signal(false);
 
   toggleSidebar(): void {
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= 1200) {
       this.mobileSidebarOpen.update(v => !v);
     } else {
       this.sidebarCollapsed.update(v => !v);

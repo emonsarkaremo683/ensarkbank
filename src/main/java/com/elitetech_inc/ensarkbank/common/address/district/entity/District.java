@@ -5,6 +5,7 @@ import com.elitetech_inc.ensarkbank.common.address.division.entity.Division;
 import com.elitetech_inc.ensarkbank.common.address.policestation.entity.PoliceStation;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,6 +26,7 @@ public class District extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "divisionID")
+    @JsonIgnoreProperties("districts")
     private Division division;
 
     @OneToMany(mappedBy = "district", fetch = FetchType.LAZY)

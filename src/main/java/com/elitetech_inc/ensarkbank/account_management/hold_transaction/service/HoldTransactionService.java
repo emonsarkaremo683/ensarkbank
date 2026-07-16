@@ -1,6 +1,7 @@
 package com.elitetech_inc.ensarkbank.account_management.hold_transaction.service;
 
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
+import com.elitetech_inc.ensarkbank.account_management.credit_account.entity.CreditAccount;
 import com.elitetech_inc.ensarkbank.account_management.hold_transaction.entity.HoldTransaction;
 import com.elitetech_inc.ensarkbank.common.enums.HoldReason;
 
@@ -10,6 +11,8 @@ import java.util.List;
 public interface HoldTransactionService {
 
     HoldTransaction createHold(Account account, BigDecimal amount, HoldReason reason, int holdDurationMinutes, String authorizationReference, String merchantInfo);
+
+    HoldTransaction createHoldOnCredit(CreditAccount creditAccount, BigDecimal amount, HoldReason reason, int holdDurationMinutes, String authorizationReference, String merchantInfo);
 
     HoldTransaction releaseHold(HoldTransaction hold);
 
@@ -22,6 +25,10 @@ public interface HoldTransactionService {
     boolean hasActiveCardHolds(Long accountId);
 
     BigDecimal getActiveHoldBalance(Long accountId);
+
+    List<HoldTransaction> getActiveHoldsByCreditAccount(Long creditAccountId);
+
+    BigDecimal getActiveHoldBalanceOnCredit(Long creditAccountId);
 
     void releaseExpiredHolds();
 

@@ -4,6 +4,7 @@ package com.elitetech_inc.ensarkbank.customer_management.kyc.entity;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,6 +23,7 @@ public class Kyc extends BaseEntity {
 
     @OneToOne
     @JoinColumn(name = "customer_id")
+    @JsonIgnore
     private Customer customer;
 
     @OneToMany(mappedBy = "kyc", cascade = CascadeType.ALL, orphanRemoval = true)

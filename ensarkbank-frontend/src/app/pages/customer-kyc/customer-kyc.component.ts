@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -15,7 +15,7 @@ import { LoadingComponent } from '../../shared/components/loading/loading.compon
   templateUrl: './customer-kyc.component.html',
   styleUrls: ['./customer-kyc.component.scss']
 })
-export class CustomerKycComponent implements OnInit {
+export class CustomerKycComponent implements OnInit, OnDestroy {
   KYCStatusLabels = KYCStatusLabels;
 
   customer = signal<CustomerResponse | null>(null);
@@ -25,6 +25,7 @@ export class CustomerKycComponent implements OnInit {
   showUploadModal = signal(false);
   showPreviewModal = signal(false);
   previewDocument = signal<KycResponse | null>(null);
+  previewUrl = signal<string | null>(null);
   selectedFiles = signal<{ [key: string]: File | null }>({
     NID: null,
     PASSPORT: null,
@@ -152,24 +153,37 @@ export class CustomerKycComponent implements OnInit {
   openPreview(doc: KycResponse): void {
     this.previewDocument.set(doc);
     this.showPreviewModal.set(true);
+    if (doc.id && this.isImageFile(doc.path)) {
+      this.api.getKycDocumentBlob(doc.id).subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          this.previewUrl.set(url);
+        },
+        error: () => {
+          this.onPreviewError();
+        }
+      });
+    }
   }
 
   closePreview(): void {
     this.showPreviewModal.set(false);
     this.previewDocument.set(null);
+    if (this.previewUrl()) {
+      URL.revokeObjectURL(this.previewUrl()!);
+      this.previewUrl.set(null);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.previewUrl()) {
+      URL.revokeObjectURL(this.previewUrl()!);
+    }
   }
 
   isImageFile(path: string): boolean {
     if (!path) return false;
     return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(path);
-  }
-
-  getDocumentUrl(path: string): string {
-    if (!path) return '';
-    if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    const base = 'http://localhost:8085';
-    if (path.startsWith('/')) return base + path;
-    return base + '/uploads/' + path;
   }
 
   onPreviewError(): void {
