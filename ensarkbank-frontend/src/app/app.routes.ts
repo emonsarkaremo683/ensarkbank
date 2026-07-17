@@ -57,6 +57,21 @@ export const routes: Routes = [
         canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER])]
       },
       {
+        path: 'divisions',
+        loadComponent: () => import('./pages/divisions/divisions.component').then(m => m.DivisionsComponent),
+        canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN])]
+      },
+      {
+        path: 'districts',
+        loadComponent: () => import('./pages/districts/districts.component').then(m => m.DistrictsComponent),
+        canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN])]
+      },
+      {
+        path: 'police-stations',
+        loadComponent: () => import('./pages/policestations/policestations.component').then(m => m.PoliceStationsComponent),
+        canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN])]
+      },
+      {
         path: 'customers',
         loadComponent: () => import('./pages/customers/customers.component').then(m => m.CustomersComponent),
         canActivate: [roleGuard([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CUSTOMER_SERVICE])]

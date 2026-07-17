@@ -43,7 +43,7 @@ public class ReportService {
 
         if (canViewAll) {
             // Head office staff (no branch assignment) — can view any branch or all branches
-            if (branchId != null) {
+            if (branchId != null && branchId != 0) {
                 return branchRepository.findById(branchId)
                         .map(List::of)
                         .orElseThrow(() -> new IllegalArgumentException("Branch not found: " + branchId));
@@ -297,7 +297,7 @@ public class ReportService {
     }
 
     private String branchName(Long branchId) {
-        if (branchId == null) {
+        if (branchId == null || branchId == 0) {
             return "ALL BRANCHES";
         }
         return branchRepository.findById(branchId).map(Branch::getName).orElse("UNKNOWN");

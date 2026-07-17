@@ -35,6 +35,9 @@ export class CashierTransactionComponent implements OnInit {
   senderFilter = signal('');
   receiverFilter = signal('');
 
+  accountSearchTerm = signal('');
+  dropdownOpen = signal(false);
+
   form = {
     accountNumber: '',
     checkNo: '',
@@ -42,6 +45,29 @@ export class CashierTransactionComponent implements OnInit {
     amount: 0,
     remarks: ''
   };
+
+  filteredAccounts = computed(() => {
+    const term = this.accountSearchTerm().toLowerCase().trim();
+    const all = this.accounts();
+    if (!term) return all;
+    return all.filter(a =>
+      a.accountNumber.toLowerCase().includes(term) ||
+      a.branchName.toLowerCase().includes(term) ||
+      a.holderResponses?.[0]?.accountHolderName?.toLowerCase().includes(term)
+    );
+  });
+
+  accountLabel = computed(() => {
+    if (this.form.type === TransactionType.DEPOSIT) return 'Receiver Account *';
+    if (this.form.type === TransactionType.WITHDRAW) return 'Sender Account *';
+    return 'Customer Account *';
+  });
+
+  selectedAccountDisplay = computed(() => {
+    const acc = this.accounts().find(a => a.accountNumber === this.form.accountNumber);
+    if (!acc) return '';
+    return `${acc.accountNumber} - ${acc.branchName} (${this.formatCurrency(acc.availableBalance)})`;
+  });
 
   columns: TableColumn[] = [
     { key: 'id', label: 'ID', sortable: true },
@@ -126,6 +152,27 @@ export class CashierTransactionComponent implements OnInit {
       amount: 0,
       remarks: ''
     };
+    this.accountSearchTerm.set('');
+    this.dropdownOpen.set(false);
+  }
+
+  toggleDropdown(): void {
+    this.dropdownOpen.update(v => !v);
+  }
+
+  selectAccount(account: AccountResponse): void {
+    this.form.accountNumber = account.accountNumber;
+    this.accountSearchTerm.set('');
+    this.dropdownOpen.set(false);
+  }
+
+  onAccountSearch(term: string): void {
+    this.accountSearchTerm.set(term);
+    this.dropdownOpen.set(true);
+  }
+
+  closeDropdown(): void {
+    this.dropdownOpen.set(false);
   }
 
   newTransaction(): void {

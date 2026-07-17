@@ -59,13 +59,26 @@
 
           <div class="form-group">
             <label class="form-label">Branch Type *</label>
-            <select class="form-select" [(ngModel)]="form.type" [disabled]="editMode()">
+            <select class="form-select" [(ngModel)]="form.type" (ngModelChange)="onTypeChange()" [disabled]="editMode()">
               <option value="">Select type</option>
               @for (type of branchTypes; track type) {
                 <option [value]="type">{{ type }}</option>
               }
             </select>
           </div>
+
+          @if (form.type === 'AGENT_BANK') {
+            <div class="form-group">
+              <label class="form-label">Parent Branch *</label>
+              <select class="form-select" [(ngModel)]="form.parentBranchId">
+                <option [value]="0">Select parent branch</option>
+                @for (branch of parentBranches(); track branch.id) {
+                  <option [value]="branch.id">{{ branch.name }}</option>
+                }
+              </select>
+            </div>
+          }
+
           <div class="form-group">
             <label class="form-label">Status *</label>
             <select class="form-select" [(ngModel)]="form.status">
@@ -87,9 +100,38 @@
           <h3 class="section-label">Address</h3>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Address</label>
-          <input type="text" class="form-input" [(ngModel)]="form.address" placeholder="Full address" />
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Division</label>
+            <select class="form-select" [(ngModel)]="form.divisionId" (ngModelChange)="onDivisionChange()">
+              <option [value]="0">Select division</option>
+              @for (div of divisions(); track div.id) {
+                <option [value]="div.id">{{ div.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">District</label>
+            <select class="form-select" [(ngModel)]="form.districtId" (ngModelChange)="onDistrictChange()" [disabled]="!form.divisionId">
+              <option [value]="0">Select district</option>
+              @for (dist of districts(); track dist.id) {
+                <option [value]="dist.id">{{ dist.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Police Station</label>
+            <select class="form-select" [(ngModel)]="form.policeStationId" [disabled]="!form.districtId">
+              <option [value]="0">Select police station</option>
+              @for (ps of policeStations(); track ps.id) {
+                <option [value]="ps.id">{{ ps.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address</label>
+            <input type="text" class="form-input" [(ngModel)]="form.address" placeholder="Full address" />
+          </div>
         </div>
       </div>
 

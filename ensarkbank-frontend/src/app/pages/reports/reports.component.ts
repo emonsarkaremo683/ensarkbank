@@ -75,7 +75,7 @@ export class ReportsComponent implements OnInit {
   private buildRequest(branchId: number, fromDate: string, toDate: string): ReportRequest {
     const user = this.auth.currentUser();
     return {
-      branchId: branchId || undefined,
+      branchId: branchId > 0 ? branchId : undefined,
       fromDate,
       toDate,
       role: user?.role,

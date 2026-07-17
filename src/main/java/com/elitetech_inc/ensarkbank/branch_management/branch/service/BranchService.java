@@ -5,6 +5,8 @@ import com.elitetech_inc.ensarkbank.account_management.account.repository.Accoun
 import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
 import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
+import com.elitetech_inc.ensarkbank.common.address.policestation.entity.PoliceStation;
+import com.elitetech_inc.ensarkbank.common.address.policestation.repository.PoliceStationRepository;
 import com.elitetech_inc.ensarkbank.common.enums.*;
 import com.elitetech_inc.ensarkbank.util.AccountNumberGenerator;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
@@ -27,6 +29,7 @@ public class BranchService {
     private final AccountNumberGenerator accountNumberGenerator;
     private final AccountRepository accountRepository;
     private final RequestValidator requestValidator;
+    private final PoliceStationRepository policeStationRepository;
 
     @Transactional
     public Branch createBranch(Branch branch) {
@@ -40,6 +43,12 @@ public class BranchService {
             Branch parent = branchRepository.findById(branch.getParentBranch().getId())
                     .orElseThrow(() -> new RuntimeException("Parent branch not found: " + branch.getParentBranch().getId()));
             branch.setParentBranch(parent);
+        }
+
+        if (branch.getPoliceStation() != null && branch.getPoliceStation().getId() != null) {
+            PoliceStation ps = policeStationRepository.findById(branch.getPoliceStation().getId())
+                    .orElseThrow(() -> new RuntimeException("Police station not found: " + branch.getPoliceStation().getId()));
+            branch.setPoliceStation(ps);
         }
 
         Branch br = branchRepository.save(branch);
@@ -81,6 +90,13 @@ public class BranchService {
         branch.setEmail(updated.getEmail());
         branch.setPhoneNumber(updated.getPhoneNumber());
         branch.setStatus(updated.getStatus());
+
+        if (updated.getPoliceStation() != null && updated.getPoliceStation().getId() != null) {
+            PoliceStation ps = policeStationRepository.findById(updated.getPoliceStation().getId())
+                    .orElseThrow(() -> new RuntimeException("Police station not found: " + updated.getPoliceStation().getId()));
+            branch.setPoliceStation(ps);
+        }
+
         return branchRepository.save(branch);
     }
 

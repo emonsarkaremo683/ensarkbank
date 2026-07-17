@@ -97,11 +97,10 @@ export class AccountsComponent implements OnInit {
   activeCount = computed(() => this.accounts().filter(a => a.accountStatus === 'ACTIVE').length);
   blockedCount = computed(() => this.accounts().filter(a => a.accountStatus === 'BLOCKED').length);
 
-  isMultiHolder = computed(() =>
-    this.step1.accountType === AccountType.BUSINESS ||
-    this.step1.accountType === AccountType.JOINT_ACCOUNT
-  );
-
+isMultiHolder(): boolean {
+  return this.step1.accountType === AccountType.BUSINESS ||
+         this.step1.accountType === AccountType.JOINT_ACCOUNT;
+}
   currentLoggedInCustomer = computed(() => this.auth.currentUser());
 
   constructor(

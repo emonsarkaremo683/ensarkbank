@@ -5,7 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Role, BranchType, BranchStatus } from '../../core/enums/role.enum';
-import { Branch } from '../../core/models';
+import { Branch, Division, District, PoliceStation } from '../../core/models';
 import { LoadingComponent } from '../../shared';
 import { DataTableComponent, TableColumn } from '../../shared/components/data-table/data-table.component';
 import { ConfirmDialogComponent } from '../../shared';
@@ -26,6 +26,11 @@ export class BranchesComponent implements OnInit {
   searchQuery = signal('');
   selectedBranch = signal<Branch | null>(null);
   branches = signal<Branch[]>([]);
+
+  divisions = signal<Division[]>([]);
+  districts = signal<District[]>([]);
+  policeStations = signal<PoliceStation[]>([]);
+  parentBranches = signal<Branch[]>([]);
 
   form = this.getEmptyForm();
 
@@ -52,6 +57,7 @@ export class BranchesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadBranches();
+    this.loadDivisions();
   }
 
   loadBranches(): void {
@@ -66,6 +72,50 @@ export class BranchesComponent implements OnInit {
         this.notify.error('Error', 'Failed to load branches.');
       }
     });
+  }
+
+  loadDivisions(): void {
+    this.api.getDivisions().subscribe({
+      next: (data) => this.divisions.set(data),
+      error: () => {}
+    });
+  }
+
+  onDivisionChange(): void {
+    this.form.districtId = 0;
+    this.form.policeStationId = 0;
+    this.districts.set([]);
+    this.policeStations.set([]);
+    if (this.form.divisionId) {
+      this.api.getDistrictsByDivision(this.form.divisionId).subscribe({
+        next: (data) => this.districts.set(data),
+        error: () => {}
+      });
+    }
+  }
+
+  onDistrictChange(): void {
+    this.form.policeStationId = 0;
+    this.policeStations.set([]);
+    if (this.form.districtId) {
+      this.api.getPoliceStationsByDistrict(this.form.districtId).subscribe({
+        next: (data) => this.policeStations.set(data),
+        error: () => {}
+      });
+    }
+  }
+
+  onTypeChange(): void {
+    this.form.parentBranchId = 0;
+    this.parentBranches.set([]);
+    if (this.form.type === BranchType.AGENT_BANK) {
+      this.api.getBranches().subscribe({
+        next: (data) => {
+          this.parentBranches.set(data.filter(b => b.type !== BranchType.AGENT_BANK));
+        },
+        error: () => {}
+      });
+    }
   }
 
   filteredBranches = computed(() => {
@@ -92,6 +142,9 @@ export class BranchesComponent implements OnInit {
   openAddForm(): void {
     this.form = this.getEmptyForm();
     this.editMode.set(false);
+    this.districts.set([]);
+    this.policeStations.set([]);
+    this.parentBranches.set([]);
     this.showModal.set(true);
   }
 
@@ -104,7 +157,11 @@ export class BranchesComponent implements OnInit {
       status: branch.status || BranchStatus.ACTIVE,
       email: branch.email || '',
       phoneNumber: branch.phoneNumber || '',
-      address: branch.address || ''
+      address: branch.address || '',
+      parentBranchId: branch.parentBranch?.id || 0,
+      policeStationId: branch.policeStation?.id || 0,
+      divisionId: 0,
+      districtId: 0
     };
     this.selectedBranch.set(branch);
     this.showModal.set(true);
@@ -142,16 +199,24 @@ export class BranchesComponent implements OnInit {
       return;
     }
 
+    if (type === BranchType.AGENT_BANK && !this.form.parentBranchId) {
+      this.notify.warning('Validation', 'Parent branch is required for agent banks.');
+      return;
+    }
+
     this.submitting.set(true);
 
     if (this.editMode() && this.selectedBranch()) {
-      const payload: Partial<Branch> = {
+      const payload: any = {
         name: name.trim(),
         email: email.trim(),
         phoneNumber: phoneNumber.trim(),
         status: status as BranchStatus,
         address: this.form.address?.trim() || ''
       };
+      if (this.form.policeStationId) {
+        payload.policeStation = { id: this.form.policeStationId };
+      }
 
       this.api.updateBranch(this.selectedBranch()!.id, payload).subscribe({
         next: () => {
@@ -166,7 +231,7 @@ export class BranchesComponent implements OnInit {
         }
       });
     } else {
-      const payload: Partial<Branch> = {
+      const payload: any = {
         name: name.trim(),
         email: email.trim(),
         phoneNumber: phoneNumber.trim(),
@@ -174,6 +239,12 @@ export class BranchesComponent implements OnInit {
         status: status as BranchStatus,
         address: this.form.address?.trim() || ''
       };
+      if (this.form.parentBranchId) {
+        payload.parentBranch = { id: this.form.parentBranchId };
+      }
+      if (this.form.policeStationId) {
+        payload.policeStation = { id: this.form.policeStationId };
+      }
 
       this.api.createBranch(payload).subscribe({
         next: () => {
@@ -205,7 +276,11 @@ export class BranchesComponent implements OnInit {
       status: BranchStatus.ACTIVE,
       email: '',
       phoneNumber: '',
-      address: ''
+      address: '',
+      parentBranchId: 0,
+      divisionId: 0,
+      districtId: 0,
+      policeStationId: 0
     };
   }
 }

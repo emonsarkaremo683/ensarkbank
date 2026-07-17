@@ -11,6 +11,7 @@ import com.elitetech_inc.ensarkbank.common.enums.BranchStatus;
 import com.elitetech_inc.ensarkbank.common.enums.BranchType;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.entity.Employee;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -47,13 +48,13 @@ public class Branch extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_branch_id")
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Branch parentBranch;
 
 
     @ManyToOne
     @JoinColumn(name = "policeStationID")
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private PoliceStation policeStation;
 
     @OneToMany(mappedBy = "branch", cascade = CascadeType.ALL, orphanRemoval = true)

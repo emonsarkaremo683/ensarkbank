@@ -116,6 +116,10 @@ export interface Branch {
   phoneNumber: string;
   address?: string;
   routingNumber?: string;
+  parentBranch?: { id: number; name?: string };
+  parentBranchId?: number;
+  policeStation?: { id: number; name?: string };
+  policeStationId?: number;
 }
 
 // Customer

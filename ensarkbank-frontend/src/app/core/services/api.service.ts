@@ -290,4 +290,31 @@ export class ApiService {
   getPoliceStationByDistrictId(districtId: number): Observable<PoliceStation[]> {
     return this.getPoliceStationsByDistrict(districtId);
   }
+
+  // Division CRUD
+  createDivision(data: { name: string }): Observable<Division> { return this.http.post<Division>(`${this.BASE}/division`, data); }
+  updateDivision(id: number, data: { name: string }): Observable<Division> { return this.http.put<Division>(`${this.BASE}/division/${id}/update`, data); }
+  deleteDivision(id: number): Observable<void> { return this.http.delete<void>(`${this.BASE}/division/${id}/delete`); }
+
+  // District CRUD
+  getAllDistricts(): Observable<District[]> {
+    return this.http.get<any>(`${this.BASE}/district/all`).pipe(
+      map(data => this.normalizeDistricts(data)),
+      catchError(() => of([]))
+    );
+  }
+  createDistrict(data: { name: string; division: { id: number } }): Observable<District> { return this.http.post<District>(`${this.BASE}/district`, data); }
+  updateDistrict(id: number, data: { name: string; division: { id: number } }): Observable<District> { return this.http.put<District>(`${this.BASE}/district/${id}`, data); }
+  deleteDistrict(id: number): Observable<void> { return this.http.delete<void>(`${this.BASE}/district/${id}/delete`); }
+
+  // Police Station CRUD
+  getAllPoliceStations(): Observable<PoliceStation[]> {
+    return this.http.get<any>(`${this.BASE}/policestation/`).pipe(
+      map(data => this.normalizePoliceStations(data)),
+      catchError(() => of([]))
+    );
+  }
+  createPoliceStation(data: { name: string; district: { id: number } }): Observable<PoliceStation> { return this.http.post<PoliceStation>(`${this.BASE}/policestation/`, data); }
+  updatePoliceStation(id: number, data: { name: string; district: { id: number } }): Observable<PoliceStation> { return this.http.post<PoliceStation>(`${this.BASE}/policestation/${id}`, data); }
+  deletePoliceStation(id: number): Observable<void> { return this.http.delete<void>(`${this.BASE}/policestation/${id}`); }
 }

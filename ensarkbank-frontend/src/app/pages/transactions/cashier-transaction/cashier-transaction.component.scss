@@ -5,6 +5,9 @@
 .page-container {
   padding: 24px;
   max-width: 1400px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
   margin: 0 auto;
 }
 
@@ -316,4 +319,109 @@
   border-radius: 6px;
   font-size: 13px;
   color: #cbd5e1;
+}
+
+.custom-dropdown {
+  position: relative;
+}
+
+.dropdown-input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.dropdown-input {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  flex: 1;
+  min-width: 0;
+  box-shadow: none !important;
+
+  &:focus {
+    outline: none;
+    box-shadow: none !important;
+  }
+}
+
+.dropdown-selected {
+  flex: 1;
+  color: #e2e8f0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-arrow {
+  color: #64748b;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+.dropdown-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #1a2d47;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.dropdown-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(201, 168, 76, 0.1);
+  }
+
+  &.selected {
+    background: rgba(201, 168, 76, 0.15);
+    border-left: 3px solid #c9a84c;
+  }
+
+  &.no-results {
+    color: #64748b;
+    cursor: default;
+    font-size: 13px;
+
+    &:hover {
+      background: transparent;
+    }
+  }
+}
+
+.item-number {
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.item-info {
+  color: #64748b;
+  font-size: 12px;
 }

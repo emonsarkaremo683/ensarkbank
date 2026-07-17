@@ -118,13 +118,40 @@
         <div class="modal-body">
           <div class="form-grid">
             <div class="form-group">
-              <label>Customer Account *</label>
-              <select [(ngModel)]="form.accountNumber" class="form-control">
-                <option value="">Select Account</option>
-                @for (acc of accounts(); track acc.id) {
-                  <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.branchName }} ({{ formatCurrency(acc.availableBalance) }})</option>
+              <label>{{ accountLabel() }}</label>
+              <div class="custom-dropdown" (mouseleave)="closeDropdown()">
+                <div class="dropdown-input-wrapper" (click)="toggleDropdown()">
+                  @if (!dropdownOpen() && form.accountNumber) {
+                    <span class="dropdown-selected">{{ selectedAccountDisplay() }}</span>
+                  } @else {
+                    <input
+                      type="text"
+                      class="form-control dropdown-input"
+                      placeholder="Type account number to search..."
+                      [ngModel]="accountSearchTerm()"
+                      (ngModelChange)="onAccountSearch($event)"
+                      (focus)="dropdownOpen.set(true)"
+                      (click)="$event.stopPropagation()"
+                    />
+                  }
+                  <svg class="dropdown-arrow" [class.open]="dropdownOpen()" viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+                @if (dropdownOpen()) {
+                  <div class="dropdown-list">
+                    @if (filteredAccounts().length === 0) {
+                      <div class="dropdown-item no-results">No accounts found</div>
+                    }
+                    @for (acc of filteredAccounts(); track acc.id) {
+                      <div class="dropdown-item" [class.selected]="acc.accountNumber === form.accountNumber" (click)="selectAccount(acc)">
+                        <span class="item-number">{{ acc.accountNumber }}</span>
+                        <span class="item-info">{{ acc.branchName }} - {{ formatCurrency(acc.availableBalance) }}</span>
+                      </div>
+                    }
+                  </div>
                 }
-              </select>
+              </div>
             </div>
             <div class="form-group">
               <label>Transaction Type *</label>

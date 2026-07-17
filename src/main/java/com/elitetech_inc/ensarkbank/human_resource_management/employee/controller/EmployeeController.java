@@ -40,7 +40,7 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeService.findAll(), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'CASHIER', 'ACCOUNTANT', 'LOAN_OFFICER', 'CUSTOMER_SERVICE', 'ATM_MANAGER', 'AUDITOR')")
     @GetMapping("{id}")
     public ResponseEntity<Optional<EmployeeResponse>> getEmployee(@PathVariable Long id){
         return new ResponseEntity<>(employeeService.findById(id), HttpStatus.OK);

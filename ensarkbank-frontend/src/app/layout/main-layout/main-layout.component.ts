@@ -22,8 +22,10 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
   styles: [`
     .app-layout {
       display: flex;
-      min-height: 100vh;
+      width: 100vw;
+      height: 100vh;
       background: #0a1628;
+      overflow: hidden;
     }
     .sidebar-overlay {
       display: none;
@@ -38,23 +40,19 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
     }
     .main-area {
       flex: 1;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      margin-left: 260px;
-      transition: margin-left 0.3s ease;
-    }
-    .sidebar-collapsed .main-area {
-      margin-left: 70px;
+      overflow: hidden;
     }
     .content {
       flex: 1;
+      min-width: 0;
       padding: 24px;
       overflow-y: auto;
+      overflow-x: hidden;
     }
     @media (max-width: 1200px) {
-      .main-area {
-        margin-left: 0 !important;
-      }
       .content {
         padding: 16px;
       }
