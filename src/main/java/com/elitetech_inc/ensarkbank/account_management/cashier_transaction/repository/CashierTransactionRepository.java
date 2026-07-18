@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CashierTransactionRepository extends JpaRepository<CashierTransaction, Long> {
@@ -19,4 +20,7 @@ public interface CashierTransactionRepository extends JpaRepository<CashierTrans
 
     @Query("SELECT ct FROM CashierTransaction ct WHERE ct.branch.id IN :branchIds ORDER BY ct.createdAt DESC")
     List<CashierTransaction> findByBranchIds(@Param("branchIds") List<Long> branchIds);
+
+
+    Optional<CashierTransaction> findCashierTransactionByTransaction_id(Long transactionId);
 }

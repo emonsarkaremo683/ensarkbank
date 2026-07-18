@@ -13,6 +13,7 @@ public interface TransactionService {
     TransactionResponse createTransaction(TransactionRequest tr, Transaction t,
                                           String senderAccount,
                                           String receiverAccount);
+    TransactionResponse reverseTransaction(Long transactionId);
 //
 //    TransactionResponse deposit(TransactionRequest request, Account account);
 //

@@ -56,12 +56,13 @@
     <app-loading message="Loading transactions..."></app-loading>
   } @else {
     <app-data-table
-      [columns]="columns"
+      [columns]="columns()"
       [data]="filteredTransactions()"
       [searchable]="true"
       [pageSize]="10"
       emptyMessage="No cashier transactions found"
       (rowClick)="viewDetail($event)"
+      (action)="onTableAction($event)"
     ></app-data-table>
   }
 
@@ -189,5 +190,19 @@
         </div>
       </div>
     </div>
+  }
+
+  <!-- Reverse Confirmation Dialog -->
+  @if (showReverseConfirm()) {
+  <app-confirm-dialog
+    [show]="true"
+    title="Reverse Transaction"
+    [message]="'Are you sure you want to reverse transaction #' + (reversingTransaction()?.id || '') + '? This action cannot be undone.'"
+    confirmText="Reverse"
+    cancelText="Cancel"
+    type="danger"
+    (confirmed)="confirmReverse()"
+    (cancelled)="cancelReverse()"
+  ></app-confirm-dialog>
   }
 </div>

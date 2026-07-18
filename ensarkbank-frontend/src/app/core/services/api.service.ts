@@ -148,6 +148,7 @@ export class ApiService {
   getTransactions(): Observable<AccountTransactionResponse[]> { return this.http.get<AccountTransactionResponse[]>(`${this.BASE}/account-transaction/all`); }
   getTransactionsByAccount(accountNumber: string): Observable<AccountTransactionResponse[]> { return this.http.get<AccountTransactionResponse[]>(`${this.BASE}/account-transaction/accountNumber/${accountNumber}`); }
   getTransactionsByAccountId(accountId: number): Observable<AccountTransactionResponse[]> { return this.http.get<AccountTransactionResponse[]>(`${this.BASE}/account-transaction/account/${accountId}`); }
+  reverseAccountTransaction(transactionId: number): Observable<AccountTransactionResponse> { return this.http.get<AccountTransactionResponse>(`${this.BASE}/account-transaction/transaction/${transactionId}`); }
 
   // Loans
   getLoans(): Observable<LoanResponse[]> { return this.http.get<LoanResponse[]>(`${this.BASE}/loans/all`); }
@@ -210,6 +211,7 @@ export class ApiService {
   getCashierTransactions(): Observable<CashierTransactionResponse[]> { return this.http.get<CashierTransactionResponse[]>(`${this.BASE}/cashier-transactions`); }
   getCashierTransactionsByAccount(accountNumber: string): Observable<CashierTransactionResponse[]> { return this.http.get<CashierTransactionResponse[]>(`${this.BASE}/cashier-transactions/account/${accountNumber}`); }
   processCashierTransaction(data: CashierTransactionRequest): Observable<CashierTransactionResponse> { return this.http.post<CashierTransactionResponse>(`${this.BASE}/cashier-transactions`, data); }
+  reverseCashierTransaction(transactionId: number): Observable<CashierTransactionResponse> { return this.http.get<CashierTransactionResponse>(`${this.BASE}/cashier-transactions/transaction/${transactionId}`); }
 
   // Reports
   getTrialBalance(data: ReportRequest): Observable<TrialBalanceResponse> { return this.http.post<TrialBalanceResponse>(`${this.BASE}/reports/trial-balance`, data); }

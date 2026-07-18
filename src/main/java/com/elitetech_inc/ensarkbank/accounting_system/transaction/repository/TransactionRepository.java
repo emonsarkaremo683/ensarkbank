@@ -14,6 +14,8 @@ import java.util.Optional;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
+
+
     Optional<Transaction> findByTransactionId(String transactionId);
 
     @Query("SELECT COUNT(t) FROM Transaction t JOIN t.entries j JOIN j.account a WHERE a.branch.id IN :branchIds")

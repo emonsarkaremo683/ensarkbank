@@ -13,6 +13,7 @@ import java.util.List;
 public class CashierTransactionResponse {
 
     private Long id;
+    private Long transactionEntityId;
     private String checkNo;
     private String cashierName;
     private String branchName;

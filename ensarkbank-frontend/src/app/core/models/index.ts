@@ -338,6 +338,7 @@ export interface Transaction {
 // Journal
 export interface JournalEntry {
   id: number;
+  transactionEntityId: number;
   transactionId: string;
   accountNumber: string;
   counterpartyAccountNumber?: string;
@@ -493,6 +494,7 @@ export interface CashierTransactionRequest {
 
 export interface JournalResponse {
   id: number;
+  transactionEntityId?: number;
   date?: string;
   transactionId: string;
   particulars?: string;
@@ -509,6 +511,7 @@ export interface JournalResponse {
 
 export interface CashierTransactionResponse {
   id: number;
+  transactionEntityId?: number;
   checkNo?: string;
   cashierName: string;
   branchName: string;

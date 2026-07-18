@@ -47,6 +47,7 @@ public class CashierTransactionMapper {
 
         return CashierTransactionResponse.builder()
                 .id(ct.getId())
+                .transactionEntityId(ct.getTransaction() != null ? ct.getTransaction().getId() : null)
                 .checkNo(ct.getCheckNo())
                 .cashierName(cashierName)
                 .branchName(branchName)

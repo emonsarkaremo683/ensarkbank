@@ -5,9 +5,13 @@ import java.math.BigDecimal;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
 import com.elitetech_inc.ensarkbank.account_management.account.service.AccountService;
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.request.AccountTransactionRequest;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.entity.Journal;
+import com.elitetech_inc.ensarkbank.accounting_system.journal.repository.JournalRepository;
 import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.branch_management.branch.service.BranchService;
+import com.elitetech_inc.ensarkbank.common.enums.EntryType;
+import com.elitetech_inc.ensarkbank.common.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +43,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final BranchRepository branchRepository;
     private final BranchValidator branchValidator;
     private final RequestValidator requestValidator;
+    private final JournalRepository journalRepository;
 
     @Override
     @Transactional
@@ -59,6 +64,39 @@ public class TransactionServiceImpl implements TransactionService {
 
 
         return processTransaction(tr, t, senderAccount, receiverAccount);
+    }
+
+    @Override
+    public TransactionResponse reverseTransaction(Long transactionId){
+        Transaction tr = transactionRepository.findById(transactionId).orElseThrow(
+                ()-> new ResourceNotFoundException("Not found " + transactionId)
+        );
+
+        String creditAccount = journalRepository.findJournalByTransaction_Id(transactionId)
+                .stream()
+                .filter(journal -> journal.getEntryType() == EntryType.CREDIT)
+                .map(Journal::getAccountNumber)
+                .findFirst()
+                .orElseThrow(
+                        ()-> new ResourceNotFoundException("Not Found")
+                );
+
+        String debitAccount = journalRepository.findJournalByTransaction_Id(transactionId)
+                .stream()
+                .filter(journal -> journal.getEntryType() == EntryType.DEBIT)
+                .map(Journal::getAccountNumber)
+                .findFirst()
+                .orElseThrow(
+                        ()-> new ResourceNotFoundException("Not Found")
+                );
+
+        tr.setTransactionType(TransactionType.REVERSE);
+        tr = transactionRepository.save(tr);
+
+        transactionPostingService.reverseDebit(tr, debitAccount, tr.getAmount());
+        transactionPostingService.reverseCredit(tr, creditAccount, tr.getAmount());
+
+        return transactionMapper.toResponse(tr);
     }
 
 
@@ -115,8 +153,8 @@ public class TransactionServiceImpl implements TransactionService {
 
                 case LOAN_DISBURSEMENT:
                     transactionPostingService.loanDisbursement(transaction,
-                            receiverAccount != null ? receiverAccount.getAccountNumber() : receiver,
                             senderAccount.getAccountNumber(),
+                            receiverAccount != null ? receiverAccount.getAccountNumber() : receiver,
                             transaction.getAmount());
                     break;
                 case LOAN_REPAYMENT:

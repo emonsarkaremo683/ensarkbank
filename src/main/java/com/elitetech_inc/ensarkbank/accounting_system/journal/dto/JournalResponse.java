@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Data
 public class JournalResponse {
     private Long id;
+    private Long transactionEntityId;
     private LocalDateTime date;
     private String transactionId;
     private String particulars;

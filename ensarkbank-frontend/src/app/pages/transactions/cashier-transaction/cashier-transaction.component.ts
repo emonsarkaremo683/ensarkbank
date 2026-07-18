@@ -8,17 +8,18 @@ import { NotificationService } from '../../../core/services/notification.service
 import {
   AccountResponse, CashierTransactionRequest, CashierTransactionResponse
 } from '../../../core/models';
-import { TransactionType } from '../../../core/enums/role.enum';
+import { TransactionType, Role } from '../../../core/enums/role.enum';
 import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table.component';
 import { StatsCardComponent } from '../../../shared/components/stats-card/stats-card.component';
 import { LoadingComponent } from '../../../shared/components/loading/loading.component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-cashier-transaction',
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    DataTableComponent, StatsCardComponent, LoadingComponent
+    DataTableComponent, StatsCardComponent, LoadingComponent, ConfirmDialogComponent
   ],
   templateUrl: './cashier-transaction.component.html',
   styleUrls: ['./cashier-transaction.component.scss']
@@ -32,11 +33,19 @@ export class CashierTransactionComponent implements OnInit {
   selectedTransaction = signal<CashierTransactionResponse | null>(null);
   showDetailModal = signal(false);
 
+  showReverseConfirm = signal(false);
+  reversingTransaction = signal<CashierTransactionResponse | null>(null);
+  reversing = signal(false);
+
   senderFilter = signal('');
   receiverFilter = signal('');
 
   accountSearchTerm = signal('');
   dropdownOpen = signal(false);
+
+  canReverse = computed(() =>
+    this.auth.hasRole([Role.SUPER_ADMIN, Role.ADMIN, Role.ACCOUNTANT, Role.BRANCH_MANAGER])
+  );
 
   form = {
     accountNumber: '',
@@ -69,7 +78,7 @@ export class CashierTransactionComponent implements OnInit {
     return `${acc.accountNumber} - ${acc.branchName} (${this.formatCurrency(acc.availableBalance)})`;
   });
 
-  columns: TableColumn[] = [
+  columns = signal<TableColumn[]>([
     { key: 'id', label: 'ID', sortable: true },
     { key: 'checkNo', label: 'Check No', sortable: true },
     { key: 'cashierName', label: 'Cashier', sortable: true },
@@ -77,7 +86,7 @@ export class CashierTransactionComponent implements OnInit {
     { key: 'transaction.amount', label: 'Amount', type: 'currency', sortable: true },
     { key: 'transaction.transactionType', label: 'Type', sortable: true },
     { key: 'transaction.status', label: 'Status', type: 'status', sortable: true },
-  ];
+  ]);
 
   transactionTypes: TransactionType[] = [TransactionType.DEPOSIT, TransactionType.WITHDRAW];
 
@@ -123,6 +132,16 @@ export class CashierTransactionComponent implements OnInit {
 
   loadData(): void {
     this.loading.set(true);
+
+    if (this.canReverse()) {
+      this.columns.update(cols => {
+        if (!cols.some(c => c.key === 'actions')) {
+          return [...cols, { key: 'actions', label: 'Actions', type: 'actions' as const }];
+        }
+        return cols;
+      });
+    }
+
     this.api.getCashierTransactions().subscribe({
       next: (data) => {
         this.transactions.set(data);
@@ -250,5 +269,45 @@ export class CashierTransactionComponent implements OnInit {
       'REVERSED': 'badge-info'
     };
     return map[status] || 'badge-neutral';
+  }
+
+  onTableAction(event: { type: string; row: any }): void {
+    if (event.type === 'edit') {
+      this.requestReverse(event.row);
+    }
+  }
+
+  requestReverse(tx: CashierTransactionResponse): void {
+    if (tx.transaction?.status === 'REVERSED') {
+      this.notify.warning('Warning', 'This transaction is already reversed');
+      return;
+    }
+    this.reversingTransaction.set(tx);
+    this.showReverseConfirm.set(true);
+  }
+
+  confirmReverse(): void {
+    const tx = this.reversingTransaction();
+    if (!tx || !tx.transactionEntityId) return;
+
+    this.reversing.set(true);
+    this.api.reverseCashierTransaction(tx.transactionEntityId).subscribe({
+      next: () => {
+        this.notify.success('Success', 'Transaction reversed successfully');
+        this.showReverseConfirm.set(false);
+        this.reversingTransaction.set(null);
+        this.reversing.set(false);
+        this.loadData();
+      },
+      error: (err) => {
+        this.notify.error('Error', err.error?.message || 'Failed to reverse transaction');
+        this.reversing.set(false);
+      }
+    });
+  }
+
+  cancelReverse(): void {
+    this.showReverseConfirm.set(false);
+    this.reversingTransaction.set(null);
   }
 }

@@ -1,5 +1,6 @@
 package com.elitetech_inc.ensarkbank.account_management.cashier_transaction.controller;
 
+import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.CashierTransaction;
 import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.dto.CashierTransactionRequest;
 import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.dto.CashierTransactionResponse;
 import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.service.CashierTransactionService;
@@ -65,5 +66,11 @@ public class CashierTransactionController {
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
         cashierTransactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT', 'BRANCH_MANAGER')")
+    @GetMapping("transaction/{id}")
+    public ResponseEntity<CashierTransactionResponse> reverse(@PathVariable Long id){
+        return ResponseEntity.ok(cashierTransactionService.reverse(id));
     }
 }

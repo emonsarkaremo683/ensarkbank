@@ -77,6 +77,8 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     private final TransactionEmailService transactionEmailService;
     private final WebSocketNotificationService webSocketNotificationService;
 
+
+
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -345,6 +347,15 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
         transactionOtpRepository.save(otp);
     }
 
+    @Override
+    public AccountTransactionResponse reverseTransaction(Long transactionId) {
+        transactionService.reverseTransaction(transactionId);
+        AccountTransaction at = accountTransactionRepository.findAccountTransactionByTransactionId(transactionId).orElseThrow();
+
+        return accountTransactionMapper.toResponse(at, at.getAccount().getAccountNumber());
+    }
+
+
     private String resolveCustomerEmail(Account account) {
         if (account.getHolders() == null || account.getHolders().isEmpty()) {
             return null;
@@ -420,4 +431,6 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
             log.error("Failed to send transfer notification: {}", e.getMessage());
         }
     }
+
+
 }

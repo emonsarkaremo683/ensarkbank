@@ -14,6 +14,8 @@ public interface JournalRepository extends JpaRepository<Journal, Long> {
     @Query("select j from Journal j where j.account.branch.id = :branchId")
     List<Journal> findByBranchId(@Param("branchId") Long branchId);
 
+    List<Journal> findJournalByTransaction_Id(Long transactionId);
+
     @Query("select j from Journal j where j.account.branch.id = :branchId " +
             "and j.createdAt >= :from and j.createdAt <= :to")
     List<Journal> findByBranchIdAndDateRange(@Param("branchId") Long branchId,

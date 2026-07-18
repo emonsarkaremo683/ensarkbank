@@ -19,4 +19,5 @@ public interface AccountTransactionService {
     OtpInitiateResponse initiateOnlineTransaction(AccountTransactionRequest atr);
     AccountTransactionResponse verifyOnlineTransaction(OtpVerifyRequest req);
     void markOtpVerified(Long otpId);
+    AccountTransactionResponse reverseTransaction(Long transactionId);
 }

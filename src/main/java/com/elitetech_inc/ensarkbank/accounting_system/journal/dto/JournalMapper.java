@@ -34,6 +34,7 @@ public class JournalMapper {
 
         JournalResponse jr = new JournalResponse();
         jr.setId(journal.getId());
+        jr.setTransactionEntityId(transaction.getId());
         jr.setDate(journal.getCreatedAt());
         jr.setTransactionId(transactionId);
         jr.setParticulars(getParticulars(journal));
@@ -96,9 +97,23 @@ public class JournalMapper {
             case LOAN_REPAYMENT:
                 return "Loan Repayment";
 
+            case REVERSE: {
+                String counterpartyAccountNumber = getAccountNumber(entryType, transactionId);
+                String counterpartyName = getName(counterpartyAccountNumber, transaction.getId());
+                return "Reverse - " + counterpartyName;
+            }
+
+            case CARD_PURCHASE:
+                return "Card Purchase";
+
+            case CARD_REVERSAL:
+                return "Card Reversal";
+
+            case BRANCH_OPENING:
+                return "Branch Opening";
+
             default:
-                throw new IllegalArgumentException(
-                        "Unhandled transaction type: " + transaction.getTransactionType());
+                return transaction.getTransactionType().name();
         }
     }
 

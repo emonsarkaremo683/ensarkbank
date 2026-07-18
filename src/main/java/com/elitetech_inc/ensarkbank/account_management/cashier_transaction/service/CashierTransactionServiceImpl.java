@@ -252,4 +252,13 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
         cashierTransactionRepository.deleteById(id);
     }
 
+    @Override
+    public CashierTransactionResponse reverse(Long transactionId) {
+        transactionService.reverseTransaction(transactionId);
+        CashierTransaction ct = cashierTransactionRepository.findCashierTransactionByTransaction_id(transactionId)
+                .orElseThrow(()-> new ResourceNotFoundException("Not found"));
+
+        return cashierTransactionMapper.toResponse(ct);
+    }
+
 }

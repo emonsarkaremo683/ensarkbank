@@ -77,4 +77,10 @@ public class AccountTransactionController {
         return new ResponseEntity<>(accountTransactionService.findByAccountId(accountId), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'CUSTOMER_SERVICE')")
+    @GetMapping("transaction/{id}")
+    public ResponseEntity<AccountTransactionResponse> reverse(@PathVariable Long id){
+        return ResponseEntity.ok(accountTransactionService.reverseTransaction(id));
+    }
+
 }

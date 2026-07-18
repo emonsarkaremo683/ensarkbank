@@ -12,13 +12,14 @@ import { TransactionType, TransactionChannel, TransactionStatus, Role } from '..
 import { DataTableComponent, TableColumn } from '../../shared/components/data-table/data-table.component';
 import { StatsCardComponent } from '../../shared/components/stats-card/stats-card.component';
 import { LoadingComponent } from '../../shared/components/loading/loading.component';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-transactions',
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    DataTableComponent, StatsCardComponent, LoadingComponent
+    DataTableComponent, StatsCardComponent, LoadingComponent, ConfirmDialogComponent
   ],
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.scss']
@@ -35,6 +36,10 @@ export class TransactionsComponent implements OnInit {
   selectedTransaction = signal<AccountTransactionResponse | null>(null);
   showDetailModal = signal(false);
 
+  showReverseConfirm = signal(false);
+  reversingTransaction = signal<JournalEntry | null>(null);
+  reversing = signal(false);
+
   otpData = signal<OtpInitiateResponse | null>(null);
   otpCode = '';
   transactionResult = signal<AccountTransactionResponse | null>(null);
@@ -46,6 +51,8 @@ export class TransactionsComponent implements OnInit {
 
   accountSearchQuery = signal('');
   searchLoading = signal(false);
+  searchMode = signal<'journal' | 'account'>('journal');
+  accountTransactions = signal<AccountTransactionResponse[]>([]);
 
   form = {
     senderAccountNumber: '',
@@ -74,7 +81,7 @@ export class TransactionsComponent implements OnInit {
   filterDateFrom = signal('');
   filterDateTo = signal('');
 
-  columns: TableColumn[] = [
+  accountColumns = signal<TableColumn[]>([
     { key: 'transactionId', label: 'Transaction ID', sortable: true },
     { key: 'senderAccountNumber', label: 'Sender', sortable: true },
     { key: 'receiverAccountNumber', label: 'Receiver', sortable: true },
@@ -83,9 +90,9 @@ export class TransactionsComponent implements OnInit {
     { key: 'response.channel', label: 'Channel', sortable: true },
     { key: 'response.status', label: 'Status', type: 'status', sortable: true },
     { key: 'direction', label: 'Direction', sortable: true },
-  ];
+  ]);
 
-  journalColumns: TableColumn[] = [
+  journalColumns = signal<TableColumn[]>([
     { key: 'date', label: 'Date', type: 'date', sortable: true },
     { key: 'transactionId', label: 'Transaction ID', sortable: true },
     { key: 'particulars', label: 'Particulars', sortable: true },
@@ -93,7 +100,7 @@ export class TransactionsComponent implements OnInit {
     { key: 'entryType', label: 'Entry', sortable: true },
     { key: 'amount', label: 'Amount', type: 'currency', sortable: true },
     { key: 'status', label: 'Status', type: 'status', sortable: true },
-  ];
+  ]);
 
   transactionTypes = Object.values(TransactionType);
   transactionChannels = Object.values(TransactionChannel);
@@ -104,6 +111,10 @@ export class TransactionsComponent implements OnInit {
 
   canExportStaff = computed(() =>
     this.auth.hasRole([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT, Role.CASHIER, Role.CUSTOMER_SERVICE, Role.AUDITOR])
+  );
+
+  canReverse = computed(() =>
+    this.auth.hasRole([Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT, Role.CUSTOMER_SERVICE])
   );
 
   filteredTransactions = computed(() => {
@@ -142,6 +153,22 @@ export class TransactionsComponent implements OnInit {
     this.loading.set(true);
     const isCustomer = this.auth.isCustomer();
     this.isCustomerView.set(isCustomer);
+
+    if (this.canReverse() && !isCustomer) {
+      this.journalColumns.update(cols => {
+        if (!cols.some(c => c.key === 'actions')) {
+          return [...cols, { key: 'actions', label: 'Actions', type: 'actions' as const }];
+        }
+        return cols;
+      });
+      this.accountColumns.update(cols => {
+        if (!cols.some(c => c.key === 'actions')) {
+          return [...cols, { key: 'actions', label: 'Actions', type: 'actions' as const }];
+        }
+        return cols;
+      });
+    }
+
     if (isCustomer) {
       const customerId = this.auth.currentUser()?.id ?? 0;
       this.api.getAccountsByCustomerId(customerId).subscribe({
@@ -186,10 +213,12 @@ export class TransactionsComponent implements OnInit {
       return;
     }
     this.searchLoading.set(true);
-    this.api.getJournalByAccount(query).subscribe({
+    this.searchMode.set('account');
+    this.api.getTransactionsByAccount(query).subscribe({
       next: (data) => {
-        this.journalHistory.set(data);
+        this.accountTransactions.set(data);
         this.searchLoading.set(false);
+        this.loading.set(false);
       },
       error: () => {
         this.notify.error('Error', 'Failed to search transactions');
@@ -200,6 +229,8 @@ export class TransactionsComponent implements OnInit {
 
   clearSearch(): void {
     this.accountSearchQuery.set('');
+    this.searchMode.set('journal');
+    this.accountTransactions.set([]);
     this.loadData();
   }
 
@@ -459,6 +490,12 @@ export class TransactionsComponent implements OnInit {
   onTableAction(event: { type: string; row: any }): void {
     if (event.type === 'view') {
       this.viewDetail(event.row);
+    } else if (event.type === 'edit') {
+      if (this.searchMode() === 'account') {
+        this.requestReverseAccountTransaction(event.row);
+      } else {
+        this.requestReverse(event.row);
+      }
     }
   }
 
@@ -481,5 +518,63 @@ export class TransactionsComponent implements OnInit {
       'TRANSFER': 'type-transfer'
     };
     return map[type] || '';
+  }
+
+  requestReverse(entry: JournalEntry): void {
+    if (entry.status === 'REVERSED') {
+      this.notify.warning('Warning', 'This transaction is already reversed');
+      return;
+    }
+    this.reversingTransaction.set(entry);
+    this.showReverseConfirm.set(true);
+  }
+
+  confirmReverse(): void {
+    const entry = this.reversingTransaction();
+    if (!entry) return;
+
+    this.reversing.set(true);
+    this.api.reverseAccountTransaction(entry.transactionEntityId).subscribe({
+      next: () => {
+        this.notify.success('Success', 'Transaction reversed successfully');
+        this.showReverseConfirm.set(false);
+        this.reversingTransaction.set(null);
+        this.reversing.set(false);
+        this.loadData();
+      },
+      error: (err) => {
+        this.notify.error('Error', err.error?.message || 'Failed to reverse transaction');
+        this.reversing.set(false);
+      }
+    });
+  }
+
+  cancelReverse(): void {
+    this.showReverseConfirm.set(false);
+    this.reversingTransaction.set(null);
+  }
+
+  requestReverseAccountTransaction(tx: AccountTransactionResponse): void {
+    if (tx.response?.status === 'REVERSED') {
+      this.notify.warning('Warning', 'This transaction is already reversed');
+      return;
+    }
+    const entityTxId = tx.response?.journals?.[0]?.transactionEntityId;
+    if (!entityTxId) {
+      this.notify.error('Error', 'Cannot determine transaction ID for reversal');
+      return;
+    }
+    this.reversing.set(true);
+    this.api.reverseAccountTransaction(entityTxId).subscribe({
+      next: () => {
+        this.notify.success('Success', 'Transaction reversed successfully');
+        this.reversing.set(false);
+        this.searchByAccount();
+      },
+      error: (err) => {
+        this.notify.error('Error', err.error?.message || 'Failed to reverse transaction');
+        this.reversing.set(false);
+      }
+    });
   }
 }

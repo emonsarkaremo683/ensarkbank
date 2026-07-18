@@ -6,6 +6,7 @@ public enum TransactionType {
     TRANSFER,
     PAYMENT,
     REFUND,
+    REVERSE,
     ATM_WITHDRAW,
     ATM_DEPOSIT,
     LOAN_DISBURSEMENT,

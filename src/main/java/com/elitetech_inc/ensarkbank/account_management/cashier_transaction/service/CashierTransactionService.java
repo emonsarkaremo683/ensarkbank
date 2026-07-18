@@ -14,4 +14,5 @@ public interface CashierTransactionService {
     List<CashierTransactionResponse> getByBranchIds(List<Long> branchIds);
     CashierTransactionResponse updateTransaction(Long id, CashierTransactionRequest request);
     void deleteTransaction(Long id);
+    CashierTransactionResponse reverse(Long transactionId);
 }
