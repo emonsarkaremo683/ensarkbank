@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { NotificationService, Notification } from '../../../core/services/notification.service';
+import { NotificationService, ToastNotification } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-toast-container',
@@ -144,14 +144,14 @@ import { NotificationService, Notification } from '../../../core/services/notifi
   `]
 })
 export class ToastContainerComponent implements OnInit, OnDestroy {
-  toasts = signal<Notification[]>([]);
+  toasts = signal<ToastNotification[]>([]);
   private subscription!: Subscription;
   private timers = new Map<number, ReturnType<typeof setTimeout>>();
 
   constructor(private notificationService: NotificationService) {}
 
   ngOnInit(): void {
-    this.subscription = this.notificationService.notifications.subscribe((notification) => {
+    this.subscription = this.notificationService.toasts.subscribe((notification: ToastNotification) => {
       this.toasts.update(toasts => [...toasts, notification]);
 
       const duration = (notification.type === 'error' || notification.type === 'warning') ? 10000 : 5000;

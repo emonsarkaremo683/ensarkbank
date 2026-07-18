@@ -1,7 +1,9 @@
 :host {
   display: block;
-  width: fit-content;
+  width: 260px;
   flex-shrink: 0;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  &.collapsed { width: 72px; }
 }
 
 .sidebar {
@@ -206,9 +208,7 @@
 // RESPONSIVE: MOBILE
 // ============================
 @media (max-width: 1200px) {
-  :host {
-    width: 0;
-  }
+  :host, :host.collapsed { width: 0; }
 
   .sidebar {
     position: fixed;

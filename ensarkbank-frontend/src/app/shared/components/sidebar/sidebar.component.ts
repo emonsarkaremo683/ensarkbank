@@ -18,6 +18,7 @@ interface NavItem {
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
   host: {
+    '[class.collapsed]': 'collapsed',
     '[class.sidebar-mobile-open]': 'mobileOpen'
   }
 })

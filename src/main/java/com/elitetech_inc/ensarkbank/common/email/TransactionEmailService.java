@@ -183,4 +183,55 @@ public class TransactionEmailService {
             throw new RuntimeException("Failed to send monthly statement email", e);
         }
     }
+
+    @Async
+    public void sendCashierTransactionEmail(String toEmail, String customerName,
+                                             String transactionType, String amount,
+                                             String accountNumber) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(toEmail);
+            helper.setSubject(transactionType + " of $" + amount + " - Ensark Bank");
+
+            String body = """
+                <!DOCTYPE html>
+                <html>
+                <head><meta charset="UTF-8"></head>
+                <body style="margin:0;padding:0;background:#f1f5f9;font-family:Segoe UI,Arial,sans-serif;">
+                <table width="100%%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:40px 0;">
+                <tr><td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                <tr><td style="background:#0f172a;padding:30px;text-align:center;">
+                <h1 style="color:#ffffff;margin:0;font-size:28px;">&#x1F3E6; Ensark Bank</h1>
+                <p style="color:#cbd5e1;margin-top:8px;">Transaction Receipt</p>
+                </td></tr>
+                <tr><td style="padding:40px;">
+                <h2 style="margin-top:0;color:#16a34a;">%s Successful</h2>
+                <p style="color:#475569;font-size:15px;line-height:24px;">Dear <strong>%s</strong>,</p>
+                <p style="color:#475569;font-size:15px;line-height:24px;">Your %s transaction has been processed successfully.</p>
+                <table width="100%%" cellpadding="12" cellspacing="0" style="border:1px solid #e2e8f0;border-radius:8px;margin:20px 0;">
+                <tr style="background:#f8fafc;"><td style="font-weight:600;color:#334155;">Transaction Type</td><td style="color:#475569;">%s</td></tr>
+                <tr><td style="font-weight:600;color:#334155;">Amount</td><td style="color:#475569;">$%s</td></tr>
+                <tr style="background:#f8fafc;"><td style="font-weight:600;color:#334155;">Account</td><td style="color:#475569;">%s</td></tr>
+                <tr><td style="font-weight:600;color:#334155;">Status</td><td style="color:#16a34a;font-weight:600;">SUCCESS</td></tr>
+                </table>
+                <div style="background:#fef2f2;border-left:4px solid #dc2626;padding:15px;border-radius:8px;">
+                <p style="margin:0;color:#991b1b;font-size:14px;">If this transaction was not made by you, please contact us immediately.</p>
+                </div>
+                </td></tr>
+                <tr><td style="background:#f8fafc;padding:25px;text-align:center;">
+                <p style="font-size:12px;color:#64748b;margin:0;">&copy; 2026 Ensark Bank. All Rights Reserved.</p>
+                </td></tr>
+                </table>
+                </td></tr></table>
+                </body></html>
+                """.formatted(transactionType, customerName, transactionType.toLowerCase(), transactionType, amount, accountNumber);
+
+            helper.setText(body, true);
+            javaMailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send cashier transaction email", e);
+        }
+    }
 }

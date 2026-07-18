@@ -5,9 +5,10 @@ import com.elitetech_inc.ensarkbank.account_management.card.entity.CardSettingsR
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepository;
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardSettingsRequestRepository;
 import com.elitetech_inc.ensarkbank.auth_management.user.entity.User;
+import com.elitetech_inc.ensarkbank.common.enums.CardType;
+import com.elitetech_inc.ensarkbank.common.enums.RequestStatus;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
-import com.elitetech_inc.ensarkbank.common.enums.RequestStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,7 @@ public class CardSettingsRequestServiceImpl implements CardSettingsRequestServic
     private final CustomerRepository customerRepository;
 
     @Override
-    public CardSettingsRequest createRequest(Long cardId, CardSettingsRequest.RequestType requestType, boolean requestedValue, Long customerId) {
+    public CardSettingsRequest createRequest(Long cardId, CardSettingsRequest.RequestType requestType, boolean requestedValue, Long customerId, CardType requestedCardType) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new RuntimeException("Card not found"));
 
@@ -41,6 +42,7 @@ public class CardSettingsRequestServiceImpl implements CardSettingsRequestServic
         request.setCard(card);
         request.setRequestType(requestType);
         request.setRequestedValue(requestedValue);
+        request.setRequestedCardType(requestedCardType);
         request.setStatus(RequestStatus.PENDING);
         request.setRequestedBy(customer.getUser());
 
@@ -80,6 +82,12 @@ public class CardSettingsRequestServiceImpl implements CardSettingsRequestServic
         switch (request.getRequestType()) {
             case INTERNATIONAL_ENABLED -> card.setInternationalEnabled(request.isRequestedValue());
             case ONLINE_TRANSACTION_ENABLED -> card.setOnlineTransactionEnabled(request.isRequestedValue());
+            case CARD_TYPE_CHANGE -> {
+                if (request.getRequestedCardType() != null) {
+                    card.setCardType(request.getRequestedCardType());
+                    card.setStatus(com.elitetech_inc.ensarkbank.common.enums.CardStatus.PENDING);
+                }
+            }
         }
         cardRepository.save(card);
 

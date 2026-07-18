@@ -52,10 +52,12 @@ export class CardsComponent implements OnInit, OnDestroy {
 
   requestForm = {
     requestType: '' as CardSettingsRequestType | '',
-    requestedValue: true
+    requestedValue: true,
+    requestedCardType: '' as CardType | ''
   };
 
   requestTypes = Object.values(CardSettingsRequestType);
+  cardTypeOptions = Object.values(CardType);
 
   form = {
     accountId: 0,
@@ -153,7 +155,7 @@ export class CardsComponent implements OnInit, OnDestroy {
 
   openRequestModal(card: CardResponse): void {
     this.selectedCard.set(card);
-    this.requestForm = { requestType: '', requestedValue: true };
+    this.requestForm = { requestType: '', requestedValue: true, requestedCardType: '' };
     this.showRequestModal.set(true);
   }
 
@@ -168,8 +170,13 @@ export class CardsComponent implements OnInit, OnDestroy {
       this.notify.warning('Validation', 'Please select a request type');
       return;
     }
+    if (this.requestForm.requestType === 'CARD_TYPE_CHANGE' && !this.requestForm.requestedCardType) {
+      this.notify.warning('Validation', 'Please select the desired card type');
+      return;
+    }
     this.submitting.set(true);
-    this.api.createCardSettingsRequest(card.cardId, this.requestForm.requestType, this.requestForm.requestedValue).subscribe({
+    const requestedCardType = this.requestForm.requestType === 'CARD_TYPE_CHANGE' ? this.requestForm.requestedCardType : undefined;
+    this.api.createCardSettingsRequest(card.cardId, this.requestForm.requestType, this.requestForm.requestedValue, requestedCardType).subscribe({
       next: () => {
         this.notify.success('Success', 'Request submitted successfully');
         this.closeRequestModal();

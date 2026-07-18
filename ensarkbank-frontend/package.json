@@ -19,10 +19,13 @@
     "@angular/platform-browser": "^22.0.0",
     "@angular/router": "^22.0.0",
     "@types/crypto-js": "^4.2.2",
+    "@types/sockjs-client": "^1.5.4",
     "chart.js": "^4.5.1",
     "crypto-js": "^4.2.0",
     "ng2-charts": "^10.0.0",
     "rxjs": "~7.8.0",
+    "sockjs-client": "^1.6.1",
+    "@stomp/stompjs": "^7.0.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

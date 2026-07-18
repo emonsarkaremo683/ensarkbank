@@ -3,5 +3,5 @@ export const environment = {
   apiUrl: 'https://api.ensarbank.com',
   appName: 'EnsarBank',
   encryptionKey: '',
-  wsUrl: 'https://api.ensarbank.com/api/events'
+  wsUrl: 'https://api.ensarbank.com/ws'
 };

@@ -514,10 +514,12 @@ export const RequestStatusLabels: Record<RequestStatus, string> = {
 // ===========================
 export enum CardSettingsRequestType {
   INTERNATIONAL_ENABLED = 'INTERNATIONAL_ENABLED',
-  ONLINE_TRANSACTION_ENABLED = 'ONLINE_TRANSACTION_ENABLED'
+  ONLINE_TRANSACTION_ENABLED = 'ONLINE_TRANSACTION_ENABLED',
+  CARD_TYPE_CHANGE = 'CARD_TYPE_CHANGE'
 }
 
 export const CardSettingsRequestTypeLabels: Record<CardSettingsRequestType, string> = {
   [CardSettingsRequestType.INTERNATIONAL_ENABLED]: 'International Transactions',
-  [CardSettingsRequestType.ONLINE_TRANSACTION_ENABLED]: 'Online Transactions'
+  [CardSettingsRequestType.ONLINE_TRANSACTION_ENABLED]: 'Online Transactions',
+  [CardSettingsRequestType.CARD_TYPE_CHANGE]: 'Card Type Change'
 };

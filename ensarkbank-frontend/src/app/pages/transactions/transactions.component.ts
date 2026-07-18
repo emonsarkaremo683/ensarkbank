@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -120,16 +120,19 @@ export class TransactionsComponent implements OnInit {
   totalTransactions = computed(() => this.journalHistory().length);
   successCount = computed(() =>
     this.journalHistory().filter(j => j.status === 'SUCCESS').length);
-  totalAmount = computed(() =>
-    this.journalHistory().reduce((s, j) => s + (j.amount || 0), 0));
+  debitTotal = computed(() =>
+    this.journalHistory().filter(j => j.entryType === 'DEBIT').reduce((s, j) => s + (j.amount || 0), 0));
+  creditTotal = computed(() =>
+    this.journalHistory().filter(j => j.entryType === 'CREDIT').reduce((s, j) => s + (j.amount || 0), 0));
   pendingCount = computed(() =>
     this.journalHistory().filter(j => j.status === 'PENDING').length);
 
   constructor(
     private api: ApiService,
     private auth: AuthService,
-    private notify: NotificationService
-  ) {}
+    private notify: NotificationService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.loadData();
@@ -144,16 +147,18 @@ export class TransactionsComponent implements OnInit {
       this.api.getAccountsByCustomerId(customerId).subscribe({
         next: (accounts) => {
           this.accounts.set(accounts);
+          this.cdr.markForCheck();
         },
         error: () => { this.notify.error('Error', 'Failed to load accounts'); }
       });
       this.api.getBeneficiaries(customerId).subscribe({
         next: (data) => this.beneficiaries.set(data),
-        error: () => {}
+        error: () => { }
       });
       this.api.getTransactionHistory(customerId).subscribe({
         next: (history) => {
           this.journalHistory.set(history);
+          this.cdr.markForCheck();
           this.loading.set(false);
         },
         error: () => { this.notify.error('Error', 'Failed to load transaction history'); this.loading.set(false); }
@@ -162,13 +167,14 @@ export class TransactionsComponent implements OnInit {
       this.api.getAllJournals().subscribe({
         next: (data) => {
           this.journalHistory.set(data);
+          this.cdr.markForCheck();
           this.loading.set(false);
         },
         error: () => { this.notify.error('Error', 'Failed to load transactions'); this.loading.set(false); }
       });
       this.api.getAccounts().subscribe({
         next: data => this.accounts.set(data),
-        error: () => {}
+        error: () => { }
       });
     }
   }
@@ -329,13 +335,13 @@ export class TransactionsComponent implements OnInit {
         this.transactions.update(list => [result, ...list]);
         if (this.isCustomerView()) {
           const customerId = this.auth.currentUser()?.id ?? 0;
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const startDate = thirtyDaysAgo.toISOString();
-      const endDate = new Date().toISOString();
-      this.api.getTransactionHistory(customerId, startDate, endDate).subscribe({
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          const startDate = thirtyDaysAgo.toISOString();
+          const endDate = new Date().toISOString();
+          this.api.getTransactionHistory(customerId, startDate, endDate).subscribe({
             next: (history) => this.journalHistory.set(history),
-            error: () => {}
+            error: () => { }
           });
         }
         this.notify.success('Success', 'Transaction completed successfully');
@@ -379,7 +385,8 @@ export class TransactionsComponent implements OnInit {
   }
 
   openExportModal(): void {
-    this.exportForm = { accountNumber: '', branchId: 0, dateFrom: '', dateTo: '', format: 'PDF' };
+    const firstAccount = this.accounts()[0]?.accountNumber || '';
+    this.exportForm = { accountNumber: firstAccount, branchId: 0, dateFrom: '', dateTo: '', format: 'PDF' };
     this.showExportModal.set(true);
   }
 

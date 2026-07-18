@@ -171,11 +171,11 @@ export class ApiService {
     if (monthlyLimit !== undefined) params = params.set('monthlyLimit', monthlyLimit.toString());
     return this.http.patch<CardResponse>(`${this.BASE}/card/${id}/status`, null, { params });
   }
-  changeCardPin(id: number, oldPin: string, newPin: string): Observable<any> { return this.http.patch(`${this.BASE}/card/${id}/change-pin`, null, { params: { pin: newPin } }); }
+  changeCardPin(id: number, oldPin: string, newPin: string): Observable<any> { return this.http.patch(`${this.BASE}/card/${id}/change-pin`, null, { params: { newPin, oldPin } }); }
 
   // Card Settings Requests
-  createCardSettingsRequest(cardId: number, requestType: string, requestedValue: boolean): Observable<CardSettingsRequest> {
-    return this.http.post<CardSettingsRequest>(`${this.BASE}/card-settings-requests/`, { cardId, requestType, requestedValue });
+  createCardSettingsRequest(cardId: number, requestType: string, requestedValue: boolean, requestedCardType?: string): Observable<CardSettingsRequest> {
+    return this.http.post<CardSettingsRequest>(`${this.BASE}/card-settings-requests/`, { cardId, requestType, requestedValue, requestedCardType });
   }
   getCardSettingsRequestsByCustomer(customerId: number): Observable<CardSettingsRequest[]> {
     return this.http.get<CardSettingsRequest[]>(`${this.BASE}/card-settings-requests/customer/${customerId}`);

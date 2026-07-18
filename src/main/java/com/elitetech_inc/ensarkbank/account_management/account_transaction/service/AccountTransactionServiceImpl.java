@@ -16,7 +16,9 @@ import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.mapper.Tra
 import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.common.enums.HolderType;
+import com.elitetech_inc.ensarkbank.common.enums.NotificationType;
 import com.elitetech_inc.ensarkbank.common.enums.OtpStatus;
+import com.elitetech_inc.ensarkbank.common.notification.websocket.WebSocketNotificationService;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.entity.Beneficiary;
 import com.elitetech_inc.ensarkbank.customer_management.beneficiary.repository.BeneficiaryRepository;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
@@ -73,6 +75,7 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
     private final Validator validator;
     private final TransactionOtpRepository transactionOtpRepository;
     private final TransactionEmailService transactionEmailService;
+    private final WebSocketNotificationService webSocketNotificationService;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -328,6 +331,8 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
         String email = transactionOtp.getCustomerEmail();
         transactionEmailService.sendTransactionSuccessEmail(email, response);
 
+        sendTransferNotification(response, transactionOtp.getAccountNumber());
+
         return response;
     }
 
@@ -377,5 +382,42 @@ public class AccountTransactionServiceImpl implements AccountTransactionService 
             return false;
         }
         return accountRepository.existsByAccountNumber(accountNumber);
+    }
+
+    private void sendTransferNotification(AccountTransactionResponse response, String senderAccountNumber) {
+        try {
+            Account senderAccount = accountRepository.findAccountByAccountNumber(senderAccountNumber).orElse(null);
+            if (senderAccount == null || senderAccount.getHolders() == null || senderAccount.getHolders().isEmpty()) {
+                return;
+            }
+
+            AccountHolder holder = senderAccount.getHolders().stream()
+                    .filter(h -> h.getHolderType() == HolderType.PRIMARY)
+                    .findFirst()
+                    .orElse(senderAccount.getHolders().getFirst());
+
+            Customer customer = holder.getCustomer();
+            if (customer == null || customer.getUser() == null) {
+                return;
+            }
+
+            Long userId = customer.getUser().getId();
+            String amount = response.getResponse().getAmount().toPlainString();
+            String receiverAcc = response.getReceiverAccountNumber() != null ? response.getReceiverAccountNumber() : "N/A";
+
+            String title = "Transfer of $" + amount + " Successful";
+            String message = "Your transfer of $" + amount + " to account " + receiverAcc + " has been completed successfully.";
+
+            webSocketNotificationService.sendNotificationToUser(
+                    userId,
+                    NotificationType.TRANSFER,
+                    title,
+                    message,
+                    response.getResponse().getReferenceNo(),
+                    "TRANSFER"
+            );
+        } catch (Exception e) {
+            log.error("Failed to send transfer notification: {}", e.getMessage());
+        }
     }
 }

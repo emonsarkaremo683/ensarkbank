@@ -415,8 +415,8 @@ export interface CardResponse {
   monthlyLimit: number;
   expiryDate: string;
   cvv?: string;
-  isInternationalEnabled: boolean;
-  isOnlineTransactionEnabled?: boolean;
+  internationalEnabled: boolean;
+  onlineTransactionEnabled?: boolean;
   createdAt?: string;
 }
 
@@ -427,6 +427,7 @@ export interface CardSettingsRequest {
   cardHolderName?: string;
   requestType: CardSettingsRequestType;
   requestedValue: boolean;
+  requestedCardType?: CardType;
   status: RequestStatus;
   rejectionReason?: string;
   requestedById?: number;

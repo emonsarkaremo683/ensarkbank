@@ -5,80 +5,108 @@
       <p class="page-subtitle">{{ isCustomerView() ? 'View your transaction history' : 'View and manage bank transactions' }}</p>
     </div>
     <div class="header-actions">
-      @if (canExportStaff()) {
-        <button class="btn btn-secondary" (click)="openExportModal()">
-          <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-          Download
-        </button>
+      @if (isCustomerView()) {
+      <button class="btn btn-secondary" (click)="openExportModal()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+          <path fill-rule="evenodd"
+            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+            clip-rule="evenodd" />
+        </svg>
+        Download
+      </button>
       }
       @if (!isCustomerView()) {
-        <button class="btn btn-primary" (click)="newTransaction()">
-          <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
-          New Transaction
-        </button>
+      <button class="btn btn-primary" (click)="newTransaction()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+          <path fill-rule="evenodd"
+            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+            clip-rule="evenodd" />
+        </svg>
+        New Transaction
+      </button>
       } @else {
-        <button class="btn btn-primary" (click)="newTransaction()">
-          <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
-          Send Money
-        </button>
+      <button class="btn btn-primary" (click)="newTransaction()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+          <path fill-rule="evenodd"
+            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+            clip-rule="evenodd" />
+        </svg>
+        Send Money
+      </button>
       }
     </div>
   </div>
 
   <div class="stats-grid">
-    <app-stats-card title="Total Transactions" [value]="totalTransactions()" icon="&#128200;" color="#c9a84c"></app-stats-card>
+    <app-stats-card title="Total Transactions" [value]="totalTransactions()" icon="&#128200;"
+      color="#c9a84c"></app-stats-card>
     <app-stats-card title="Successful" [value]="successCount()" icon="&#9989;" color="#22c55e"></app-stats-card>
-    <app-stats-card title="Total Amount" [value]="formatCurrency(totalAmount())" icon="&#128176;" color="#3b82f6"></app-stats-card>
+    <app-stats-card title="Debit" [value]="formatCurrency(debitTotal())" icon="⬇️" color="#ef4444"></app-stats-card>
+    <app-stats-card title="Credit" [value]="formatCurrency(creditTotal())" icon="⬆️" color="#22c55e"></app-stats-card>
     <app-stats-card title="Pending" [value]="pendingCount()" icon="&#9203;" color="#f59e0b"></app-stats-card>
   </div>
 
   <!-- OTP Verification (shown inline when needed) -->
   @if (step() === 'otp') {
-    <div class="otp-card">
-      <div class="otp-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <path d="M12 8v4M12 16h.01"/>
-        </svg>
-      </div>
-      <h2>Verify OTP</h2>
-      <p class="otp-subtitle">Enter the OTP sent to <strong>{{ otpData()?.maskedEmail }}</strong></p>
-      <p class="otp-expire">Expires at {{ otpData()?.expiresAt | date:'mediumTime' }}</p>
-      <div class="otp-input-wrapper">
-        <input type="text" [(ngModel)]="otpCode" class="otp-input" placeholder="Enter OTP" maxlength="6" autocomplete="one-time-code" />
-      </div>
-      <div class="otp-actions">
-        <button class="btn btn-secondary" (click)="cancelOtp()">Cancel</button>
-        <button class="btn btn-primary" (click)="verifyOtp()" [disabled]="submitting() || !otpCode">
-          @if (submitting()) { <span class="spinner"></span> Verifying... } @else { Verify & Complete }
-        </button>
-      </div>
+  <div class="otp-card">
+    <div class="otp-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="M12 8v4M12 16h.01" />
+      </svg>
     </div>
+    <h2>Verify OTP</h2>
+    <p class="otp-subtitle">Enter the OTP sent to <strong>{{ otpData()?.maskedEmail }}</strong></p>
+    <p class="otp-expire">Expires at {{ otpData()?.expiresAt | date:'mediumTime' }}</p>
+    <div class="otp-input-wrapper">
+      <input type="text" [(ngModel)]="otpCode" class="otp-input" placeholder="Enter OTP" maxlength="6"
+        autocomplete="one-time-code" />
+    </div>
+    <div class="otp-actions">
+      <button class="btn btn-secondary" (click)="cancelOtp()">Cancel</button>
+      <button class="btn btn-primary" (click)="verifyOtp()" [disabled]="submitting() || !otpCode">
+        @if (submitting()) { <span class="spinner"></span> Verifying... } @else { Verify & Complete }
+      </button>
+    </div>
+  </div>
   }
 
   <!-- Transaction Result (shown inline when needed) -->
   @if (step() === 'result') {
-    <div class="result-card" [class.success]="transactionResult()?.response?.status === 'SUCCESS'" [class.failed]="transactionResult()?.response?.status !== 'SUCCESS'">
-      <div class="result-icon">
-        @if (transactionResult()?.response?.status === 'SUCCESS') {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        } @else {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-        }
-      </div>
-      <h2>{{ transactionResult()?.response?.status === 'SUCCESS' ? 'Transaction Successful' : 'Transaction Failed' }}</h2>
-      @if (transactionResult()) {
-        <div class="result-details">
-          <div class="result-row"><span>Transaction ID</span><span class="highlight">{{ transactionResult()!.transactionId }}</span></div>
-          <div class="result-row"><span>Amount</span><span class="amount">{{ formatCurrency(transactionResult()!.response?.amount || 0) }}</span></div>
-          <div class="result-row"><span>Sender</span><span>{{ transactionResult()!.senderAccountNumber }}</span></div>
-          <div class="result-row"><span>Receiver</span><span>{{ transactionResult()!.receiverAccountNumber || '-' }}</span></div>
-          <div class="result-row"><span>Type</span><span>{{ transactionResult()!.response?.transactionType }}</span></div>
-          <div class="result-row"><span>Status</span><span class="badge" [class]="getStatusClass(transactionResult()!.response?.status || '')">{{ transactionResult()!.response?.status }}</span></div>
-        </div>
+  <div class="result-card" [class.success]="transactionResult()?.response?.status === 'SUCCESS'"
+    [class.failed]="transactionResult()?.response?.status !== 'SUCCESS'">
+    <div class="result-icon">
+      @if (transactionResult()?.response?.status === 'SUCCESS') {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
+        <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+        <polyline points="22 4 12 14.01 9 11.01" />
+      </svg>
+      } @else {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="15" y1="9" x2="9" y2="15" />
+        <line x1="9" y1="9" x2="15" y2="15" />
+      </svg>
       }
-      <button class="btn btn-primary" (click)="newTransaction()">New Transaction</button>
     </div>
+    <h2>{{ transactionResult()?.response?.status === 'SUCCESS' ? 'Transaction Successful' : 'Transaction Failed' }}</h2>
+    @if (transactionResult()) {
+    <div class="result-details">
+      <div class="result-row"><span>Transaction ID</span><span class="highlight">{{ transactionResult()!.transactionId
+          }}</span></div>
+      <div class="result-row"><span>Amount</span><span class="amount">{{
+          formatCurrency(transactionResult()!.response?.amount || 0) }}</span></div>
+      <div class="result-row"><span>Sender</span><span>{{ transactionResult()!.senderAccountNumber }}</span></div>
+      <div class="result-row"><span>Receiver</span><span>{{ transactionResult()!.receiverAccountNumber || '-' }}</span>
+      </div>
+      <div class="result-row"><span>Type</span><span>{{ transactionResult()!.response?.transactionType }}</span></div>
+      <div class="result-row"><span>Status</span><span class="badge"
+          [class]="getStatusClass(transactionResult()!.response?.status || '')">{{ transactionResult()!.response?.status
+          }}</span></div>
+    </div>
+    }
+    <button class="btn btn-primary" (click)="newTransaction()">New Transaction</button>
+  </div>
   }
 
   <div class="section-divider"></div>
@@ -87,32 +115,38 @@
 
   <!-- Account Search for Staff -->
   @if (canSearchByAccount()) {
-    <div class="search-bar">
-      <div class="search-input-wrapper">
-        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" class="search-icon"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Search by account number..."
-          [ngModel]="accountSearchQuery()"
-          (ngModelChange)="accountSearchQuery.set($event)"
-          (keyup.enter)="searchByAccount()"
-        />
-        @if (accountSearchQuery()) {
-          <button class="search-clear" (click)="clearSearch()">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-          </button>
-        }
-      </div>
-      <button class="btn btn-primary" (click)="searchByAccount()" [disabled]="searchLoading()">
-        @if (searchLoading()) {
-          <span class="spinner-small"></span>
-        } @else {
-          <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
-          Search
-        }
+  <div class="search-bar">
+    <div class="search-input-wrapper">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" class="search-icon">
+        <path fill-rule="evenodd"
+          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+          clip-rule="evenodd" />
+      </svg>
+      <input type="text" class="search-input" placeholder="Search by account number..." [ngModel]="accountSearchQuery()"
+        (ngModelChange)="accountSearchQuery.set($event)" (keyup.enter)="searchByAccount()" />
+      @if (accountSearchQuery()) {
+      <button class="search-clear" (click)="clearSearch()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+          <path fill-rule="evenodd"
+            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+            clip-rule="evenodd" />
+        </svg>
       </button>
+      }
     </div>
+    <button class="btn btn-primary" (click)="searchByAccount()" [disabled]="searchLoading()">
+      @if (searchLoading()) {
+      <span class="spinner-small"></span>
+      } @else {
+      <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+        <path fill-rule="evenodd"
+          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+          clip-rule="evenodd" />
+      </svg>
+      Search
+      }
+    </button>
+  </div>
   }
 
   <div class="filters-bar">
@@ -121,7 +155,7 @@
       <select [ngModel]="filterType()" (ngModelChange)="filterType.set($event)" class="form-control-sm">
         <option value="">All Types</option>
         @for (type of transactionTypes; track type) {
-          <option [value]="type">{{ type }}</option>
+        <option [value]="type">{{ type }}</option>
         }
       </select>
     </div>
@@ -130,13 +164,14 @@
       <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)" class="form-control-sm">
         <option value="">All Status</option>
         @for (status of ['SUCCESS', 'FAILED', 'PENDING', 'CANCELLED', 'REVERSED']; track status) {
-          <option [value]="status">{{ status }}</option>
+        <option [value]="status">{{ status }}</option>
         }
       </select>
     </div>
     <div class="filter-group">
       <label>From</label>
-      <input type="date" [ngModel]="filterDateFrom()" (ngModelChange)="filterDateFrom.set($event)" class="form-control-sm">
+      <input type="date" [ngModel]="filterDateFrom()" (ngModelChange)="filterDateFrom.set($event)"
+        class="form-control-sm">
     </div>
     <div class="filter-group">
       <label>To</label>
@@ -145,184 +180,244 @@
   </div>
 
   @if (loading()) {
-    <app-loading message="Loading transactions..."></app-loading>
+  <app-loading message="Loading transactions..."></app-loading>
   } @else {
-    <app-data-table
-      [columns]="journalColumns"
-      [data]="filteredTransactions()"
-      [searchable]="true"
-      [pageSize]="10"
-      emptyMessage="No transactions found"
-    ></app-data-table>
+  <app-data-table [columns]="journalColumns" [data]="filteredTransactions()" [searchable]="true" [pageSize]="10"
+    emptyMessage="No transactions found"></app-data-table>
   }
 
   <!-- Transaction Form Modal -->
   @if (showFormModal()) {
-    <div class="modal-overlay" (click)="closeFormModal()">
-      <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>New Transaction</h2>
-          <button class="modal-close" (click)="closeFormModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>From Account *</label>
-              <select [(ngModel)]="form.senderAccountNumber" class="form-control">
-                <option value="">Select Sender</option>
-                @for (acc of accounts(); track acc.id) {
-                  <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.accountType }} ({{ formatCurrency(acc.availableBalance) }})</option>
-                }
-              </select>
-            </div>
-
-            @if (isCustomerView()) {
-              <div class="form-group">
-                <label>Send To *</label>
-                <div class="receiver-mode-toggle">
-                  <button type="button" class="toggle-btn" [class.active]="receiverMode() === 'account'" (click)="receiverMode.set('account'); selectedBeneficiaryId = null; form.receiverAccountNumber = ''; form.receiverName = ''; form.bankName = ''">Account Number</button>
-                  <button type="button" class="toggle-btn" [class.active]="receiverMode() === 'beneficiary'" (click)="receiverMode.set('beneficiary'); form.receiverAccountNumber = ''; form.receiverName = ''; form.bankName = ''">Beneficiary</button>
-                </div>
-              </div>
-
-              @if (receiverMode() === 'account') {
-                <div class="form-group">
-                  <label>Receiver Account Number *</label>
-                  <div class="account-input-wrapper">
-                    <input type="text" [ngModel]="form.receiverAccountNumber" (ngModelChange)="form.receiverAccountNumber = $event; onReceiverAccountInput()" class="form-control" [class.input-success]="receiverAccountFound() === true" [class.input-error]="receiverAccountFound() === false" placeholder="Enter 12-digit account number" maxlength="17" />
-                    @if (receiverAccountLookupLoading()) {
-                      <span class="lookup-indicator loading"><span class="spinner-small"></span></span>
-                    } @else if (receiverAccountFound() === true) {
-                      <span class="lookup-indicator found"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></span>
-                    } @else if (receiverAccountFound() === false) {
-                      <span class="lookup-indicator not-found"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></span>
-                    }
-                  </div>
-                  @if (receiverAccountFound() === true) {
-                    <span class="field-hint success">Account found - fields auto-filled</span>
-                  } @else if (receiverAccountFound() === false) {
-                    <span class="field-hint error">Account not found - please fill fields manually</span>
-                  }
-                </div>
-                <div class="form-group">
-                  <label>Receiver Name</label>
-                  <input type="text" [(ngModel)]="form.receiverName" class="form-control" [readonly]="receiverAccountAutoFilled()" [class.auto-filled]="receiverAccountAutoFilled()" placeholder="Receiver name">
-                </div>
-                <div class="form-group">
-                  <label>Bank Name</label>
-                  <input type="text" [(ngModel)]="form.bankName" class="form-control" [readonly]="receiverAccountAutoFilled()" [class.auto-filled]="receiverAccountAutoFilled()" placeholder="Bank name">
-                </div>
-                <div class="form-group">
-                  <label>Routing Number</label>
-                  <input type="text" [(ngModel)]="form.routingNumber" class="form-control" [readonly]="receiverAccountAutoFilled()" [class.auto-filled]="receiverAccountAutoFilled()" placeholder="Routing number">
-                </div>
-              } @else {
-                <div class="form-group">
-                  <label>Select Beneficiary *</label>
-                  <select [(ngModel)]="selectedBeneficiaryId" class="form-control" (ngModelChange)="onBeneficiarySelect($event)">
-                    <option [ngValue]="null">Select Beneficiary</option>
-                    @for (b of beneficiaries(); track b.id) {
-                      <option [ngValue]="b.id">{{ b.name }} - {{ b.accNumber }} ({{ b.beneficiaryType }})</option>
-                    }
-                  </select>
-                </div>
+  <div class="modal-overlay" (click)="closeFormModal()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>New Transaction</h2>
+        <button class="modal-close" (click)="closeFormModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>From Account *</label>
+            <select [(ngModel)]="form.senderAccountNumber" class="form-control">
+              <option value="">Select Sender</option>
+              @for (acc of accounts(); track acc.id) {
+              <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.accountType }} ({{
+                formatCurrency(acc.availableBalance) }})</option>
               }
-            } @else {
-              <div class="form-group">
-                <label>Receiver Account *</label>
-                <select [(ngModel)]="form.receiverAccountNumber" class="form-control">
-                  <option value="">Select Receiver</option>
-                  @for (acc of accounts(); track acc.id) {
-                    <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.accountType }}</option>
-                  }
-                </select>
-              </div>
-            }
+            </select>
+          </div>
 
-            <div class="form-group">
-              <label>Amount *</label>
-              <input type="number" [(ngModel)]="form.amount" class="form-control" min="0.01" step="0.01" placeholder="0.00">
-            </div>
-            <div class="form-group full-width">
-              <label>Remarks</label>
-              <input type="text" [(ngModel)]="form.remarks" class="form-control" placeholder="Transaction remarks (optional)">
+          @if (isCustomerView()) {
+          <div class="form-group">
+            <label>Send To *</label>
+            <div class="receiver-mode-toggle">
+              <button type="button" class="toggle-btn" [class.active]="receiverMode() === 'account'"
+                (click)="receiverMode.set('account'); selectedBeneficiaryId = null; form.receiverAccountNumber = ''; form.receiverName = ''; form.bankName = ''">Account
+                Number</button>
+              <button type="button" class="toggle-btn" [class.active]="receiverMode() === 'beneficiary'"
+                (click)="receiverMode.set('beneficiary'); form.receiverAccountNumber = ''; form.receiverName = ''; form.bankName = ''">Beneficiary</button>
             </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeFormModal()">Cancel</button>
-          <button class="btn btn-primary" (click)="initiateTransaction()" [disabled]="submitting()">
-            @if (submitting()) {
-              <span class="spinner"></span> Processing...
-            } @else {
-              <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"/></svg>
-              Initiate Transaction
+
+          @if (receiverMode() === 'account') {
+          <div class="form-group">
+            <label>Receiver Account Number *</label>
+            <div class="account-input-wrapper">
+              <input type="text" [ngModel]="form.receiverAccountNumber"
+                (ngModelChange)="form.receiverAccountNumber = $event; onReceiverAccountInput()" class="form-control"
+                [class.input-success]="receiverAccountFound() === true"
+                [class.input-error]="receiverAccountFound() === false" placeholder="Enter 12-digit account number"
+                maxlength="17" />
+              @if (receiverAccountLookupLoading()) {
+              <span class="lookup-indicator loading"><span class="spinner-small"></span></span>
+              } @else if (receiverAccountFound() === true) {
+              <span class="lookup-indicator found"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                  <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd" />
+                </svg></span>
+              } @else if (receiverAccountFound() === false) {
+              <span class="lookup-indicator not-found"><svg viewBox="0 0 20 20" fill="currentColor" width="16"
+                  height="16">
+                  <path fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clip-rule="evenodd" />
+                </svg></span>
+              }
+            </div>
+            @if (receiverAccountFound() === true) {
+            <span class="field-hint success">Account found - fields auto-filled</span>
+            } @else if (receiverAccountFound() === false) {
+            <span class="field-hint error">Account not found - please fill fields manually</span>
             }
-          </button>
+          </div>
+          <div class="form-group">
+            <label>Receiver Name</label>
+            <input type="text" [(ngModel)]="form.receiverName" class="form-control"
+              [readonly]="receiverAccountAutoFilled()" [class.auto-filled]="receiverAccountAutoFilled()"
+              placeholder="Receiver name">
+          </div>
+          <div class="form-group">
+            <label>Bank Name</label>
+            <input type="text" [(ngModel)]="form.bankName" class="form-control" [readonly]="receiverAccountAutoFilled()"
+              [class.auto-filled]="receiverAccountAutoFilled()" placeholder="Bank name">
+          </div>
+          <div class="form-group">
+            <label>Routing Number</label>
+            <input type="text" [(ngModel)]="form.routingNumber" class="form-control"
+              [readonly]="receiverAccountAutoFilled()" [class.auto-filled]="receiverAccountAutoFilled()"
+              placeholder="Routing number">
+          </div>
+          } @else {
+          <div class="form-group">
+            <label>Select Beneficiary *</label>
+            <select [(ngModel)]="selectedBeneficiaryId" class="form-control"
+              (ngModelChange)="onBeneficiarySelect($event)">
+              <option [ngValue]="null">Select Beneficiary</option>
+              @for (b of beneficiaries(); track b.id) {
+              <option [ngValue]="b.id">{{ b.name }} - {{ b.accNumber }} ({{ b.beneficiaryType }})</option>
+              }
+            </select>
+          </div>
+          }
+          } @else {
+          <div class="form-group">
+            <label>Receiver Account *</label>
+            <select [(ngModel)]="form.receiverAccountNumber" class="form-control">
+              <option value="">Select Receiver</option>
+              @for (acc of accounts(); track acc.id) {
+              <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.accountType }}</option>
+              }
+            </select>
+          </div>
+          }
+
+          <div class="form-group">
+            <label>Amount *</label>
+            <input type="number" [(ngModel)]="form.amount" class="form-control" min="0.01" step="0.01"
+              placeholder="0.00">
+          </div>
+          <div class="form-group full-width">
+            <label>Remarks</label>
+            <input type="text" [(ngModel)]="form.remarks" class="form-control"
+              placeholder="Transaction remarks (optional)">
+          </div>
         </div>
       </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeFormModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="initiateTransaction()" [disabled]="submitting()">
+          @if (submitting()) {
+          <span class="spinner"></span> Processing...
+          } @else {
+          <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+            <path fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+              clip-rule="evenodd" />
+          </svg>
+          Initiate Transaction
+          }
+        </button>
+      </div>
     </div>
+  </div>
   }
 
   <!-- Export Modal -->
   @if (showExportModal()) {
-    <div class="modal-overlay" (click)="closeExportModal()">
-      <div class="modal-container export-modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Download Transaction History</h2>
-          <button class="modal-close" (click)="closeExportModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="export-form-grid">
-            <div class="form-group">
-              <label>Account Number (optional)</label>
-              <input type="text" [(ngModel)]="exportForm.accountNumber" class="form-control" placeholder="Filter by account number">
-            </div>
-            @if (!isCustomerView()) {
-              <div class="form-group">
-                <label>Branch ID (optional)</label>
-                <input type="number" [(ngModel)]="exportForm.branchId" class="form-control" placeholder="Filter by branch ID" min="0">
-              </div>
+  <div class="modal-overlay" (click)="closeExportModal()">
+    <div class="modal-container export-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Download Transaction History</h2>
+        <button class="modal-close" (click)="closeExportModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="export-form-grid">
+          <div class="form-group">
+            <label>Account Number</label>
+            @if (isCustomerView()) {
+            <select [(ngModel)]="exportForm.accountNumber" class="form-control">
+              <option value="">All Accounts</option>
+              @for (acc of accounts(); track acc.id) {
+              <option [value]="acc.accountNumber">{{ acc.accountNumber }} - {{ acc.accountType }}</option>
+              }
+            </select>
+            } @else {
+            <input type="text" [(ngModel)]="exportForm.accountNumber" class="form-control"
+              placeholder="Filter by account number">
             }
-            <div class="form-group">
-              <label>Format</label>
-              <div class="format-options">
-                <button type="button" class="format-btn" [class.active]="exportForm.format === 'PDF'" (click)="exportForm.format = 'PDF'">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                  PDF
-                </button>
-                <button type="button" class="format-btn" [class.active]="exportForm.format === 'EXCEL'" (click)="exportForm.format = 'EXCEL'">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M8 17h2"/><path d="M14 13h2"/><path d="M14 17h2"/></svg>
-                  Excel
-                </button>
-                <button type="button" class="format-btn" [class.active]="exportForm.format === 'CSV'" (click)="exportForm.format = 'CSV'">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
-                  CSV
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>From Date</label>
-              <input type="date" [(ngModel)]="exportForm.dateFrom" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>To Date</label>
-              <input type="date" [(ngModel)]="exportForm.dateTo" class="form-control">
+          </div>
+          @if (!isCustomerView()) {
+          <div class="form-group">
+            <label>Branch ID (optional)</label>
+            <input type="number" [(ngModel)]="exportForm.branchId" class="form-control"
+              placeholder="Filter by branch ID" min="0">
+          </div>
+          }
+          <div class="form-group">
+            <label>Format</label>
+            <div class="format-options">
+              <button type="button" class="format-btn" [class.active]="exportForm.format === 'PDF'"
+                (click)="exportForm.format = 'PDF'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <polyline points="10 9 9 9 8 9" />
+                </svg>
+                PDF
+              </button>
+              <button type="button" class="format-btn" [class.active]="exportForm.format === 'EXCEL'"
+                (click)="exportForm.format = 'EXCEL'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <path d="M8 13h2" />
+                  <path d="M8 17h2" />
+                  <path d="M14 13h2" />
+                  <path d="M14 17h2" />
+                </svg>
+                Excel
+              </button>
+              <button type="button" class="format-btn" [class.active]="exportForm.format === 'CSV'"
+                (click)="exportForm.format = 'CSV'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="8" y1="13" x2="16" y2="13" />
+                  <line x1="8" y1="17" x2="16" y2="17" />
+                </svg>
+                CSV
+              </button>
             </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeExportModal()">Cancel</button>
-          <button class="btn btn-primary" (click)="exportTransactions()" [disabled]="exporting()">
-            @if (exporting()) {
-              <span class="spinner"></span> Generating...
-            } @else {
-              <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-              Download {{ exportForm.format }}
-            }
-          </button>
+          <div class="form-group">
+            <label>From Date</label>
+            <input type="date" [(ngModel)]="exportForm.dateFrom" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>To Date</label>
+            <input type="date" [(ngModel)]="exportForm.dateTo" class="form-control">
+          </div>
         </div>
       </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeExportModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="exportTransactions()" [disabled]="exporting()">
+          @if (exporting()) {
+          <span class="spinner"></span> Generating...
+          } @else {
+          <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+            <path fill-rule="evenodd"
+              d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+              clip-rule="evenodd" />
+          </svg>
+          Download {{ exportForm.format }}
+          }
+        </button>
+      </div>
     </div>
+  </div>
   }
 </div>

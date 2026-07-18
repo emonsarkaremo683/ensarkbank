@@ -163,6 +163,7 @@ public class AccountServiceImpl implements AccountService {
     public List<AccountResponse> getAccountsByBranchId(Long branchId) {
         return accountRepository.findAllByBranchId(branchId)
                 .stream()
+                .filter(account -> account.getAccountNumber().startsWith("acc"))
                 .map(accountMapper::toAccountResponse)
                 .collect(Collectors.toList());
     }
@@ -196,6 +197,7 @@ public class AccountServiceImpl implements AccountService {
     public List<AccountResponse> getAccounts() {
         return accountRepository.findAll()
                 .stream()
+                .filter(account -> account.getAccountNumber().startsWith("acc"))
                 .map(accountMapper::toAccountResponse)
                 .collect(Collectors.toList());
     }

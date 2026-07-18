@@ -2,6 +2,7 @@ package com.elitetech_inc.ensarkbank.account_management.card.controller;
 
 import com.elitetech_inc.ensarkbank.account_management.card.entity.CardSettingsRequest;
 import com.elitetech_inc.ensarkbank.account_management.card.service.CardSettingsRequestService;
+import com.elitetech_inc.ensarkbank.common.enums.CardType;
 import com.elitetech_inc.ensarkbank.common.enums.RequestStatus;
 import com.elitetech_inc.ensarkbank.common.security.CustomerSecurity;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +29,15 @@ public class CardSettingsRequestController {
             Authentication auth) {
         Long cardId = Long.valueOf(body.get("cardId").toString());
         CardSettingsRequest.RequestType requestType = CardSettingsRequest.RequestType.valueOf(body.get("requestType").toString());
-        boolean requestedValue = Boolean.parseBoolean(body.get("requestedValue").toString());
+        boolean requestedValue = body.get("requestedValue") != null ? Boolean.parseBoolean(body.get("requestedValue").toString()) : false;
         Long customerId = customerSecurity.getAuthenticatedCustomerId(auth);
-        return ResponseEntity.ok(requestService.createRequest(cardId, requestType, requestedValue, customerId));
+
+        CardType requestedCardType = null;
+        if (body.get("requestedCardType") != null) {
+            requestedCardType = CardType.valueOf(body.get("requestedCardType").toString());
+        }
+
+        return ResponseEntity.ok(requestService.createRequest(cardId, requestType, requestedValue, customerId, requestedCardType));
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")

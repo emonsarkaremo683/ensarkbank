@@ -52,30 +52,33 @@ public class BranchService {
         }
 
         Branch br = branchRepository.save(branch);
-
-        boolean isAgentBank = br.getType() == BranchType.AGENT_BANK;
-        BigDecimal initialBalance = isAgentBank
-                ? BigDecimal.valueOf(1000000.00)
-                : BigDecimal.valueOf(5000000.00);
-
         Account ar = new Account();
-        ar.setBranch(br);
-        ar.setAccountStatus(AccountStatus.ACTIVE);
-        ar.setAccountType(isAgentBank ? AccountType.AGENT_BANK_VAULT : AccountType.BRANCH_VAULT);
-        ar.setAvailableBalance(initialBalance);
-        ar.setAccountNumber(accountNumberGenerator.generateBranchAccountNumber(br.getRoutingNumber(),
-                isAgentBank ? "ag-" : "br-"));
-        ar.setCurrentBalance(initialBalance);
-        ar.setHoldBalance(BigDecimal.ZERO);
+        boolean isAgentBank = br.getType() == BranchType.AGENT_BANK;
+        boolean isHeadOffice = br.getType() == BranchType.HEAD_OFFICE;
+        BigDecimal initialBalance = isHeadOffice
+                ? BigDecimal.valueOf(10000000.00)
+                : BigDecimal.valueOf(5000000.00);
+        if (!isAgentBank){
 
-        AccountHolder ahr = new AccountHolder();
-        ahr.setCanWithdraw(true);
-        ahr.setCanDeposit(true);
-        ahr.setCanApproveTransaction(true);
-        ahr.setHolderType(HolderType.INTER_BRANCH_SETTLEMENT);
+            ar.setBranch(br);
+            ar.setAccountStatus(AccountStatus.ACTIVE);
+            ar.setAccountType(isHeadOffice? AccountType.INTER_BANK_VAULT: AccountType.BRANCH_VAULT);
+            ar.setAvailableBalance(initialBalance);
+            ar.setAccountNumber(accountNumberGenerator.generateBranchAccountNumber(br.getRoutingNumber(),
+                    isHeadOffice ? "head-" : "br-"));
+            ar.setCurrentBalance(initialBalance);
+            ar.setHoldBalance(BigDecimal.ZERO);
 
-        ar.setHolders(new ArrayList<>());
-        ar.getHolders().add(ahr);
+            AccountHolder ahr = new AccountHolder();
+            ahr.setCanWithdraw(true);
+            ahr.setCanDeposit(true);
+            ahr.setCanApproveTransaction(true);
+            ahr.setHolderType(HolderType.INTER_BRANCH_SETTLEMENT);
+
+            ar.setHolders(new ArrayList<>());
+            ar.getHolders().add(ahr);
+        }
+
         accountRepository.save(ar);
 
         return br;

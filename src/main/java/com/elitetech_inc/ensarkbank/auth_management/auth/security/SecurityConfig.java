@@ -60,6 +60,7 @@ public class SecurityConfig {
                                 "/api/policestation/district/**"
                         ).permitAll()
                         .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

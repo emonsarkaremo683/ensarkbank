@@ -27,12 +27,12 @@ export class BranchesComponent implements OnInit {
   selectedBranch = signal<Branch | null>(null);
   branches = signal<Branch[]>([]);
 
+  form = this.getEmptyForm();
+
   divisions = signal<Division[]>([]);
   districts = signal<District[]>([]);
   policeStations = signal<PoliceStation[]>([]);
   parentBranches = signal<Branch[]>([]);
-
-  form = this.getEmptyForm();
 
   columns: TableColumn[] = [
     { key: 'name', label: 'Branch Name', type: 'text', sortable: true },
@@ -58,20 +58,7 @@ export class BranchesComponent implements OnInit {
   ngOnInit(): void {
     this.loadBranches();
     this.loadDivisions();
-  }
-
-  loadBranches(): void {
-    this.loading.set(true);
-    this.api.getBranches().subscribe({
-      next: (data) => {
-        this.branches.set(data);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.notify.error('Error', 'Failed to load branches.');
-      }
-    });
+    this.loadParentBranches();
   }
 
   loadDivisions(): void {
@@ -79,6 +66,19 @@ export class BranchesComponent implements OnInit {
       next: (data) => this.divisions.set(data),
       error: () => {}
     });
+  }
+
+  loadParentBranches(): void {
+    this.api.getBranches().subscribe({
+      next: (data) => this.parentBranches.set(data.filter(b => b.type === BranchType.BRANCH || b.type === BranchType.HEAD_OFFICE)),
+      error: () => {}
+    });
+  }
+
+  onTypeChange(): void {
+    if (this.form.type !== 'AGENT_BANK') {
+      this.form.parentBranchId = 0;
+    }
   }
 
   onDivisionChange(): void {
@@ -105,17 +105,18 @@ export class BranchesComponent implements OnInit {
     }
   }
 
-  onTypeChange(): void {
-    this.form.parentBranchId = 0;
-    this.parentBranches.set([]);
-    if (this.form.type === BranchType.AGENT_BANK) {
-      this.api.getBranches().subscribe({
-        next: (data) => {
-          this.parentBranches.set(data.filter(b => b.type !== BranchType.AGENT_BANK));
-        },
-        error: () => {}
-      });
-    }
+  loadBranches(): void {
+    this.loading.set(true);
+    this.api.getBranches().subscribe({
+      next: (data) => {
+        this.branches.set(data);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.notify.error('Error', 'Failed to load branches.');
+      }
+    });
   }
 
   filteredBranches = computed(() => {
@@ -142,9 +143,6 @@ export class BranchesComponent implements OnInit {
   openAddForm(): void {
     this.form = this.getEmptyForm();
     this.editMode.set(false);
-    this.districts.set([]);
-    this.policeStations.set([]);
-    this.parentBranches.set([]);
     this.showModal.set(true);
   }
 
@@ -158,11 +156,15 @@ export class BranchesComponent implements OnInit {
       email: branch.email || '',
       phoneNumber: branch.phoneNumber || '',
       address: branch.address || '',
-      parentBranchId: branch.parentBranch?.id || 0,
-      policeStationId: branch.policeStation?.id || 0,
+      branchId: branch.id || 0,
+      parentBranchId: branch.parentBranchId || 0,
       divisionId: 0,
-      districtId: 0
+      districtId: 0,
+      policeStationId: branch.policeStationId || 0
     };
+    if (branch.parentBranch?.id) {
+      this.form.parentBranchId = branch.parentBranch.id;
+    }
     this.selectedBranch.set(branch);
     this.showModal.set(true);
   }
@@ -199,24 +201,16 @@ export class BranchesComponent implements OnInit {
       return;
     }
 
-    if (type === BranchType.AGENT_BANK && !this.form.parentBranchId) {
-      this.notify.warning('Validation', 'Parent branch is required for agent banks.');
-      return;
-    }
-
     this.submitting.set(true);
 
     if (this.editMode() && this.selectedBranch()) {
-      const payload: any = {
+      const payload: Partial<Branch> = {
         name: name.trim(),
         email: email.trim(),
         phoneNumber: phoneNumber.trim(),
         status: status as BranchStatus,
         address: this.form.address?.trim() || ''
       };
-      if (this.form.policeStationId) {
-        payload.policeStation = { id: this.form.policeStationId };
-      }
 
       this.api.updateBranch(this.selectedBranch()!.id, payload).subscribe({
         next: () => {
@@ -231,7 +225,7 @@ export class BranchesComponent implements OnInit {
         }
       });
     } else {
-      const payload: any = {
+      const payload: Partial<Branch> = {
         name: name.trim(),
         email: email.trim(),
         phoneNumber: phoneNumber.trim(),
@@ -239,12 +233,6 @@ export class BranchesComponent implements OnInit {
         status: status as BranchStatus,
         address: this.form.address?.trim() || ''
       };
-      if (this.form.parentBranchId) {
-        payload.parentBranch = { id: this.form.parentBranchId };
-      }
-      if (this.form.policeStationId) {
-        payload.policeStation = { id: this.form.policeStationId };
-      }
 
       this.api.createBranch(payload).subscribe({
         next: () => {
@@ -277,6 +265,7 @@ export class BranchesComponent implements OnInit {
       email: '',
       phoneNumber: '',
       address: '',
+      branchId: 0,
       parentBranchId: 0,
       divisionId: 0,
       districtId: 0,

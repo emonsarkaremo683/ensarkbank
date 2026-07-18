@@ -2,6 +2,7 @@ package com.elitetech_inc.ensarkbank.account_management.card.entity;
 
 import com.elitetech_inc.ensarkbank.auth_management.user.entity.User;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
+import com.elitetech_inc.ensarkbank.common.enums.CardType;
 import com.elitetech_inc.ensarkbank.common.enums.RequestStatus;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -24,6 +25,9 @@ public class CardSettingsRequest extends BaseEntity {
     private boolean requestedValue;
 
     @Enumerated(EnumType.STRING)
+    private CardType requestedCardType;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RequestStatus status;
 
@@ -35,6 +39,7 @@ public class CardSettingsRequest extends BaseEntity {
 
     public enum RequestType {
         INTERNATIONAL_ENABLED,
-        ONLINE_TRANSACTION_ENABLED
+        ONLINE_TRANSACTION_ENABLED,
+        CARD_TYPE_CHANGE
     }
 }
