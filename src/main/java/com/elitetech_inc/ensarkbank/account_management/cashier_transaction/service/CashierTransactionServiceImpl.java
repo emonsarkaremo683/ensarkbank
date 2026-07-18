@@ -3,6 +3,7 @@ package com.elitetech_inc.ensarkbank.account_management.cashier_transaction.serv
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
+import com.elitetech_inc.ensarkbank.account_management.account.service.AccountService;
 import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.CashierTransaction;
 import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.dto.CashierTransactionMapper;
 import com.elitetech_inc.ensarkbank.account_management.cashier_transaction.dto.CashierTransactionRequest;
@@ -50,6 +51,7 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
     private final CashierTransactionMapper cashierTransactionMapper;
     private final TransactionMapper transactionMapper;
     private final AccountRepository accountRepository;
+    private final AccountService accountService;
     private final TransactionService transactionService;
     private final JoinHelperRepository joinHelperRepository;
     private final BranchValidator branchValidator;
@@ -70,8 +72,7 @@ public class CashierTransactionServiceImpl implements CashierTransactionService 
 
         branchValidator.assertNotAgentBank(branch.getId());
 
-        Account branchAcc = accountRepository.findAccountByAccountNumber("br-"+branch.getRoutingNumber())
-                .orElseThrow();
+        Account branchAcc = accountService.getOrCreateVaultAccount(branch);
         if (validator.checkAccountExists(request.getAccountNumber())){
             validator.checkAccountStatus(request.getAccountNumber());
         }

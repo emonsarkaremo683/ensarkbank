@@ -119,6 +119,12 @@ public class TransactionServiceImpl implements TransactionService {
                             senderAccount.getAccountNumber(),
                             transaction.getAmount());
                     break;
+                case LOAN_REPAYMENT:
+                    transactionPostingService.loanRepayment(transaction,
+                            senderAccount.getAccountNumber(),
+                            receiverAccount != null ? receiverAccount.getAccountNumber() : receiver,
+                            transaction.getAmount());
+                    break;
                 default:
                     throw new IllegalArgumentException("Unsupported transaction type: " + transaction.getTransactionType());
             }

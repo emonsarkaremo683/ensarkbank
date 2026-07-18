@@ -2,6 +2,7 @@ package com.elitetech_inc.ensarkbank.account_management.account.service;
 
 import com.elitetech_inc.ensarkbank.account_management.account.dto.request.AccountRequest;
 import com.elitetech_inc.ensarkbank.account_management.account.dto.response.AccountResponse;
+import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,5 +22,6 @@ public interface AccountService {
     List<Long> resolveBranchAndChildIds(Long branchId);
     List<AccountResponse> getAccounts();
     List<AccountResponse> getAccountsByCustomerId(Long customerId);
+    com.elitetech_inc.ensarkbank.account_management.account.entity.Account getOrCreateVaultAccount(Branch branch);
 
 }

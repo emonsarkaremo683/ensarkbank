@@ -178,12 +178,13 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="closeDetail()">Close</button>
-          @if (selectedLoan()!.status === 'PENDING' && isManager()) {
-            <button class="btn btn-danger" (click)="confirmLoanAction(selectedLoan()!, 'reject')">Reject</button>
-            <button class="btn btn-primary" (click)="confirmLoanAction(selectedLoan()!, 'approve')">Approve</button>
-          }
-          @if (selectedLoan()!.status === 'APPROVED' && isAccountant()) {
-            <button class="btn btn-primary" (click)="confirmLoanAction(selectedLoan()!, 'disburse')">Disburse</button>
+          @if ((selectedLoan()!.status === 'PENDING' || selectedLoan()!.status === 'APPROVED') && isManager()) {
+            @if (selectedLoan()!.status === 'PENDING') {
+              <button class="btn btn-danger" (click)="confirmLoanAction(selectedLoan()!, 'reject')">Reject</button>
+            }
+            <button class="btn btn-primary" (click)="confirmLoanAction(selectedLoan()!, 'approve')">
+              {{ selectedLoan()!.status === 'APPROVED' ? 'Disburse' : 'Approve' }}
+            </button>
           }
           @if (selectedLoan()!.status === 'ACTIVE' || selectedLoan()!.status === 'DISBURSED') {
             <button class="btn btn-primary" (click)="openRepay(selectedLoan()!); closeDetail()">Pay EMI</button>

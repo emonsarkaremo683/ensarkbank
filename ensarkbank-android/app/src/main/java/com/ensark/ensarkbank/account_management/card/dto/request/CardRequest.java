@@ -1,7 +1,8 @@
 package com.ensark.ensarkbank.account_management.card.dto.request;
 
-import com.elitetech_inc.ensarkbank.common.enums.CardNetwork;
-import com.elitetech_inc.ensarkbank.common.enums.CardType;
+import com.ensark.ensarkbank.enums.CardNetwork;
+import com.ensark.ensarkbank.enums.CardType;
+
 import lombok.Data;
 
 @Data

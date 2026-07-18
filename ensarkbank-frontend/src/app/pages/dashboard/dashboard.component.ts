@@ -146,7 +146,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       next: (accounts) => {
         this.customerAccounts.set(accounts);
         this.accountCount.set(accounts.length);
-        this.totalBalance.set(accounts.reduce((sum, acc) => sum + (acc.availableBalance || 0), 0));
+        this.totalBalance.set(accounts.reduce((sum, acc) => sum + ((acc.availableBalance || 0) + (acc.holdBalance || 0)), 0));
 
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

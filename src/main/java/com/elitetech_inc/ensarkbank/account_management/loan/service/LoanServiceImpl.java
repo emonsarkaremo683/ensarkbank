@@ -2,6 +2,7 @@ package com.elitetech_inc.ensarkbank.account_management.loan.service;
 
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
+import com.elitetech_inc.ensarkbank.account_management.account.service.AccountService;
 import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanApplicationRequest;
 import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanApplicationResponse;
 import com.elitetech_inc.ensarkbank.account_management.loan.dto.LoanMapper;
@@ -41,6 +42,7 @@ public class LoanServiceImpl implements LoanService{
     private final LoanRepository loanRepository;
     private final LoanRepaymentRepository repaymentRepository;
     private final AccountRepository accountRepository;
+    private final AccountService accountService;
     private final TransactionService transactionService;
     private final LoanMapper loanMapper;
     private final BranchRepository branchRepository;
@@ -81,9 +83,15 @@ public class LoanServiceImpl implements LoanService{
         return loanMapper.toResponse(savedLoan);
     }
 
+    @Transactional
     @Override
     public LoanApplicationResponse approve(Long loanId) {
         Loan loan = getLoanOrThrow(loanId);
+
+        if (loan.getStatus() == LoanStatus.APPROVED) {
+            return disburse(loanId);
+        }
+
         requireStatus(loan, LoanStatus.PENDING);
         loan.setStatus(LoanStatus.APPROVED);
         loan.setApprovalDate(LocalDate.now());
@@ -322,8 +330,7 @@ public class LoanServiceImpl implements LoanService{
 
         if(b == null) throw new IllegalArgumentException("Branch not found");
 
-        return accountRepository.findAccountByAccountNumber("br-" + b.getRoutingNumber())
-                .orElseThrow(() -> new IllegalStateException("Loan control GL account not configured"));
+        return accountService.getOrCreateVaultAccount(b);
 
     }
 

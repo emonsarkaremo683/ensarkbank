@@ -218,7 +218,7 @@ public class ReportService {
                     if (balance.compareTo(ZERO) > 0) {
                         put(liabilityLines, "ACC-" + account.getId(), line);
                     } else {
-                        put(assetLines, "ACC-" + account.getId(), line);
+                        put(assetLines, "acc-" + account.getId(), line);
                     }
                 }
             }

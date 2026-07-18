@@ -242,6 +242,9 @@ public class TransactionPostingService {
      * =====================================================
      * Loan Control Account   DEBIT  (asset increases)
      * Customer Account       CREDIT (funds delivered)
+     *
+     * Note: Vault/loan-control accounts are debited without
+     * a balance check since loan disbursement creates new money.
      */
     public void loanDisbursement(
             Transaction transaction,
@@ -249,8 +252,16 @@ public class TransactionPostingService {
             String customerAccount,
             BigDecimal amount
     ) {
-        debit(transaction, loanControlAccount, amount);
-        credit(transaction, customerAccount, amount);
+        BigDecimal normalizedAmount = normalizeAmount(amount);
+        if (accountRepository.existsByAccountNumber(loanControlAccount)) {
+            Account account = accountRepository.findAccountByAccountNumber(loanControlAccount).orElseThrow(
+                    () -> new RuntimeException("Account not found")
+            );
+            account.setAvailableBalance(zeroIfNull(account.getAvailableBalance()).subtract(normalizedAmount));
+            account.setCurrentBalance(zeroIfNull(account.getCurrentBalance()).subtract(normalizedAmount));
+        }
+        addEntry(transaction, loanControlAccount, EntryType.DEBIT, normalizedAmount);
+        credit(transaction, customerAccount, normalizedAmount);
     }
 
     /*

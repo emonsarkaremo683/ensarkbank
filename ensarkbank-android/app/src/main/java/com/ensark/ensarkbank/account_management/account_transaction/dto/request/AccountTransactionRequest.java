@@ -1,6 +1,7 @@
 package com.ensark.ensarkbank.account_management.account_transaction.dto.request;
 
-import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.request.TransactionRequest;
+import com.ensark.ensarkbank.accounting_system.transaction.dto.request.TransactionRequest;
+
 import lombok.Data;
 
 import java.math.BigDecimal;

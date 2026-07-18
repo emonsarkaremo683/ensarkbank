@@ -4,6 +4,7 @@ import com.elitetech_inc.ensarkbank.auth_management.user.entity.User;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.common.enums.CardType;
 import com.elitetech_inc.ensarkbank.common.enums.RequestStatus;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,6 +17,7 @@ public class CardSettingsRequest extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "card_id", nullable = false)
+    @JsonIgnoreProperties({"account", "pinHash", "cvv"})
     private Card card;
 
     @Enumerated(EnumType.STRING)
@@ -35,6 +37,7 @@ public class CardSettingsRequest extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requested_by", nullable = false)
+    @JsonIgnoreProperties({"addresses", "password"})
     private User requestedBy;
 
     public enum RequestType {

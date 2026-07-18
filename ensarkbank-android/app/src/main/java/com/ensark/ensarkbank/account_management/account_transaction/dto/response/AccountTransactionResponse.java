@@ -1,6 +1,7 @@
 package com.ensark.ensarkbank.account_management.account_transaction.dto.response;
 
-import com.elitetech_inc.ensarkbank.accounting_system.transaction.dto.response.TransactionResponse;
+import com.ensark.ensarkbank.accounting_system.transaction.dto.response.TransactionResponse;
+
 import lombok.Builder;
 import lombok.Data;
 
