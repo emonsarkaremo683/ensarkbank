@@ -6,9 +6,12 @@ import com.elitetech_inc.ensarkbank.account_management.card.repository.CardRepos
 import com.elitetech_inc.ensarkbank.account_management.card.repository.CardSettingsRequestRepository;
 import com.elitetech_inc.ensarkbank.auth_management.user.entity.User;
 import com.elitetech_inc.ensarkbank.common.enums.CardType;
+import com.elitetech_inc.ensarkbank.common.enums.NotificationType;
 import com.elitetech_inc.ensarkbank.common.enums.RequestStatus;
 import com.elitetech_inc.ensarkbank.customer_management.customer.entity.Customer;
 import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
+import com.elitetech_inc.ensarkbank.util.EmailUtil;
+import com.elitetech_inc.ensarkbank.util.NotificationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,8 @@ public class CardSettingsRequestServiceImpl implements CardSettingsRequestServic
     private final CardSettingsRequestRepository requestRepository;
     private final CardRepository cardRepository;
     private final CustomerRepository customerRepository;
+    private final NotificationUtil notificationUtil;
+    private final EmailUtil emailUtil;
 
     @Override
     public CardSettingsRequest createRequest(Long cardId, CardSettingsRequest.RequestType requestType, boolean requestedValue, Long customerId, CardType requestedCardType) {
@@ -46,7 +51,21 @@ public class CardSettingsRequestServiceImpl implements CardSettingsRequestServic
         request.setStatus(RequestStatus.PENDING);
         request.setRequestedBy(customer.getUser());
 
-        return requestRepository.save(request);
+        CardSettingsRequest saved = requestRepository.save(request);
+
+        // Notify authorities
+        String maskedCard = card.getCardNumber().length() > 4
+                ? "****" + card.getCardNumber().substring(card.getCardNumber().length() - 4)
+                : card.getCardNumber();
+        notificationUtil.notifyAuthorities(
+                NotificationType.GENERAL,
+                "Card Settings Request",
+                "Customer " + customer.getName() + " has requested " + requestType + " change for card " + maskedCard + ".",
+                String.valueOf(saved.getId()),
+                "CARD_SETTINGS_REQUEST"
+        );
+
+        return saved;
     }
 
     @Override
@@ -91,7 +110,12 @@ public class CardSettingsRequestServiceImpl implements CardSettingsRequestServic
         }
         cardRepository.save(card);
 
-        return requestRepository.save(request);
+        CardSettingsRequest saved = requestRepository.save(request);
+
+        // Notify customer
+        notifyCardRequestCustomer(request, "APPROVED");
+
+        return saved;
     }
 
     @Override
@@ -106,6 +130,29 @@ public class CardSettingsRequestServiceImpl implements CardSettingsRequestServic
         request.setStatus(RequestStatus.REJECTED);
         request.setRejectionReason(reason);
 
-        return requestRepository.save(request);
+        CardSettingsRequest saved = requestRepository.save(request);
+
+        // Notify customer
+        notifyCardRequestCustomer(request, "REJECTED");
+
+        return saved;
+    }
+
+    private void notifyCardRequestCustomer(CardSettingsRequest request, String status) {
+        if (request.getRequestedBy() == null) return;
+
+        var user = request.getRequestedBy();
+        String maskedCard = request.getCard().getCardNumber().length() > 4
+                ? "****" + request.getCard().getCardNumber().substring(request.getCard().getCardNumber().length() - 4)
+                : request.getCard().getCardNumber();
+
+        String title = "Card Request " + status;
+        String message = "Your card settings request (" + request.getRequestType() + ") for card " +
+                maskedCard + " has been " + status.toLowerCase() + ".";
+
+        notificationUtil.notifyUser(user.getId(), NotificationType.CARD_STATUS_CHANGED, title, message,
+                String.valueOf(request.getId()), "CARD_SETTINGS_REQUEST");
+
+        emailUtil.sendCardStatusEmail(user.getEmail(), user.getUsername(), maskedCard, status);
     }
 }

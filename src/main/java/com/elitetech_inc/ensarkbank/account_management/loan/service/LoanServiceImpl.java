@@ -19,9 +19,12 @@ import com.elitetech_inc.ensarkbank.accounting_system.transaction.service.Transa
 import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.common.enums.LoanStatus;
+import com.elitetech_inc.ensarkbank.common.enums.NotificationType;
 import com.elitetech_inc.ensarkbank.common.enums.RepaymentStatus;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
+import com.elitetech_inc.ensarkbank.util.EmailUtil;
+import com.elitetech_inc.ensarkbank.util.NotificationUtil;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Validator;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +52,8 @@ public class LoanServiceImpl implements LoanService{
     private final TransactionMapper transactionMapper;
     private final RequestValidator requestValidator;
     private final Validator validator;
+    private final NotificationUtil notificationUtil;
+    private final EmailUtil emailUtil;
 
     private static final int SCALE = 2;
     private static final RoundingMode RM = RoundingMode.HALF_UP;
@@ -80,6 +85,16 @@ public class LoanServiceImpl implements LoanService{
 
         Loan savedLoan = loanRepository.save(loan);
 
+        // Notify authorities about new loan application
+        notificationUtil.notifyAuthorities(
+                NotificationType.LOAN_APPLICATION,
+                "New Loan Application",
+                "Loan application for account " + account.getAccountNumber() +
+                        " - Principal: " + lar.getPrincipalAmount() + " BDT, Tenure: " + lar.getTenureMonths() + " months. Status: PENDING.",
+                String.valueOf(savedLoan.getId()),
+                "LOAN"
+        );
+
         return loanMapper.toResponse(savedLoan);
     }
 
@@ -96,7 +111,13 @@ public class LoanServiceImpl implements LoanService{
         loan.setStatus(LoanStatus.APPROVED);
         loan.setApprovalDate(LocalDate.now());
         loanRepository.save(loan);
-        return disburse(loanId);
+
+        LoanApplicationResponse response = disburse(loanId);
+
+        // Notify customer about loan approval
+        notifyLoanCustomer(loan, "APPROVED");
+
+        return response;
     }
 
     @Override
@@ -105,7 +126,36 @@ public class LoanServiceImpl implements LoanService{
         requireStatus(loan, LoanStatus.PENDING);
         loan.setStatus(LoanStatus.REJECTED);
         loan.setRejectionReason(reason);
-        return loanMapper.toResponse(loanRepository.save(loan));
+
+        LoanApplicationResponse response = loanMapper.toResponse(loanRepository.save(loan));
+
+        // Notify customer about loan rejection
+        notifyLoanCustomer(loan, "REJECTED");
+
+        return response;
+    }
+
+    private void notifyLoanCustomer(Loan loan, String status) {
+        if (loan.getAccount() == null || loan.getAccount().getHolders() == null) return;
+
+        loan.getAccount().getHolders().stream()
+                .filter(h -> h.getCustomer() != null && h.getCustomer().getUser() != null)
+                .findFirst()
+                .ifPresent(holder -> {
+                    var user = holder.getCustomer().getUser();
+                    var customer = holder.getCustomer();
+
+                    NotificationType notifType = "APPROVED".equals(status)
+                            ? NotificationType.LOAN_APPROVED : NotificationType.LOAN_REJECTED;
+                    String title = "Loan " + status;
+                    String message = "Your loan #" + loan.getId() + " for " +
+                            loan.getPrincipalAmount() + " BDT has been " + status.toLowerCase() + ".";
+
+                    notificationUtil.notifyUser(user.getId(), notifType, title, message,
+                            String.valueOf(loan.getId()), "LOAN");
+                    emailUtil.sendLoanStatusEmail(user.getEmail(), customer.getName(),
+                            String.valueOf(loan.getId()), status);
+                });
     }
 
 

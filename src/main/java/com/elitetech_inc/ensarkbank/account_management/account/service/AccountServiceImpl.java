@@ -21,8 +21,11 @@ import com.elitetech_inc.ensarkbank.common.enums.AccountType;
 import com.elitetech_inc.ensarkbank.common.enums.BranchType;
 import com.elitetech_inc.ensarkbank.common.enums.HolderType;
 import com.elitetech_inc.ensarkbank.common.enums.HoldReason;
+import com.elitetech_inc.ensarkbank.common.enums.NotificationType;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
+import com.elitetech_inc.ensarkbank.util.EmailUtil;
+import com.elitetech_inc.ensarkbank.util.NotificationUtil;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import com.elitetech_inc.ensarkbank.util.Validator;
@@ -58,6 +61,8 @@ public class AccountServiceImpl implements AccountService {
     private final TransactionMapper transactionMapper;
     private final HoldTransactionService holdTransactionService;
     private final AccountNumberGenerator accountNumberGenerator;
+    private final NotificationUtil notificationUtil;
+    private final EmailUtil emailUtil;
 
     @Transactional
     @Override
@@ -100,6 +105,19 @@ public class AccountServiceImpl implements AccountService {
         nominee.setAccount(saved);
         nomineeRepository.save(nominee);
 
+        // Notify authorities about new account application
+        String customerName = holders.stream()
+                .findFirst()
+                .map(h -> h.getCustomer().getName())
+                .orElse("Unknown");
+        notificationUtil.notifyAuthorities(
+                NotificationType.ACCOUNT_CREATED,
+                "New Account Application",
+                "Customer " + customerName + " has applied for a new " + ar.getAccountType() + " account. Status: PENDING.",
+                String.valueOf(saved.getId()),
+                "ACCOUNT"
+        );
+
         return accountMapper.toAccountResponse(saved);
     }
 
@@ -123,6 +141,7 @@ public class AccountServiceImpl implements AccountService {
 
         if (status != AccountStatus.ACTIVE){
             Account updated = accountRepository.save(acc);
+            notifyAccountHolder(acc, status);
             return accountMapper.toAccountResponse(updated);
         }
 
@@ -158,6 +177,9 @@ public class AccountServiceImpl implements AccountService {
         acc.setHoldBalance(activeHoldBalance);
         acc.setCurrentBalance(acc.getAvailableBalance().add(activeHoldBalance));
         Account updated = accountRepository.save(acc);
+
+        notifyAccountHolder(acc, status);
+
         return accountMapper.toAccountResponse(updated);
     }
 
@@ -249,6 +271,29 @@ public class AccountServiceImpl implements AccountService {
                     vault.getHolders().add(holder);
 
                     return accountRepository.save(vault);
+                });
+    }
+
+    private void notifyAccountHolder(Account acc, AccountStatus status) {
+        if (acc.getHolders() == null || acc.getHolders().isEmpty()) return;
+
+        acc.getHolders().stream()
+                .filter(h -> h.getCustomer() != null && h.getCustomer().getUser() != null)
+                .findFirst()
+                .ifPresent(holder -> {
+                    var user = holder.getCustomer().getUser();
+                    var customer = holder.getCustomer();
+
+                    NotificationType notifType = status == AccountStatus.ACTIVE
+                            ? NotificationType.ACCOUNT_CREATED
+                            : NotificationType.ACCOUNT_SUSPENDED;
+                    String title = "Account " + status.name();
+                    String message = "Your account " + acc.getAccountNumber() + " has been " + status.name().toLowerCase() + ".";
+
+                    notificationUtil.notifyUser(user.getId(), notifType, title, message,
+                            String.valueOf(acc.getId()), "ACCOUNT");
+                    emailUtil.sendAccountStatusEmail(user.getEmail(), customer.getName(),
+                            acc.getAccountNumber(), status.name());
                 });
     }
 }

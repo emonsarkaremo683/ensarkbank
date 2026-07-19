@@ -15,6 +15,8 @@ import com.elitetech_inc.ensarkbank.accounting_system.transaction.repository.Tra
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.service.TransactionPostingService;
 import com.elitetech_inc.ensarkbank.common.enums.*;
 import com.elitetech_inc.ensarkbank.common.exception.InsufficientCreditException;
+import com.elitetech_inc.ensarkbank.util.EmailUtil;
+import com.elitetech_inc.ensarkbank.util.NotificationUtil;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import com.elitetech_inc.ensarkbank.util.Validator;
@@ -45,13 +47,25 @@ public class CardServiceImpl implements CardService {
     private final TransactionRepository transactionRepository;
     private final Utils utils;
     private final CreditAccountRepository creditAccountRepository;
+    private final NotificationUtil notificationUtil;
+    private final EmailUtil emailUtil;
 
     @Override
     public CardResponse createCard(CardRequest cr, Long id) {
         requestValidator.validateCard(cr);
         validator.checkPassportAvailable(id);
         Card card = cardMapper.toCard(cr);
-        return cardMapper.toCardResponse(cardRepository.save(card));
+        CardResponse response = cardMapper.toCardResponse(cardRepository.save(card));
+
+        notificationUtil.notifyAuthorities(
+                NotificationType.CARD_APPLICATION,
+                "New Card Application",
+                "Customer #" + id + " has applied for a new " + cr.getCardType() + " " + cr.getCardNetwork() + " card. Status: PENDING.",
+                String.valueOf(response.getCardId()),
+                "CARD"
+        );
+
+        return response;
     }
 
     @Override
@@ -79,7 +93,29 @@ public class CardServiceImpl implements CardService {
         card.setStatus(cr);
         card.setDailyLimit(card.getCardType() != CardType.DEBIT ? dailyLimit : 0.0);
         card.setMonthlyLimit(card.getCardType() != CardType.DEBIT ? monthlyLimit : 0.0);
-        return cardMapper.toCardResponse(cardRepository.save(card));
+        CardResponse response = cardMapper.toCardResponse(cardRepository.save(card));
+
+        // Notify customer about card status change
+        if (card.getAccount() != null && card.getAccount().getHolders() != null) {
+            card.getAccount().getHolders().stream()
+                    .filter(h -> h.getCustomer() != null && h.getCustomer().getUser() != null)
+                    .findFirst()
+                    .ifPresent(holder -> {
+                        var user = holder.getCustomer().getUser();
+                        var customer = holder.getCustomer();
+                        String maskedCard = card.getCardNumber().length() > 4
+                                ? "****" + card.getCardNumber().substring(card.getCardNumber().length() - 4)
+                                : card.getCardNumber();
+                        notificationUtil.notifyUser(user.getId(), NotificationType.CARD_STATUS_CHANGED,
+                                "Card " + cr.name(),
+                                "Your card " + maskedCard + " has been " + cr.name().toLowerCase() + ".",
+                                String.valueOf(cardId), "CARD");
+                        emailUtil.sendCardStatusEmail(user.getEmail(), customer.getName(),
+                                maskedCard, cr.name());
+                    });
+        }
+
+        return response;
     }
 
     @Override

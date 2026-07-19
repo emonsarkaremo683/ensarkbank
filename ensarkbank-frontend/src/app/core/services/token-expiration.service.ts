@@ -1,17 +1,20 @@
 import { Injectable, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { CryptoService } from './crypto.service';
 
 @Injectable({ providedIn: 'root' })
 export class TokenExpirationService {
   private readonly TOKEN_KEY = 'bank_token';
-  private readonly USER_KEY = 'bank_user';
 
-  private router = inject(Router);
   private crypto = inject(CryptoService);
 
   private timerId: ReturnType<typeof setTimeout> | null = null;
   private expiryTime: number | null = null;
+
+  /** Emits whenever the token expires locally. AuthService subscribes to this
+   *  so that clearing session state (signal + storage + redirect) happens in
+   *  exactly one place instead of being duplicated/forgotten here. */
+  readonly expired$ = new Subject<void>();
 
   startTimer(encryptedToken: string): void {
     this.stopTimer();
@@ -91,8 +94,6 @@ export class TokenExpirationService {
 
   private forceLogout(): void {
     this.stopTimer();
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-    this.router.navigate(['/login']);
+    this.expired$.next();
   }
 }

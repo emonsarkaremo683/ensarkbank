@@ -8,6 +8,7 @@ import com.elitetech_inc.ensarkbank.common.address.address.repository.AddressRep
 import com.elitetech_inc.ensarkbank.common.enums.AddressType;
 import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
 import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
+import com.elitetech_inc.ensarkbank.common.enums.NotificationType;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.mapper.CustomerMapper;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.request.CustomerRequest;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.response.CustomerResponse;
@@ -18,6 +19,9 @@ import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.KycDocuments;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.repository.KycRepository;
 import com.elitetech_inc.ensarkbank.auth_management.auth.security.EmailConfig;
 import com.elitetech_inc.ensarkbank.auth_management.auth.security.JwtUtil;
+import com.elitetech_inc.ensarkbank.common.enums.NotificationType;
+import com.elitetech_inc.ensarkbank.util.NotificationUtil;
+import com.elitetech_inc.ensarkbank.util.EmailUtil;
 import com.elitetech_inc.ensarkbank.util.RequestValidator;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import jakarta.mail.MessagingException;
@@ -45,6 +49,8 @@ public class CustomerServiceImpl implements CustomerService {
     private final AddressRepository addressRepository;
     private final EmailConfig emailConfig;
     private final JwtUtil jwtUtil;
+    private final NotificationUtil notificationUtil;
+    private final EmailUtil emailUtil;
 
 
     @Override
@@ -127,7 +133,16 @@ public class CustomerServiceImpl implements CustomerService {
             System.err.println("Failed to send verification email: " + e.getMessage());
         }
 
-        // ── 6. Response ───────────────────────────────────────
+        // ── 6. Notify authorities ─────────────────────────────
+        notificationUtil.notifyAuthorities(
+                NotificationType.CUSTOMER_REGISTERED,
+                "New Customer Registered",
+                "Customer " + cr.getName() + " has been registered. KYC status: PENDING.",
+                String.valueOf(savedCustomer.getId()),
+                "CUSTOMER"
+        );
+
+        // ── 7. Response ───────────────────────────────────────
         return customerMapper.toResponse(savedCustomer);
     }
 
@@ -164,7 +179,20 @@ public class CustomerServiceImpl implements CustomerService {
 
         c.getKyc().setStatus(status);
 
-        return customerMapper.toResponse(customerRepository.save(c));
+        CustomerResponse response = customerMapper.toResponse(customerRepository.save(c));
+
+        // Notify customer + email
+        NotificationType notifType = status == KYCStatus.VERIFIED
+                ? NotificationType.KYC_VERIFIED : NotificationType.KYC_REJECTED;
+        String title = "KYC " + status.name();
+        String message = "Your KYC verification has been " + status.name().toLowerCase() + ".";
+
+        notificationUtil.notifyUser(c.getUser().getId(), notifType, title, message,
+                String.valueOf(id), "KYC");
+
+        emailUtil.sendKycStatusEmail(c.getUser().getEmail(), c.getName(), status.name());
+
+        return response;
     }
 
     @Override

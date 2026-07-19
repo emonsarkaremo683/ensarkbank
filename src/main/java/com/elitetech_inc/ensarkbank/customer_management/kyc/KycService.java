@@ -2,6 +2,7 @@ package com.elitetech_inc.ensarkbank.customer_management.kyc;
 
 import com.elitetech_inc.ensarkbank.common.enums.DocumentType;
 import com.elitetech_inc.ensarkbank.common.enums.KYCStatus;
+import com.elitetech_inc.ensarkbank.common.enums.NotificationType;
 import com.elitetech_inc.ensarkbank.common.exception.ResourceNotFoundException;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.mapper.CustomerMapper;
 import com.elitetech_inc.ensarkbank.customer_management.customer.dto.response.CustomerResponse;
@@ -11,6 +12,8 @@ import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.Kyc;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.entity.KycDocuments;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.repository.KycDocumentsRepository;
 import com.elitetech_inc.ensarkbank.customer_management.kyc.repository.KycRepository;
+import com.elitetech_inc.ensarkbank.util.EmailUtil;
+import com.elitetech_inc.ensarkbank.util.NotificationUtil;
 import com.elitetech_inc.ensarkbank.util.Utils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -30,6 +33,8 @@ public class KycService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper mapper;
     private final Utils utils;
+    private final NotificationUtil notificationUtil;
+    private final EmailUtil emailUtil;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -57,7 +62,22 @@ public class KycService {
         kyc.setStatus(status);
         Kyc kyc1 = repository.save(kyc);
         customer.setKyc(kyc1);
-        return mapper.toResponse(customer);
+
+        CustomerResponse response = mapper.toResponse(customer);
+
+        // Notify customer + email
+        if (customer.getUser() != null) {
+            NotificationType notifType = status == KYCStatus.VERIFIED
+                    ? NotificationType.KYC_VERIFIED : NotificationType.KYC_REJECTED;
+            String title = "KYC " + status.name();
+            String message = "Your KYC verification has been " + status.name().toLowerCase() + ".";
+
+            notificationUtil.notifyUser(customer.getUser().getId(), notifType, title, message,
+                    String.valueOf(id), "KYC");
+            emailUtil.sendKycStatusEmail(customer.getUser().getEmail(), customer.getName(), status.name());
+        }
+
+        return response;
     }
 
     @Transactional
@@ -116,6 +136,14 @@ public class KycService {
         Kyc savedKyc = repository.save(kyc);
         customer.setKyc(savedKyc);
 
+        // Notify authorities about KYC document submission/resubmission
+        notificationUtil.notifyAuthorities(
+                NotificationType.KYC_SUBMITTED,
+                "KYC Documents Submitted",
+                "Customer " + customer.getName() + " (ID: " + id + ") has submitted KYC documents for review.",
+                String.valueOf(id),
+                "KYC"
+        );
 
         return mapper.toResponse(customerRepository.save(customer));
     }

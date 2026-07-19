@@ -25,6 +25,7 @@ export class AuthService {
   ) {
     this.currentUser.set(this.loadUser());
     this.tokenExpiration.startTimerFromStorage();
+     this.tokenExpiration.expired$.subscribe(() => this.logout());
   }
 
   login(request: LoginRequest): Observable<LoginResponse> {

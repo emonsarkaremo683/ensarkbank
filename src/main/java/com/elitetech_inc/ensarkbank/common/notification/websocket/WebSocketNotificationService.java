@@ -31,11 +31,6 @@ public class WebSocketNotificationService {
                     notification
             );
 
-            messagingTemplate.convertAndSend(
-                    "/topic/notifications",
-                    notification
-            );
-
             log.info("WebSocket notification sent to user {}: {}", userId, title);
         } catch (Exception e) {
             log.error("Failed to send WebSocket notification to user {}: {}", userId, e.getMessage());
