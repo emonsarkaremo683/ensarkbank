@@ -53,7 +53,7 @@ public class JournalService {
     public List<JournalResponse> getAllJournals() {
         return journalRepository.findAllJournals()
                 .stream()
-                .filter(journal -> !journal.getAccountNumber().startsWith("br-"))
+                .filter(journal -> journal.getAccountNumber().startsWith("acc-"))
                 .map(journalMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -61,7 +61,8 @@ public class JournalService {
     public List<JournalResponse> getJournalsByBranchId(Long branchId) {
         return journalRepository.findByBranchId(branchId)
                 .stream()
-                .filter(journal -> !journal.getAccountNumber().startsWith("br-"))
+                .filter(journal -> journal.getAccountNumber().startsWith("acc-")
+                )
                 .map(journalMapper::toResponse)
                 .collect(Collectors.toList());
     }

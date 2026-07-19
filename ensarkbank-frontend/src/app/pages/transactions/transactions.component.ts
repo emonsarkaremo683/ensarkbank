@@ -51,7 +51,7 @@ export class TransactionsComponent implements OnInit {
 
   accountSearchQuery = signal('');
   searchLoading = signal(false);
-  searchMode = signal<'journal' | 'account'>('journal');
+    searchMode = signal<'journal' | 'account'>('journal');
   accountTransactions = signal<AccountTransactionResponse[]>([]);
 
   form = {
@@ -118,14 +118,36 @@ export class TransactionsComponent implements OnInit {
   );
 
   filteredTransactions = computed(() => {
+    let result = this.journalHistory();
     const query = this.accountSearchQuery().toLowerCase().trim();
-    if (!query) return this.journalHistory();
-    return this.journalHistory().filter(t =>
-      t.accountNumber?.toLowerCase().includes(query) ||
-      t.counterpartyAccountNumber?.toLowerCase().includes(query) ||
-      t.transactionId?.toLowerCase().includes(query) ||
-      t.particulars?.toLowerCase().includes(query)
-    );
+    if (query) {
+      result = result.filter(t =>
+        t.accountNumber?.toLowerCase().includes(query) ||
+        t.counterpartyAccountNumber?.toLowerCase().includes(query) ||
+        t.transactionId?.toLowerCase().includes(query) ||
+        t.particulars?.toLowerCase().includes(query)
+      );
+    }
+    const type = this.filterType();
+    if (type) {
+      result = result.filter(t => t.transactionType === type);
+    }
+    const status = this.filterStatus();
+    if (status) {
+      result = result.filter(t => t.status === status);
+    }
+    const dateFrom = this.filterDateFrom();
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      result = result.filter(t => new Date(t.date) >= from);
+    }
+    const dateTo = this.filterDateTo();
+    if (dateTo) {
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      result = result.filter(t => new Date(t.date) <= to);
+    }
+    return result;
   });
 
   totalTransactions = computed(() => this.journalHistory().length);

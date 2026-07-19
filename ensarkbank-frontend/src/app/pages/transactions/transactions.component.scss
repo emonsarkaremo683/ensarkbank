@@ -368,21 +368,22 @@
 
 .filters-bar {
   display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 10px;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 
   label {
-    font-size: 12px;
+    font-size: 10px;
     color: #64748b;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
   }
 }
 
@@ -467,12 +468,12 @@
 .form-control-sm {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: 6px;
+  padding: 6px 10px;
   color: #e2e8f0;
-  font-size: 13px;
+  font-size: 12px;
   outline: none;
-  min-width: 140px;
+  min-width: 120px;
 
   &:focus {
     border-color: rgba(201, 168, 76, 0.5);

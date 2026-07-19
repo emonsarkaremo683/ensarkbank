@@ -102,9 +102,9 @@
 
   <div class="section-divider"></div>
 
-  <h2 class="section-heading">{{ searchMode() === 'account' ? 'Account Transactions' : (isCustomerView() ? 'Transaction History' : 'Journal Entries') }}</h2>
+  <h2 class="section-heading">{{ searchMode() === 'account' ? 'Account Transactions' : (isCustomerView() ? 'Transaction History' : 'Account Transaction History') }}</h2>
 
-  <!-- Account Search for Staff -->
+  <!-- Account Search for Staff
   @if (canSearchByAccount()) {
   <div class="search-bar">
     <div class="search-input-wrapper">
@@ -138,47 +138,81 @@
       }
     </button>
   </div>
-  }
+  } -->
 
-  <div class="filters-bar">
-    <div class="filter-group">
-      <label>Type</label>
-      <select [ngModel]="filterType()" (ngModelChange)="filterType.set($event)" class="form-control-sm">
-        <option value="">All Types</option>
-        @for (type of transactionTypes; track type) {
-        <option [value]="type">{{ type }}</option>
-        }
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>Status</label>
-      <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)" class="form-control-sm">
-        <option value="">All Status</option>
-        @for (status of ['SUCCESS', 'FAILED', 'PENDING', 'CANCELLED', 'REVERSED']; track status) {
-        <option [value]="status">{{ status }}</option>
-        }
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>From</label>
-      <input type="date" [ngModel]="filterDateFrom()" (ngModelChange)="filterDateFrom.set($event)"
-        class="form-control-sm">
-    </div>
-    <div class="filter-group">
-      <label>To</label>
-      <input type="date" [ngModel]="filterDateTo()" (ngModelChange)="filterDateTo.set($event)" class="form-control-sm">
-    </div>
-  </div>
+  
 
   @if (loading()) {
   <app-loading message="Loading transactions..."></app-loading>
   } @else if (searchMode() === 'account') {
   <app-data-table [columns]="accountColumns()" [data]="accountTransactions()" [searchable]="true" [pageSize]="10"
-    emptyMessage="No account transactions found" (action)="onTableAction($event)"></app-data-table>
+    emptyMessage="No account transactions found" (action)="onTableAction($event)">
+    <div table-toolbar-extra class="filters-bar">
+      <div class="filter-group">
+        <label>Type</label>
+        <select [ngModel]="filterType()" (ngModelChange)="filterType.set($event)" class="form-control-sm">
+          <option value="">All Types</option>
+          @for (type of transactionTypes; track type) {
+          <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)" class="form-control-sm">
+          <option value="">All Status</option>
+          @for (status of ['SUCCESS', 'FAILED', 'PENDING', 'CANCELLED', 'REVERSED']; track status) {
+          <option [value]="status">{{ status }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>From</label>
+        <input type="date" [ngModel]="filterDateFrom()" (ngModelChange)="filterDateFrom.set($event)"
+          class="form-control-sm">
+      </div>
+      <div class="filter-group">
+        <label>To</label>
+        <input type="date" [ngModel]="filterDateTo()" (ngModelChange)="filterDateTo.set($event)" class="form-control-sm">
+      </div>
+    </div>
+  </app-data-table>
+    
   } @else {
   <app-data-table [columns]="journalColumns()" [data]="filteredTransactions()" [searchable]="true" [pageSize]="10"
-    emptyMessage="No transactions found" (action)="onTableAction($event)"></app-data-table>
+    emptyMessage="No transactions found" (action)="onTableAction($event)">
+    <div table-toolbar-extra class="filters-bar">
+      <div class="filter-group">
+        <label>Type</label>
+        <select [ngModel]="filterType()" (ngModelChange)="filterType.set($event)" class="form-control-sm">
+          <option value="">All Types</option>
+          @for (type of transactionTypes; track type) {
+          <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)" class="form-control-sm">
+          <option value="">All Status</option>
+          @for (status of ['SUCCESS', 'FAILED', 'PENDING', 'CANCELLED', 'REVERSED']; track status) {
+          <option [value]="status">{{ status }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>From</label>
+        <input type="date" [ngModel]="filterDateFrom()" (ngModelChange)="filterDateFrom.set($event)"
+          class="form-control-sm">
+      </div>
+      <div class="filter-group">
+        <label>To</label>
+        <input type="date" [ngModel]="filterDateTo()" (ngModelChange)="filterDateTo.set($event)" class="form-control-sm">
+      </div>
+    </div>
+  </app-data-table>
   }
+  
 
   <!-- Transaction Form Modal -->
   @if (showFormModal()) {

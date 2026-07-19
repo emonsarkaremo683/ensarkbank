@@ -12,6 +12,7 @@
           (input)="onSearch($event)"
         />
       </div>
+      <ng-content select="[table-toolbar-extra]"></ng-content>
       <div class="toolbar-info">
         <span class="result-count">{{ filteredData().length }} records</span>
       </div>
