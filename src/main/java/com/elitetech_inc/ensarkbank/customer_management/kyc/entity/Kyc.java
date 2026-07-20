@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +22,13 @@ public class Kyc extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private KYCStatus status;
 
+    @ToString.Exclude
     @OneToOne
     @JoinColumn(name = "customer_id")
     @JsonIgnore
     private Customer customer;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "kyc", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<KycDocuments> documents = new ArrayList<>();
 

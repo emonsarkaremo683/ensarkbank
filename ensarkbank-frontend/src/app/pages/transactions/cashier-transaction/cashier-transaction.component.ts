@@ -48,11 +48,11 @@ export class CashierTransactionComponent implements OnInit {
   );
 
   form = {
-    accountNumber: '',
-    checkNo: '',
-    type: '' as TransactionType | '',
-    amount: 0,
-    remarks: ''
+    accountNumber: signal(''),
+    checkNo: signal(''),
+    type: signal<TransactionType | ''>(''),
+    amount: signal(0),
+    remarks: signal('')
   };
 
   filteredAccounts = computed(() => {
@@ -67,15 +67,20 @@ export class CashierTransactionComponent implements OnInit {
   });
 
   accountLabel = computed(() => {
-    if (this.form.type === TransactionType.DEPOSIT) return 'Receiver Account *';
-    if (this.form.type === TransactionType.WITHDRAW) return 'Sender Account *';
+    if (this.form.type() === TransactionType.DEPOSIT) return 'Receiver Account *';
+    if (this.form.type() === TransactionType.WITHDRAW) return 'Sender Account *';
     return 'Customer Account *';
   });
 
   selectedAccountDisplay = computed(() => {
-    const acc = this.accounts().find(a => a.accountNumber === this.form.accountNumber);
+    const acc = this.accounts().find(a => a.accountNumber === this.form.accountNumber());
     if (!acc) return '';
     return `${acc.accountNumber} - ${acc.branchName} (${this.formatCurrency(acc.availableBalance)})`;
+  });
+
+  selectedAccountSignatures = computed(() => {
+    const acc = this.accounts().find(a => a.accountNumber === this.form.accountNumber());
+    return acc?.signatures || [];
   });
 
   columns = signal<TableColumn[]>([
@@ -164,13 +169,11 @@ export class CashierTransactionComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.form = {
-      accountNumber: '',
-      checkNo: '',
-      type: '',
-      amount: 0,
-      remarks: ''
-    };
+    this.form.accountNumber.set('');
+    this.form.checkNo.set('');
+    this.form.type.set('');
+    this.form.amount.set(0);
+    this.form.remarks.set('');
     this.accountSearchTerm.set('');
     this.dropdownOpen.set(false);
   }
@@ -180,7 +183,7 @@ export class CashierTransactionComponent implements OnInit {
   }
 
   selectAccount(account: AccountResponse): void {
-    this.form.accountNumber = account.accountNumber;
+    this.form.accountNumber.set(account.accountNumber);
     this.accountSearchTerm.set('');
     this.dropdownOpen.set(false);
   }
@@ -204,7 +207,7 @@ export class CashierTransactionComponent implements OnInit {
   }
 
   submitTransaction(): void {
-    if (!this.form.accountNumber || !this.form.type || this.form.amount <= 0) {
+    if (!this.form.accountNumber() || !this.form.type() || this.form.amount() <= 0) {
       this.notify.warning('Validation', 'Please fill all required fields');
       return;
     }
@@ -217,20 +220,20 @@ export class CashierTransactionComponent implements OnInit {
 
     this.submitting.set(true);
 
-    const selectedAccount = this.accounts().find(a => a.accountNumber === this.form.accountNumber);
+    const selectedAccount = this.accounts().find(a => a.accountNumber === this.form.accountNumber());
 
     const request: CashierTransactionRequest = {
-      checkNo: this.form.checkNo || undefined,
+      checkNo: this.form.checkNo() || undefined,
       branchId: user.branchId!,
-      accountNumber: this.form.accountNumber,
+      accountNumber: this.form.accountNumber(),
       accountName: selectedAccount?.holderResponses?.[0]?.accountHolderName || undefined,
-      type: this.form.type as TransactionType,
+      type: this.form.type() as TransactionType,
       bankName: selectedAccount?.branchName || undefined,
       employeeId: user.id,
       routingNumber: selectedAccount?.branchRoutingNumber || undefined,
       transactionRequest: {
-        amount: this.form.amount,
-        remarks: this.form.remarks || undefined
+        amount: this.form.amount(),
+        remarks: this.form.remarks() || undefined
       }
     };
 
@@ -309,5 +312,10 @@ export class CashierTransactionComponent implements OnInit {
   cancelReverse(): void {
     this.showReverseConfirm.set(false);
     this.reversingTransaction.set(null);
+  }
+
+  getSignatureUrl(path: string): string {
+    if (!path) return '';
+    return `http://localhost:8085/uploads/${path.replace('signature/', 'signature/')}`;
   }
 }

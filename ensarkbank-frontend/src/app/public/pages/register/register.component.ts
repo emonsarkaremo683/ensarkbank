@@ -374,8 +374,8 @@ export class RegisterComponent implements OnInit {
 
     this.authService.register(formData).subscribe({
       next: () => {
-        this.notification.success('Registration Successful', 'Your account has been created. Please login.');
-        this.router.navigate(['/login']);
+        this.notification.success('Registration Successful', 'Your account has been created. Please verify your email.');
+        this.router.navigate(['/verify-email-sent'], { queryParams: { email: this.personalForm.value.email } });
       },
       error: (err) => {
         this.isLoading.set(false);

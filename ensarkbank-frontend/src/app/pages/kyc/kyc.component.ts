@@ -5,6 +5,7 @@ import { ApiService } from '../../core/services/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { CustomerResponse, KycResponse } from '../../core/models';
 import { KYCStatus, KYCStatusLabels } from '../../core/enums/role.enum';
+import { environment } from '../../../environments/environment';
 import { DataTableComponent, TableColumn } from '../../shared/components/data-table/data-table.component';
 import { StatsCardComponent } from '../../shared/components/stats-card/stats-card.component';
 import { LoadingComponent } from '../../shared/components/loading/loading.component';
@@ -189,6 +190,12 @@ export class KycComponent implements OnInit, OnDestroy {
   isImageFile(path: string): boolean {
     if (!path) return false;
     return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(path);
+  }
+
+  getProfileUrl(customer: CustomerResponse): string {
+    if (customer.imageUrl) return customer.imageUrl;
+    if (customer.profile) return `${environment.apiUrl}/uploads/customer/${customer.profile}`;
+    return '';
   }
 
   onPreviewError(): void {

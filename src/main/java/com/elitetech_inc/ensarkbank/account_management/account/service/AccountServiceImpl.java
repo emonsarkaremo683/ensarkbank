@@ -4,7 +4,9 @@ import com.elitetech_inc.ensarkbank.account_management.account.dto.mapper.Accoun
 import com.elitetech_inc.ensarkbank.account_management.account.dto.request.AccountRequest;
 import com.elitetech_inc.ensarkbank.account_management.account.dto.response.AccountResponse;
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
+import com.elitetech_inc.ensarkbank.account_management.account.entity.Signature;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
+import com.elitetech_inc.ensarkbank.account_management.account.repository.SignatureRepository;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.mapper.AccountHolderMapper;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
 import com.elitetech_inc.ensarkbank.account_management.hold_transaction.service.HoldTransactionService;
@@ -63,10 +65,11 @@ public class AccountServiceImpl implements AccountService {
     private final AccountNumberGenerator accountNumberGenerator;
     private final NotificationUtil notificationUtil;
     private final EmailUtil emailUtil;
+    private final SignatureRepository signatureRepository;
 
     @Transactional
     @Override
-    public AccountResponse createAccount(AccountRequest ar, Map<String, MultipartFile> nominees) {
+    public AccountResponse createAccount(AccountRequest ar,Map<String, MultipartFile> signature, Map<String, MultipartFile> nominees) {
 
         requestValidator.validateAccount(ar);
 
@@ -98,6 +101,38 @@ public class AccountServiceImpl implements AccountService {
                 if(key.equals("photo")) nominee.setPhoto("nominee/" + path);
             }
         }
+
+        // Saving Signatures - all customer accounts require all holders' signatures
+        boolean isVaultAccount = ar.getAccountType() == AccountType.BRANCH_VAULT
+                || ar.getAccountType() == AccountType.ATM_VAULT
+                || ar.getAccountType() == AccountType.INTER_BANK_VAULT
+                || ar.getAccountType() == AccountType.AGENT_BANK_VAULT
+                || ar.getAccountType() == AccountType.LOAN_VAULT;
+
+        if (!isVaultAccount) {
+            int requiredSignatures = holders.size();
+            if (signature == null || signature.isEmpty()) {
+                throw new RuntimeException("Account requires " + requiredSignatures + " signature(s) from all holders");
+            }
+            if (signature.size() < requiredSignatures) {
+                throw new RuntimeException("Account requires " + requiredSignatures + " signature(s) from all holders, but only " + signature.size() + " provided");
+            }
+        }
+
+        if (signature != null && !signature.isEmpty()) {
+            int idx = 0;
+            for (Map.Entry<String, MultipartFile> entry : signature.entrySet()) {
+                MultipartFile file = entry.getValue();
+                String path = utils.uploadFile(file, "signature", holders.getFirst().getCustomer().getName());
+                Signature sign = new Signature();
+                sign.setSignature("signature/" + path);
+                if (idx < holders.size()) {
+                    holders.get(idx).addSignature(sign);
+                }
+                idx++;
+            }
+        }
+
         account.setAccountStatus(AccountStatus.PENDING);
 
         Account saved = accountRepository.save(account);

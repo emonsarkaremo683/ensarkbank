@@ -11,5 +11,6 @@ public class AccountHolderRequest {
     private Boolean canDeposit;
     private Boolean canApproveTransaction;
 
+    private String signature;
     private Long customerId;
 }

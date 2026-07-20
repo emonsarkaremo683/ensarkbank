@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.ArrayList;
@@ -38,13 +39,17 @@ public class Customer extends BaseEntity {
     private String profile;
 
 
+    @ToString.Exclude
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ToString.Exclude
+    @JsonIgnore
     @OneToOne(mappedBy = "customer")
     private Kyc kyc;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "customer")
     @JsonIgnore
     private List<Beneficiary> beneficiaries = new ArrayList<>();

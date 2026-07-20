@@ -1,0 +1,50 @@
+<div class="verify-page">
+  <div class="verify-card">
+    <div class="card-logo">
+      <a routerLink="/">
+        <span class="logo-icon">&#x2B21;</span>
+        <span class="logo-text">EnsarBank</span>
+      </a>
+    </div>
+
+    <div class="card-content">
+      <div class="icon-circle">
+        <span>&#9993;</span>
+      </div>
+      <h2>Verify Your Email</h2>
+      <p>
+        We've sent a verification link to
+        @if (email()) {
+          <strong>{{ email() }}</strong>
+        } @else {
+          your email address
+        }.
+        Please check your inbox and click the link to activate your account.
+      </p>
+
+      @if (resent()) {
+        <div class="resent-note">
+          <p>A new verification email has been sent. Please check your inbox.</p>
+        </div>
+      } @else {
+        <div class="note">
+          <p>Didn't receive the email? Check your spam folder or click below to resend.</p>
+        </div>
+      }
+    </div>
+
+    <div class="card-actions">
+      @if (email() && !resent()) {
+        <button class="btn-resend" (click)="resendEmail()" [disabled]="isResending()">
+          @if (isResending()) {
+            <span class="spinner"></span>
+            <span>Sending...</span>
+          } @else {
+            <span>Resend Verification Email</span>
+          }
+        </button>
+      }
+      <a routerLink="/login" class="back-link">Back to Login</a>
+    </div>
+  </div>
+</div>

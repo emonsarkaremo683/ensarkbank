@@ -34,6 +34,16 @@ export const routes: Routes = [
     path: 'unauthorized',
     loadComponent: () => import('./public/pages/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },
+  {
+    path: 'verify-email-sent',
+    loadComponent: () => import('./public/pages/verify-email-sent/verify-email-sent.component').then(m => m.VerifyEmailSentComponent),
+    canActivate: [publicGuard]
+  },
+  {
+    path: 'verify-email',
+    loadComponent: () => import('./public/pages/verify-email/verify-email.component').then(m => m.VerifyEmailComponent),
+    canActivate: [publicGuard]
+  },
 
   // Staff routes (all authenticated non-CUSTOMER users)
   {

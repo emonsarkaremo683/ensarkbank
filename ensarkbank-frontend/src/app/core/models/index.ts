@@ -228,6 +228,12 @@ export interface AccountResponse {
   n_nid_front?: string;
   n_nid_back?: string;
   holderResponses: AccountHolderResponse[];
+  signatures: Signature[];
+}
+
+export interface Signature {
+  id: number;
+  signature: string;
 }
 
 export interface AccountHolderRequest {

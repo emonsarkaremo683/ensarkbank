@@ -3,6 +3,8 @@ package com.elitetech_inc.ensarkbank.account_management.account.dto.mapper;
 import com.elitetech_inc.ensarkbank.account_management.account.dto.request.AccountRequest;
 import com.elitetech_inc.ensarkbank.account_management.account.dto.response.AccountResponse;
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
+import com.elitetech_inc.ensarkbank.account_management.account.entity.Signature;
+import com.elitetech_inc.ensarkbank.account_management.account.repository.SignatureRepository;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.mapper.AccountHolderMapper;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.response.AccountHolderResponse;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
@@ -27,6 +29,7 @@ public class AccountMapper {
     private final AccountNumberGenerator  accountNumberGenerator;
     private final BranchRepository branchRepository;
     private final NomineeRepository nomineeRepository;
+    private final SignatureRepository signatureRepository;
 
     public AccountResponse toAccountResponse(Account acc) {
         AccountResponse ar = new AccountResponse();
@@ -57,6 +60,9 @@ public class AccountMapper {
         });
 
         ar.setHolderResponses(holders);
+
+        List<Signature> sigs = signatureRepository.findSignaturesByAccountHolderAccountId(acc.getId());
+        ar.setSignatures(sigs);
 
         return ar;
     }

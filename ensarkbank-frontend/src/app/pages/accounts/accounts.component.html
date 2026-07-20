@@ -173,6 +173,15 @@
                           <option [ngValue]="false">No</option>
                         </select>
                       </div>
+                      <div class="form-group full-width">
+                        <label>Holder Signature * ({{ i + 1 }} of {{ holders().length }})</label>
+                        <input type="file" class="form-control" accept="image/*" (change)="onSignatureSelected(i, $event)">
+                        @if (holder.signature) {
+                          <span class="field-hint success">{{ holder.signature.name }}</span>
+                        } @else {
+                          <span class="field-hint error">Signature required from all holders</span>
+                        }
+                      </div>
                     </div>
                   </div>
                 }
@@ -181,6 +190,19 @@
             }
 
             <div class="form-grid">
+              @if (!isMultiHolder()) {
+                <div class="form-section-title">Account Holder Signature</div>
+                <div class="form-group full-width">
+                  <label>Your Signature *</label>
+                  <input type="file" class="form-control" accept="image/*" (change)="onSingleSignatureSelected($event)">
+                  @if (singleHolderSignature()) {
+                    <span class="field-hint success">{{ singleHolderSignature()!.name }}</span>
+                  } @else {
+                    <span class="field-hint error">Signature required</span>
+                  }
+                </div>
+                <div class="section-divider"></div>
+              }
               <div class="form-section-title">Nominee Information</div>
               <div class="form-group">
                 <label>Nominee Name</label>
@@ -304,7 +326,7 @@
               }
             }
           </div>
-          @if (selectedAccount()!.holderResponses && selectedAccount()!.holderResponses.length > 0) {
+            @if (selectedAccount()!.holderResponses && selectedAccount()!.holderResponses.length > 0) {
             <div class="section-divider"></div>
             <h3 class="section-title">Account Holders</h3>
             <div class="holders-list">
@@ -319,6 +341,17 @@
                     @if (holder.canWithdraw) { <span class="permission-tag">WITHDRAW</span> }
                     @if (holder.canApproveTransaction) { <span class="permission-tag">APPROVE</span> }
                   </div>
+                </div>
+              }
+            </div>
+          }
+          @if (selectedAccount()!.signatures && selectedAccount()!.signatures.length > 0) {
+            <div class="section-divider"></div>
+            <h3 class="section-title">Account Signatures</h3>
+            <div class="signatures-grid">
+              @for (sig of selectedAccount()!.signatures; track sig.id) {
+                <div class="signature-item">
+                  <img [src]="getSignatureUrl(sig.signature)" alt="Signature" class="signature-img">
                 </div>
               }
             </div>

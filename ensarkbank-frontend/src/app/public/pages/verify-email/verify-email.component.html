@@ -1,0 +1,49 @@
+<div class="verify-page">
+  <div class="verify-card">
+    <div class="card-logo">
+      <a routerLink="/">
+        <span class="logo-icon">&#x2B21;</span>
+        <span class="logo-text">EnsarBank</span>
+      </a>
+    </div>
+
+    @if (status() === 'loading') {
+      <div class="card-content">
+        <div class="icon-circle loading">
+          <div class="loader"></div>
+        </div>
+        <h2>Verifying Your Email</h2>
+        <p>Please wait while we verify your email address...</p>
+      </div>
+    }
+
+    @if (status() === 'success') {
+      <div class="card-content">
+        <div class="icon-circle success">
+          <span>&#10003;</span>
+        </div>
+        <h2>Email Verified!</h2>
+        <p>{{ message() }}</p>
+        <p class="sub-text">You can now log in to your account and start using online banking.</p>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn-primary" (click)="goToLogin()">Go to Login</button>
+      </div>
+    }
+
+    @if (status() === 'error') {
+      <div class="card-content">
+        <div class="icon-circle error">
+          <span>&#10007;</span>
+        </div>
+        <h2>Verification Failed</h2>
+        <p>{{ message() }}</p>
+      </div>
+
+      <div class="card-actions">
+        <a routerLink="/login" class="back-link">Back to Login</a>
+      </div>
+    }
+  </div>
+</div>

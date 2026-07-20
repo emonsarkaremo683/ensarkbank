@@ -92,7 +92,7 @@
               <label>{{ accountLabel() }}</label>
               <div class="custom-dropdown" (mouseleave)="closeDropdown()">
                 <div class="dropdown-input-wrapper" (click)="toggleDropdown()">
-                  @if (!dropdownOpen() && form.accountNumber) {
+                  @if (!dropdownOpen() && form.accountNumber()) {
                     <span class="dropdown-selected">{{ selectedAccountDisplay() }}</span>
                   } @else {
                     <input
@@ -115,7 +115,7 @@
                       <div class="dropdown-item no-results">No accounts found</div>
                     }
                     @for (acc of filteredAccounts(); track acc.id) {
-                      <div class="dropdown-item" [class.selected]="acc.accountNumber === form.accountNumber" (click)="selectAccount(acc)">
+                      <div class="dropdown-item" [class.selected]="acc.accountNumber === form.accountNumber()" (click)="selectAccount(acc)">
                         <span class="item-number">{{ acc.accountNumber }}</span>
                         <span class="item-info">{{ acc.branchName }} - {{ formatCurrency(acc.availableBalance) }}</span>
                       </div>
@@ -126,7 +126,7 @@
             </div>
             <div class="form-group">
               <label>Transaction Type *</label>
-              <select [(ngModel)]="form.type" class="form-control">
+              <select [ngModel]="form.type()" (ngModelChange)="form.type.set($event)" class="form-control">
                 <option value="">Select Type</option>
                 @for (type of transactionTypes; track type) {
                   <option [value]="type">{{ type }}</option>
@@ -135,16 +135,28 @@
             </div>
             <div class="form-group">
               <label>Check Number</label>
-              <input type="text" [(ngModel)]="form.checkNo" class="form-control" placeholder="Optional check number">
+              <input type="text" [ngModel]="form.checkNo()" (ngModelChange)="form.checkNo.set($event)" class="form-control" placeholder="Optional check number">
             </div>
             <div class="form-group">
               <label>Amount *</label>
-              <input type="number" [(ngModel)]="form.amount" class="form-control" min="0.01" step="0.01" placeholder="0.00">
+              <input type="number" [ngModel]="form.amount()" (ngModelChange)="form.amount.set($event)" class="form-control" min="0.01" step="0.01" placeholder="0.00">
             </div>
             <div class="form-group full-width">
               <label>Remarks</label>
-              <input type="text" [(ngModel)]="form.remarks" class="form-control" placeholder="Transaction remarks (optional)">
+              <input type="text" [ngModel]="form.remarks()" (ngModelChange)="form.remarks.set($event)" class="form-control" placeholder="Transaction remarks (optional)">
             </div>
+            @if (form.type() === 'WITHDRAW' && form.accountNumber() && selectedAccountSignatures().length > 0) {
+              <div class="signatures-section full-width">
+                <label class="signatures-label">Account Signatures (Verify before withdrawal)</label>
+                <div class="signatures-grid">
+                  @for (sig of selectedAccountSignatures(); track sig.id) {
+                    <div class="signature-item">
+                      <img [src]="getSignatureUrl(sig.signature)" alt="Holder Signature" class="signature-img">
+                    </div>
+                  }
+                </div>
+              </div>
+            }
           </div>
         </div>
         <div class="modal-footer">

@@ -43,20 +43,20 @@ export class AuthService {
     return this.http.post(`${this.API_URL}/register`, formData);
   }
 
-  verifyEmail(token: string): Observable<any> {
-    return this.http.get(`${this.API_URL}/verify-email?token=${token}`);
+  verifyEmail(token: string): Observable<string> {
+    return this.http.get(`${this.API_URL}/verify-email?token=${token}`, { responseType: 'text' });
   }
 
-  sendVerificationEmail(): Observable<any> {
-    return this.http.post(`${this.API_URL}/send-verification`, {});
+  sendVerificationEmail(email: string): Observable<string> {
+    return this.http.post(`${this.API_URL}/send-verification`, { email }, { responseType: 'text' });
   }
 
-  forgotPassword(request: ForgetPasswordRequest): Observable<any> {
-    return this.http.post(`${this.API_URL}/forgot-password`, request);
+  forgotPassword(request: ForgetPasswordRequest): Observable<string> {
+    return this.http.post(`${this.API_URL}/forgot-password`, request, { responseType: 'text' });
   }
 
-  resetPassword(request: ResetPasswordRequest): Observable<any> {
-    return this.http.post(`${this.API_URL}/reset-password`, request);
+  resetPassword(request: ResetPasswordRequest): Observable<string> {
+    return this.http.post(`${this.API_URL}/reset-password`, request, { responseType: 'text' });
   }
 
   logout(): void {

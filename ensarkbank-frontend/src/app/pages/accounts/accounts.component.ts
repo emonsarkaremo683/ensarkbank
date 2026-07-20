@@ -20,6 +20,7 @@ interface HolderEntry {
   canWithdraw: boolean;
   canDeposit: boolean;
   canApproveTransaction: boolean;
+  signature: File | null;
   searching: boolean;
   notFound: boolean;
 }
@@ -68,6 +69,8 @@ export class AccountsComponent implements OnInit {
     nidFront: null as File | null,
     nidBack: null as File | null
   };
+
+  singleHolderSignature = signal<File | null>(null);
 
   columns: TableColumn[] = [
     { key: 'accountNumber', label: 'Account Number', sortable: true },
@@ -139,6 +142,7 @@ isMultiHolder(): boolean {
     this.currentStep.set(1);
     this.step1 = { accountType: '', availableBalance: 0, branchId: 0 };
     this.holders.set([]);
+    this.singleHolderSignature.set(null);
     this.step2 = {
       n_name: '', n_email: '', n_phone: '', relation: '',
       photo: null, nidFront: null, nidBack: null
@@ -192,6 +196,7 @@ isMultiHolder(): boolean {
       canWithdraw: true,
       canDeposit: true,
       canApproveTransaction: type === HolderType.PRIMARY,
+      signature: null,
       searching: false,
       notFound: false
     };
@@ -267,6 +272,24 @@ isMultiHolder(): boolean {
     if (input.files?.length) this.step2.nidBack = input.files[0];
   }
 
+  onSignatureSelected(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.holders.update(list => {
+        const updated = [...list];
+        updated[index] = { ...updated[index], signature: input.files![0] };
+        return updated;
+      });
+    }
+  }
+
+  onSingleSignatureSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.singleHolderSignature.set(input.files[0]);
+    }
+  }
+
   submitAccount(): void {
     if (!this.step1.accountType || !this.step1.branchId) {
       this.notify.warning('Validation', 'Please fill account info');
@@ -276,6 +299,16 @@ isMultiHolder(): boolean {
       const invalid = this.holders().some(h => !h.customerId);
       if (invalid) {
         this.notify.warning('Validation', 'Please search and select all account holders');
+        return;
+      }
+      const missingSig = this.holders().some(h => !h.signature);
+      if (missingSig) {
+        this.notify.warning('Validation', 'Signature is required from all account holders');
+        return;
+      }
+    } else {
+      if (!this.singleHolderSignature()) {
+        this.notify.warning('Validation', 'Signature is required');
         return;
       }
     }
@@ -316,6 +349,17 @@ isMultiHolder(): boolean {
     if (this.step2.photo) formData.append('photo', this.step2.photo);
     if (this.step2.nidFront) formData.append('nid_front', this.step2.nidFront);
     if (this.step2.nidBack) formData.append('nid_back', this.step2.nidBack);
+
+    const signatureFiles = this.holders()
+      .map(h => h.signature)
+      .filter((f): f is File => f !== null);
+
+    if (!this.isMultiHolder() && this.singleHolderSignature()) {
+      signatureFiles.push(this.singleHolderSignature()!);
+    }
+
+    signatureFiles.forEach(f => formData.append('signatures', f));
+
     this.api.createAccount(formData).subscribe({
       next: (res) => {
         this.notify.success('Success', `Account ${res.accountNumber} created`);
@@ -391,5 +435,10 @@ isMultiHolder(): boolean {
   getHolderName(account: AccountResponse): string {
     if (!account.holderResponses || account.holderResponses.length === 0) return '-';
     return account.holderResponses.map(h => h.accountHolderName).join(', ');
+  }
+
+  getSignatureUrl(path: string): string {
+    if (!path) return '';
+    return `http://localhost:8085/uploads/${path.replace('signature/', 'signature/')}`;
   }
 }

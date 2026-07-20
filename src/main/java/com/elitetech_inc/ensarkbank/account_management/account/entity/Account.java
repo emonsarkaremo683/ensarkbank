@@ -5,9 +5,11 @@ import com.elitetech_inc.ensarkbank.branch_management.branch.entity.Branch;
 import com.elitetech_inc.ensarkbank.common.entity.BaseEntity;
 import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.common.enums.AccountType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -41,6 +43,8 @@ public class Account extends BaseEntity {
     private Branch branch;
 
 
+    @JsonIgnore
+    @ToString.Exclude
     @OneToMany(mappedBy = "account",
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,

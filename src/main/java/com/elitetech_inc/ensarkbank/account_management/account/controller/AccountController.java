@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/api/account/")
@@ -39,7 +40,8 @@ public class AccountController {
     @PostMapping("create")
     public ResponseEntity<AccountResponse> addAccount(
             @RequestPart("data") String data,
-
+            // Signatures
+            @RequestPart(value = "signatures", required = true) List<MultipartFile> signatures,
             // nominee
             @RequestPart(value = "photo", required = true) MultipartFile photo,
             @RequestPart(value = "nid_front", required = true) MultipartFile nid_front,
@@ -55,11 +57,19 @@ public class AccountController {
             }
         }
 
+        Map<String, MultipartFile> signatureMap = new HashMap<>();
+        if (signatures != null) {
+            AtomicInteger index = new AtomicInteger(0);
+            for (MultipartFile sig : signatures) {
+                signatureMap.put("signature_" + index.getAndIncrement(), sig);
+            }
+        }
+
         Map<String, MultipartFile> nominees = new HashMap<>();
         nominees.put("photo", photo);
         nominees.put("nid_front", nid_front);
         nominees.put("nid_back", nid_back);
-        return new ResponseEntity<>(accountService.createAccount(dto, nominees), HttpStatus.CREATED);
+        return new ResponseEntity<>(accountService.createAccount(dto, signatureMap, nominees), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CASHIER')")
