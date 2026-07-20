@@ -46,7 +46,10 @@ export class AccountsComponent implements OnInit {
   showModal = signal(false);
   showDetailModal = signal(false);
   showStatusModal = signal(false);
+  showSignatureDialog = signal(false);
   selectedAccount = signal<AccountResponse | null>(null);
+  selectedHolderName = signal('');
+  selectedHolderSignature = signal('');
   newStatus = signal('');
 
   currentStep = signal(1);
@@ -384,6 +387,18 @@ isMultiHolder(): boolean {
     this.selectedAccount.set(null);
   }
 
+  openSignatureDialog(holderName: string, signaturePath: string): void {
+    this.selectedHolderName.set(holderName);
+    this.selectedHolderSignature.set(signaturePath);
+    this.showSignatureDialog.set(true);
+  }
+
+  closeSignatureDialog(): void {
+    this.showSignatureDialog.set(false);
+    this.selectedHolderName.set('');
+    this.selectedHolderSignature.set('');
+  }
+
   openStatusModal(account: AccountResponse): void {
     this.selectedAccount.set(account);
     this.newStatus.set(account.accountStatus);
@@ -439,6 +454,6 @@ isMultiHolder(): boolean {
 
   getSignatureUrl(path: string): string {
     if (!path) return '';
-    return `http://localhost:8085/uploads/${path.replace('signature/', 'signature/')}`;
+    return `http://localhost:8085/uploads/signature/${path}`;
   }
 }

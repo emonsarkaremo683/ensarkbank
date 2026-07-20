@@ -593,6 +593,72 @@
   border-radius: 6px;
 }
 
+.btn-view-sig {
+  padding: 5px 10px;
+  background: rgba(201, 168, 76, 0.1);
+  color: #c9a84c;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover {
+    background: rgba(201, 168, 76, 0.2);
+    border-color: rgba(201, 168, 76, 0.5);
+  }
+}
+
+.signature-modal {
+  max-width: 520px;
+}
+
+.sig-dialog-info {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.sig-dialog-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.sig-dialog-label {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.sig-dialog-value {
+  font-size: 14px;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.sig-dialog-grid {
+  justify-items: center;
+}
+
+.sig-dialog-item {
+  max-width: 300px;
+  width: 100%;
+  border-color: rgba(201, 168, 76, 0.2);
+}
+
+.sig-dialog-img {
+  max-height: 150px;
+}
+
 .spinner {
   display: inline-block;
   width: 16px;

@@ -123,6 +123,12 @@
                   </div>
                 }
               </div>
+              <!-- @if (form.accountNumber()) {
+                <button type="button" class="btn btn-view-sig" (click)="openSignatureDialog()">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
+                  View Signature
+                </button>
+              } -->
             </div>
             <div class="form-group">
               <label>Transaction Type *</label>
@@ -186,5 +192,34 @@
     (confirmed)="confirmReverse()"
     (cancelled)="cancelReverse()"
   ></app-confirm-dialog>
+  }
+
+  <!-- Signature Verification Dialog -->
+  @if (showSignatureDialog()) {
+    <div class="modal-overlay" (click)="closeSignatureDialog()">
+      <div class="modal-container signature-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Signature Verification</h2>
+          <button class="modal-close" (click)="closeSignatureDialog()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="sig-dialog-info">Verify the customer's signature matches before processing the transaction.</p>
+          <div class="sig-dialog-account">
+            <span class="sig-dialog-label">Account Holder:</span>
+            <span class="sig-dialog-value">{{ signatureDialogAccountHolder() }}</span>
+          </div>
+          <div class="signatures-grid sig-dialog-grid">
+            @for (sig of signatureDialogSignatures(); track sig.id) {
+              <div class="signature-item sig-dialog-item">
+                <img [src]="getSignatureUrl(sig.signature)" alt="Account Signature" class="signature-img sig-dialog-img">
+              </div>
+            }
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeSignatureDialog()">Close</button>
+        </div>
+      </div>
+    </div>
   }
 </div>

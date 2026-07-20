@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface AccountService {
-    AccountResponse createAccount(AccountRequest ar, Map<String, MultipartFile> signature, Map<String, MultipartFile> nominees);
+    AccountResponse createAccount(AccountRequest ar, List<MultipartFile> signature, Map<String, MultipartFile> nominees);
 
     void deleteAccount(Long id);
     Optional<AccountResponse> getAccount(Long id);

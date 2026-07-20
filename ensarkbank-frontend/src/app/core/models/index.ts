@@ -251,6 +251,7 @@ export interface AccountHolderResponse {
   canWithdraw: boolean;
   canDeposit: boolean;
   canApproveTransaction: boolean;
+  signature?: string;
 }
 
 // Beneficiary

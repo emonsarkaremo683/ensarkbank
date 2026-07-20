@@ -37,6 +37,10 @@ export class CashierTransactionComponent implements OnInit {
   reversingTransaction = signal<CashierTransactionResponse | null>(null);
   reversing = signal(false);
 
+  showSignatureDialog = signal(false);
+  signatureDialogSignatures = signal<any[]>([]);
+  signatureDialogAccountHolder = signal('');
+
   senderFilter = signal('');
   receiverFilter = signal('');
 
@@ -80,7 +84,10 @@ export class CashierTransactionComponent implements OnInit {
 
   selectedAccountSignatures = computed(() => {
     const acc = this.accounts().find(a => a.accountNumber === this.form.accountNumber());
-    return acc?.signatures || [];
+    if (!acc?.holderResponses) return [];
+    return acc.holderResponses
+      .filter(h => h.signature)
+      .map(h => ({ id: h.id, signature: h.signature! }));
   });
 
   columns = signal<TableColumn[]>([
@@ -316,6 +323,26 @@ export class CashierTransactionComponent implements OnInit {
 
   getSignatureUrl(path: string): string {
     if (!path) return '';
-    return `http://localhost:8085/uploads/${path.replace('signature/', 'signature/')}`;
+    return `http://localhost:8085/uploads/signature/${path}`;
+  }
+
+  openSignatureDialog(): void {
+    const acc = this.accounts().find(a => a.accountNumber === this.form.accountNumber());
+    const sigs = acc?.holderResponses
+      ?.filter(h => h.signature)
+      .map(h => ({ id: h.id, signature: h.signature! })) || [];
+    if (sigs.length === 0) {
+      this.notify.warning('No Signatures', 'No signatures found for this account');
+      return;
+    }
+    this.signatureDialogSignatures.set(sigs);
+    this.signatureDialogAccountHolder.set(acc?.holderResponses?.[0]?.accountHolderName || '');
+    this.showSignatureDialog.set(true);
+  }
+
+  closeSignatureDialog(): void {
+    this.showSignatureDialog.set(false);
+    this.signatureDialogSignatures.set([]);
+    this.signatureDialogAccountHolder.set('');
   }
 }

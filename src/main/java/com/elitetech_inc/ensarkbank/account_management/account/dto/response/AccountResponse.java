@@ -1,6 +1,5 @@
 package com.elitetech_inc.ensarkbank.account_management.account.dto.response;
 
-import com.elitetech_inc.ensarkbank.account_management.account.entity.Signature;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.response.AccountHolderResponse;
 import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.common.enums.AccountType;
@@ -33,7 +32,6 @@ public class AccountResponse {
     private String n_nid_front;
     private String n_nid_back;
 
-    private List<Signature> signatures = new ArrayList<>();
-
     private List<AccountHolderResponse>holderResponses = new ArrayList<>();
+
 }

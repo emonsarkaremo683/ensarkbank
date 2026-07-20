@@ -57,19 +57,12 @@ public class AccountController {
             }
         }
 
-        Map<String, MultipartFile> signatureMap = new HashMap<>();
-        if (signatures != null) {
-            AtomicInteger index = new AtomicInteger(0);
-            for (MultipartFile sig : signatures) {
-                signatureMap.put("signature_" + index.getAndIncrement(), sig);
-            }
-        }
 
         Map<String, MultipartFile> nominees = new HashMap<>();
         nominees.put("photo", photo);
         nominees.put("nid_front", nid_front);
         nominees.put("nid_back", nid_back);
-        return new ResponseEntity<>(accountService.createAccount(dto, signatureMap, nominees), HttpStatus.CREATED);
+        return new ResponseEntity<>(accountService.createAccount(dto, signatures, nominees), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'CASHIER')")

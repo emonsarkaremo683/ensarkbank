@@ -11,5 +11,6 @@ public class AccountHolderResponse {
     private HolderType holderType;
     private Boolean canWithdraw;
     private Boolean canDeposit;
+    private String signature;
     private Boolean canApproveTransaction;
 }

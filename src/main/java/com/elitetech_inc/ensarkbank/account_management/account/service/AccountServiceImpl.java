@@ -4,9 +4,7 @@ import com.elitetech_inc.ensarkbank.account_management.account.dto.mapper.Accoun
 import com.elitetech_inc.ensarkbank.account_management.account.dto.request.AccountRequest;
 import com.elitetech_inc.ensarkbank.account_management.account.dto.response.AccountResponse;
 import com.elitetech_inc.ensarkbank.account_management.account.entity.Account;
-import com.elitetech_inc.ensarkbank.account_management.account.entity.Signature;
 import com.elitetech_inc.ensarkbank.account_management.account.repository.AccountRepository;
-import com.elitetech_inc.ensarkbank.account_management.account.repository.SignatureRepository;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.dto.mapper.AccountHolderMapper;
 import com.elitetech_inc.ensarkbank.account_management.account_holder.entity.AccountHolder;
 import com.elitetech_inc.ensarkbank.account_management.hold_transaction.service.HoldTransactionService;
@@ -22,7 +20,6 @@ import com.elitetech_inc.ensarkbank.common.enums.AccountStatus;
 import com.elitetech_inc.ensarkbank.common.enums.AccountType;
 import com.elitetech_inc.ensarkbank.common.enums.BranchType;
 import com.elitetech_inc.ensarkbank.common.enums.HolderType;
-import com.elitetech_inc.ensarkbank.common.enums.HoldReason;
 import com.elitetech_inc.ensarkbank.common.enums.NotificationType;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionChannel;
 import com.elitetech_inc.ensarkbank.common.enums.TransactionType;
@@ -45,6 +42,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -65,27 +64,25 @@ public class AccountServiceImpl implements AccountService {
     private final AccountNumberGenerator accountNumberGenerator;
     private final NotificationUtil notificationUtil;
     private final EmailUtil emailUtil;
-    private final SignatureRepository signatureRepository;
 
     @Transactional
     @Override
-    public AccountResponse createAccount(AccountRequest ar,Map<String, MultipartFile> signature, Map<String, MultipartFile> nominees) {
+    public AccountResponse createAccount(AccountRequest ar,List<MultipartFile> signature, Map<String, MultipartFile> nominees) {
 
         requestValidator.validateAccount(ar);
 
-        List<AccountHolder> accountHolders = ar.getAccountHolders().stream().map(accountHolderMapper::toAccountHolder).toList();
-
-        validator.checkKycStatus(accountHolders.stream().map(ah -> ah.getCustomer().getId()).findFirst().orElseThrow());
+        List<AccountHolder> holders = ar.getAccountHolders()
+                .stream()
+                .map(accountHolderMapper::toAccountHolder)
+                .toList();
+        validator.checkKycStatus(holders.stream().map(ah -> ah.getCustomer().getId()).findFirst().orElseThrow());
 
         Account account = accountMapper.toAccount(ar);
 
-        // Set Account Holders
-        List<AccountHolder> holders = ar.getAccountHolders()
-                .stream()
-                        .map(accountHolderMapper::toAccountHolder)
-                                .toList();
+        uploadSignatures(signature, holders);
 
         account.addHolders(holders);
+
 
         // Saving Nominee
         Nominee nominee = accountMapper.toNominee(ar);
@@ -102,36 +99,6 @@ public class AccountServiceImpl implements AccountService {
             }
         }
 
-        // Saving Signatures - all customer accounts require all holders' signatures
-        boolean isVaultAccount = ar.getAccountType() == AccountType.BRANCH_VAULT
-                || ar.getAccountType() == AccountType.ATM_VAULT
-                || ar.getAccountType() == AccountType.INTER_BANK_VAULT
-                || ar.getAccountType() == AccountType.AGENT_BANK_VAULT
-                || ar.getAccountType() == AccountType.LOAN_VAULT;
-
-        if (!isVaultAccount) {
-            int requiredSignatures = holders.size();
-            if (signature == null || signature.isEmpty()) {
-                throw new RuntimeException("Account requires " + requiredSignatures + " signature(s) from all holders");
-            }
-            if (signature.size() < requiredSignatures) {
-                throw new RuntimeException("Account requires " + requiredSignatures + " signature(s) from all holders, but only " + signature.size() + " provided");
-            }
-        }
-
-        if (signature != null && !signature.isEmpty()) {
-            int idx = 0;
-            for (Map.Entry<String, MultipartFile> entry : signature.entrySet()) {
-                MultipartFile file = entry.getValue();
-                String path = utils.uploadFile(file, "signature", holders.getFirst().getCustomer().getName());
-                Signature sign = new Signature();
-                sign.setSignature("signature/" + path);
-                if (idx < holders.size()) {
-                    holders.get(idx).addSignature(sign);
-                }
-                idx++;
-            }
-        }
 
         account.setAccountStatus(AccountStatus.PENDING);
 
@@ -229,7 +196,7 @@ public class AccountServiceImpl implements AccountService {
                 .stream()
                 .filter(account -> account.getAccountNumber().startsWith("acc"))
                 .map(accountMapper::toAccountResponse)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Override
@@ -239,7 +206,7 @@ public class AccountServiceImpl implements AccountService {
                 .distinct()
                 .filter(account -> account.getAccountNumber().startsWith("acc"))
                 .map(accountMapper::toAccountResponse)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Override
@@ -264,7 +231,7 @@ public class AccountServiceImpl implements AccountService {
                 .stream()
                 .filter(account -> account.getAccountNumber().startsWith("acc"))
                 .map(accountMapper::toAccountResponse)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Override
@@ -272,7 +239,7 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findDistinctByHoldersCustomerId(customerId)
                 .stream()
                 .map(accountMapper::toAccountResponse)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Override
@@ -330,5 +297,32 @@ public class AccountServiceImpl implements AccountService {
                     emailUtil.sendAccountStatusEmail(user.getEmail(), customer.getName(),
                             acc.getAccountNumber(), status.name());
                 });
+    }
+
+
+    private void uploadSignatures(List<MultipartFile> signatures, List<AccountHolder> holders) {
+
+        if (signatures == null || signatures.isEmpty()) {
+            return;
+        }
+
+        int limit = Math.min(signatures.size(), holders.size());
+
+        for (int i = 0; i < limit; i++) {
+
+            MultipartFile file = signatures.get(i);
+
+            String customerName = holders.get(i)
+                    .getCustomer()
+                    .getName();
+
+            String path = utils.uploadFile(
+                    file,
+                    "signature",
+                    customerName
+            );
+
+            holders.get(i).setSignature(path);
+        }
     }
 }

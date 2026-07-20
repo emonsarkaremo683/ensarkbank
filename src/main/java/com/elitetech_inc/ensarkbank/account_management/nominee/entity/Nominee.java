@@ -29,7 +29,6 @@ public class Nominee extends BaseEntity {
     private NomineeRelation relation;
 
 
-
     @Column(nullable = false)
     private String photo;
     @Column(nullable = false)

@@ -22,6 +22,7 @@ public class AccountHolderMapper {
         response.setCanDeposit(accountHolder.getCanDeposit());
         response.setCanWithdraw(accountHolder.getCanWithdraw());
         response.setCanApproveTransaction(accountHolder.getCanApproveTransaction());
+        response.setSignature(accountHolder.getSignature());
         return response;
     }
 
@@ -36,6 +37,8 @@ public class AccountHolderMapper {
                 .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + ahr.getCustomerId()));
 
         accountHolder.setCustomer(customer);
+
         return accountHolder;
     }
+
 }
