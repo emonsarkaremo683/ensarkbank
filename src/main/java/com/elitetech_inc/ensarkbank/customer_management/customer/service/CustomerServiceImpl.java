@@ -128,8 +128,7 @@ public class CustomerServiceImpl implements CustomerService {
         try {
             String token = jwtUtil.generateVerificationToken(u.getEmail());
             emailConfig.sendVerificationEmail(u.getEmail(), cr.getName(), token);
-        } catch (MessagingException e) {
-            // Log but don't fail — email send should not block registration
+        } catch (Exception e) {
             System.err.println("Failed to send verification email: " + e.getMessage());
         }
 

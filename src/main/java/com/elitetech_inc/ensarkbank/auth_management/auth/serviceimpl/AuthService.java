@@ -20,7 +20,6 @@ import com.elitetech_inc.ensarkbank.human_resource_management.employee.dto.mappe
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.dto.response.EmployeeResponse;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.entity.Employee;
 import com.elitetech_inc.ensarkbank.human_resource_management.employee.repository.EmployeeRepository;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -120,7 +119,7 @@ public class AuthService {
 
         try {
             emailService.sendVerificationEmail(user.getEmail(), getName(user), token);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to send verification email: " + e.getMessage());
         }
     }
@@ -157,7 +156,7 @@ public class AuthService {
 
         try {
             emailService.sendPasswordResetEmail(user.getEmail(), getName(user), token);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to send reset email: " + e.getMessage());
         }
     }

@@ -1,7 +1,6 @@
 package com.elitetech_inc.ensarkbank.util;
 
 import com.elitetech_inc.ensarkbank.auth_management.auth.security.EmailConfig;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,7 +17,7 @@ public class EmailUtil {
             String subject = "Account " + status + " - Ensark Bank";
             String body = buildStatusEmail(customerName, "Account", accountNumber, status);
             emailConfig.sendEmail(toEmail, subject, body);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("Failed to send account status email to {}: {}", toEmail, e.getMessage());
         }
     }
@@ -28,7 +27,7 @@ public class EmailUtil {
             String subject = "Card " + status + " - Ensark Bank";
             String body = buildStatusEmail(customerName, "Card", cardNumber, status);
             emailConfig.sendEmail(toEmail, subject, body);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("Failed to send card status email to {}: {}", toEmail, e.getMessage());
         }
     }
@@ -38,7 +37,7 @@ public class EmailUtil {
             String subject = "Loan " + status + " - Ensark Bank";
             String body = buildStatusEmail(customerName, "Loan", loanId, status);
             emailConfig.sendEmail(toEmail, subject, body);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("Failed to send loan status email to {}: {}", toEmail, e.getMessage());
         }
     }
@@ -48,7 +47,7 @@ public class EmailUtil {
             String subject = "KYC Verification " + status + " - Ensark Bank";
             String body = buildKycStatusEmail(customerName, status);
             emailConfig.sendEmail(toEmail, subject, body);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("Failed to send KYC status email to {}: {}", toEmail, e.getMessage());
         }
     }

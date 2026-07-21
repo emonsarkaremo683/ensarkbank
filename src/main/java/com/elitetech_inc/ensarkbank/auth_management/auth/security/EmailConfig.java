@@ -1,6 +1,5 @@
 package com.elitetech_inc.ensarkbank.auth_management.auth.security;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +18,7 @@ public class EmailConfig {
 
     private final JavaMailSender javaMailSender;
 
-    public void sendEmail(String to, String subject, String text) throws MessagingException {
+    public void sendEmail(String to, String subject, String text) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
@@ -29,14 +28,14 @@ public class EmailConfig {
 
             javaMailSender.send(message);
             log.info("Email sent successfully to {}", to);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("Failed to send email to {}: {}", to, e.getMessage(), e);
-            throw e;
+            throw new RuntimeException("Failed to send email", e);
         }
     }
 
     // ── Email verification ───────────────────────────────────────
-    public void sendVerificationEmail(String to, String name, String token) throws MessagingException {
+    public void sendVerificationEmail(String to, String name, String token) {
 
         String link = frontendUrl + "/verify-email?token=" + token;
 
@@ -143,7 +142,7 @@ This is an automated security email.
 
 
     // ── Password reset ────────────────────────────────────────────
-    public void sendPasswordResetEmail(String to, String name, String token) throws MessagingException {
+    public void sendPasswordResetEmail(String to, String name, String token) {
 
         String link = frontendUrl + "/reset-password?token=" + token;
 

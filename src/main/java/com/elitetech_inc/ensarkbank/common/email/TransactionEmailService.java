@@ -1,7 +1,6 @@
 package com.elitetech_inc.ensarkbank.common.email;
 
 import com.elitetech_inc.ensarkbank.account_management.account_transaction.dto.response.AccountTransactionResponse;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
@@ -62,7 +61,7 @@ public class TransactionEmailService {
 
             helper.setText(body, true);
             javaMailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to send OTP email", e);
         }
     }
@@ -129,7 +128,7 @@ public class TransactionEmailService {
 
             helper.setText(body, true);
             javaMailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to send transaction success email", e);
         }
     }
@@ -179,7 +178,7 @@ public class TransactionEmailService {
                     new org.springframework.core.io.ByteArrayResource(pdfAttachment));
 
             javaMailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to send monthly statement email", e);
         }
     }
@@ -230,7 +229,7 @@ public class TransactionEmailService {
 
             helper.setText(body, true);
             javaMailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to send cashier transaction email", e);
         }
     }
