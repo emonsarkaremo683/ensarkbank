@@ -140,6 +140,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+   loadCustomers(): void {
+    this.loading.set(true);
+    this.api.getCustomers().subscribe({
+      next: (data) => {
+        this.customerCount.set(data.length || 0);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.notify.error('Error', 'Failed to load customers.');
+      }
+    });
+  }
+
   private loadCustomerData(): void {
     const customerId = this.currentUser()?.id ?? 0;
     this.api.getAccountsByCustomerId(customerId).pipe(takeUntil(this.destroy$)).subscribe({
