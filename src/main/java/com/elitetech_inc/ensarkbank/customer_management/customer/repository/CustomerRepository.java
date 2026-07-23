@@ -23,4 +23,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     @Query("SELECT DISTINCT c FROM Customer c WHERE c.id IN (SELECT ah.customer.id FROM AccountHolder ah JOIN ah.account a WHERE a.branch.id IN :branchIds)")
     List<Customer> findCustomersByBranchIds(@Param("branchIds") List<Long> branchIds);
+
+
 }

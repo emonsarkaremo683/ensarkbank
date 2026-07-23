@@ -607,6 +607,19 @@ export interface DashboardStats {
   transactionTypeDistribution: LabelValue[];
   transactionStatusDistribution: LabelValue[];
   branchWiseSummary: BranchSummary[];
+  customersTrend: TrendData;
+  accountsTrend: TrendData;
+  balanceTrend: TrendData;
+  transactionsTrend: TrendData;
+  loansTrend: TrendData;
+  atmsTrend: TrendData;
+}
+
+export interface TrendData {
+  percentageChange: number;
+  currentCount: number;
+  previousCount: number;
+  up: boolean;
 }
 
 export interface TimeSeriesPoint {

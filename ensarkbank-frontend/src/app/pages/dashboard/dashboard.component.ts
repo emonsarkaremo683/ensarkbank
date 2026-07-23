@@ -6,15 +6,14 @@ import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Role } from '../../core/enums/role.enum';
-import { AccountResponse, LoanResponse, DashboardStats } from '../../core/models';
+import { AccountResponse, LoanResponse, DashboardStats, AccountTransactionResponse, ATMResponse, TrendData } from '../../core/models';
 import { LoadingComponent } from '../../shared';
-import { StatsCardComponent } from '../../shared';
 import { ChartComponent } from '../../shared/components/charts/chart.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, LoadingComponent, StatsCardComponent, ChartComponent],
+  imports: [CommonModule, LoadingComponent, ChartComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -36,6 +35,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   customerLoans = signal<LoanResponse[]>([]);
 
   dashboardStats = signal<DashboardStats | null>(null);
+
+  recentTransactions = signal<AccountTransactionResponse[]>([]);
+  atmList = signal<ATMResponse[]>([]);
+
+  customersTrend = signal<TrendData | null>(null);
+  accountsTrend = signal<TrendData | null>(null);
+  balanceTrend = signal<TrendData | null>(null);
+  transactionsTrend = signal<TrendData | null>(null);
+  loansTrend = signal<TrendData | null>(null);
+  atmsTrend = signal<TrendData | null>(null);
 
   currentUser = computed(() => this.auth.currentUser());
   isCustomer = computed(() => this.auth.isCustomer());
@@ -74,14 +83,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       { label: 'New Transaction', icon: '⚡', route: '/transactions/new', color: '#c9a84c', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER] },
       { label: 'Manage Accounts', icon: '🏦', route: '/accounts', color: '#3b82f6', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.ACCOUNTANT] },
       { label: 'Customers', icon: '👥', route: '/customers', color: '#22c55e', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CUSTOMER_SERVICE, Role.AUDITOR] },
-      // { label: 'Transactions', icon: '📝', route: '/transactions', color: '#a855f7', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.CASHIER, Role.ACCOUNTANT, Role.AUDITOR, Role.CUSTOMER_SERVICE, Role.LOAN_OFFICER] },
       { label: 'Loan Applications', icon: '📋', route: '/loans', color: '#8b5cf6', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.LOAN_OFFICER] },
       { label: 'Cards', icon: '💳', route: '/cards', color: '#06b6d4', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CASHIER, Role.BRANCH_MANAGER] },
       { label: 'ATM Management', icon: '🏧', route: '/atm', color: '#f97316', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.ATM_MANAGER] },
       { label: 'View Reports', icon: '📈', route: '/reports', color: '#f59e0b', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.ACCOUNTANT, Role.AUDITOR] },
       { label: 'Manage Employees', icon: '👤', route: '/employees', color: '#ec4899', roles: [Role.SUPER_ADMIN, Role.ADMIN] },
       { label: 'Manage Branches', icon: '🏛️', route: '/branches', color: '#14b8a6', roles: [Role.SUPER_ADMIN] },
-      // { label: 'Beneficiaries', icon: '🤝', route: '/beneficiaries', color: '#22d3ee', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CUSTOMER_SERVICE, Role.BRANCH_MANAGER] },
       { label: 'Cashier Operations', icon: '💰', route: '/transactions/cashier', color: '#eab308', roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.CASHIER] }
     ];
     return actions.filter(a => a.roles.includes(userRole));
@@ -140,20 +147,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-   loadCustomers(): void {
-    this.loading.set(true);
-    this.api.getCustomers().subscribe({
-      next: (data) => {
-        this.customerCount.set(data.length || 0);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.notify.error('Error', 'Failed to load customers.');
-      }
-    });
-  }
-
   private loadCustomerData(): void {
     const customerId = this.currentUser()?.id ?? 0;
     this.api.getAccountsByCustomerId(customerId).pipe(takeUntil(this.destroy$)).subscribe({
@@ -206,6 +199,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.totalBalance.set(stats.totalBalance);
         this.atmCount.set(stats.totalActiveCards);
 
+        this.customersTrend.set(stats.customersTrend);
+        this.accountsTrend.set(stats.accountsTrend);
+        this.balanceTrend.set(stats.balanceTrend);
+        this.transactionsTrend.set(stats.transactionsTrend);
+        this.loansTrend.set(stats.loansTrend);
+        this.atmsTrend.set(stats.atmsTrend);
+
         this.transactionTrendLabels.set(stats.transactionTrends.map((t: any) => t.date));
         this.transactionTrendData.set(stats.transactionTrends.map((t: any) => t.count));
 
@@ -232,6 +232,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.notify.error('Error', 'Failed to load dashboard data');
       }
     });
+
+    this.api.getTransactions().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (transactions) => {
+        this.recentTransactions.set(transactions.slice(0, 6));
+      },
+      error: () => {}
+    });
+
+    this.api.getATMs().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (atms) => {
+        this.atmList.set(atms.slice(0, 6));
+      },
+      error: () => {}
+    });
   }
 
   toggleAutoRefresh(): void {
@@ -251,6 +265,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  }
+
+  formatCompactCurrency(value: number): string {
+    if (value >= 1000000000) {
+      return '$' + (value / 1000000000).toFixed(1) + 'B';
+    } else if (value >= 1000000) {
+      return '$' + (value / 1000000).toFixed(1) + 'M';
+    } else if (value >= 1000) {
+      return '$' + (value / 1000).toFixed(1) + 'K';
+    }
+    return this.formatCurrency(value);
   }
 
   refresh(): void {

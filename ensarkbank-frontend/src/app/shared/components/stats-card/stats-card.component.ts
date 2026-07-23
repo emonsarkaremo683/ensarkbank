@@ -15,4 +15,5 @@ export class StatsCardComponent {
   @Input() trend: 'up' | 'down' | 'neutral' = 'neutral';
   @Input() trendValue = '';
   @Input() color = '#c9a84c';
+  @Input() compact = false;
 }

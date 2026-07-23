@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -28,4 +29,10 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     @Query("SELECT l.status, COUNT(l) FROM Loan l JOIN l.account a GROUP BY l.status")
     List<Object[]> countByStatusGroupedAll();
+
+    @Query("SELECT COUNT(l) FROM Loan l WHERE l.createdAt BETWEEN :start AND :end")
+    long countByCreatedAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(l) FROM Loan l JOIN l.account a WHERE a.branch.id IN :branchIds AND l.createdAt BETWEEN :start AND :end")
+    long countByBranchIdsAndCreatedAtBetween(@Param("branchIds") List<Long> branchIds, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

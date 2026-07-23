@@ -27,6 +27,23 @@ public class DashboardResponse {
     private List<LabelValue> transactionStatusDistribution;
     private List<BranchSummary> branchWiseSummary;
 
+    private TrendData customersTrend;
+    private TrendData accountsTrend;
+    private TrendData balanceTrend;
+    private TrendData transactionsTrend;
+    private TrendData loansTrend;
+    private TrendData atmsTrend;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TrendData {
+        private double percentageChange;
+        private long currentCount;
+        private long previousCount;
+        private boolean up;
+    }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

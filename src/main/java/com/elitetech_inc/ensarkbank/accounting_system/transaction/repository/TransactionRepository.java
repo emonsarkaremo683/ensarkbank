@@ -50,4 +50,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("SELECT COUNT(t) FROM Transaction t")
     long countAll();
+
+    @Query("SELECT COUNT(t) FROM Transaction t WHERE t.createdAt BETWEEN :start AND :end")
+    long countByCreatedAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(t) FROM Transaction t JOIN t.entries j JOIN j.account a WHERE a.branch.id IN :branchIds AND t.createdAt BETWEEN :start AND :end")
+    long countByBranchIdsAndCreatedAtBetween(@Param("branchIds") List<Long> branchIds, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

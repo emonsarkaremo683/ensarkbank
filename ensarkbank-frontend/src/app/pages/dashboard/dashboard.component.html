@@ -32,188 +32,439 @@
     </div>
   </header>
 
-  <!-- Stats -->
-  <section class="stats-row">
+  <!-- Stats Grid -->
+  <section class="stats-grid">
     @if (visibleStats().includes('customers')) {
-      <app-stats-card title="Total Customers" [value]="customerCount()" icon="👥" color="#22c55e" />
+      <div class="stat-card">
+        <div class="stat-card__content">
+          <p class="stat-card__title">Total Customers</p>
+          <h3 class="stat-card__value">{{ customerCount() | number }}</h3>
+          @if (customersTrend()) {
+            <div class="stat-card__trend" [class.stat-card__trend--up]="customersTrend()!.up" [class.stat-card__trend--down]="!customersTrend()!.up">
+              @if (customersTrend()!.up) {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+              } @else {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              }
+              <span>{{ customersTrend()!.up ? '+' : '' }}{{ customersTrend()!.percentageChange }}% vs last month</span>
+            </div>
+          }
+        </div>
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+          </svg>
+        </div>
+      </div>
     }
     @if (visibleStats().includes('accounts')) {
-      <app-stats-card title="Total Accounts" [value]="accountCount()" icon="🏦" color="#3b82f6" />
-    }
-    @if (visibleStats().includes('transactions')) {
-      <app-stats-card title="Total Transactions" [value]="transactionCount()" icon="📝" color="#c9a84c" />
-    }
-    @if (visibleStats().includes('loans')) {
-      <app-stats-card title="Total Loans" [value]="loanCount()" icon="📋" color="#8b5cf6" />
+      <div class="stat-card">
+        <div class="stat-card__content">
+          <p class="stat-card__title">Total Accounts</p>
+          <h3 class="stat-card__value">{{ accountCount() | number }}</h3>
+          @if (accountsTrend()) {
+            <div class="stat-card__trend" [class.stat-card__trend--up]="accountsTrend()!.up" [class.stat-card__trend--down]="!accountsTrend()!.up">
+              @if (accountsTrend()!.up) {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+              } @else {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              }
+              <span>{{ accountsTrend()!.up ? '+' : '' }}{{ accountsTrend()!.percentageChange }}% vs last month</span>
+            </div>
+          }
+        </div>
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/>
+          </svg>
+        </div>
+      </div>
     }
     @if (visibleStats().includes('balance')) {
-      <app-stats-card title="Total Balance" [value]="formatCurrency(totalBalance())" icon="💰" color="#f59e0b" />
+      <div class="stat-card">
+        <div class="stat-card__content">
+          <p class="stat-card__title">Total Deposits</p>
+          <h3 class="stat-card__value">{{ formatCompactCurrency(totalBalance()) }}</h3>
+          @if (balanceTrend()) {
+            <div class="stat-card__trend" [class.stat-card__trend--up]="balanceTrend()!.up" [class.stat-card__trend--down]="!balanceTrend()!.up">
+              @if (balanceTrend()!.up) {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+              } @else {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              }
+              <span>{{ balanceTrend()!.up ? '+' : '' }}{{ balanceTrend()!.percentageChange }}% vs last month</span>
+            </div>
+          }
+        </div>
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+          </svg>
+        </div>
+      </div>
+    }
+    @if (visibleStats().includes('transactions')) {
+      <div class="stat-card">
+        <div class="stat-card__content">
+          <p class="stat-card__title">Total Transactions</p>
+          <h3 class="stat-card__value">{{ transactionCount() | number }}</h3>
+          @if (transactionsTrend()) {
+            <div class="stat-card__trend" [class.stat-card__trend--up]="transactionsTrend()!.up" [class.stat-card__trend--down]="!transactionsTrend()!.up">
+              @if (transactionsTrend()!.up) {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+              } @else {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              }
+              <span>{{ transactionsTrend()!.up ? '+' : '' }}{{ transactionsTrend()!.percentageChange }}% vs last month</span>
+            </div>
+          }
+        </div>
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
+          </svg>
+        </div>
+      </div>
+    }
+    @if (visibleStats().includes('loans')) {
+      <div class="stat-card">
+        <div class="stat-card__content">
+          <p class="stat-card__title">Total Loans</p>
+          <h3 class="stat-card__value">{{ loanCount() | number }}</h3>
+          @if (loansTrend()) {
+            <div class="stat-card__trend" [class.stat-card__trend--up]="loansTrend()!.up" [class.stat-card__trend--down]="!loansTrend()!.up">
+              @if (loansTrend()!.up) {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+              } @else {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              }
+              <span>{{ loansTrend()!.up ? '+' : '' }}{{ loansTrend()!.percentageChange }}% vs last month</span>
+            </div>
+          }
+        </div>
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+          </svg>
+        </div>
+      </div>
     }
     @if (visibleStats().includes('atms')) {
-      <app-stats-card title="Active Cards" [value]="atmCount()" icon="💳" color="#f97316" />
+      <div class="stat-card">
+        <div class="stat-card__content">
+          <p class="stat-card__title">Active ATMs</p>
+          <h3 class="stat-card__value">{{ atmCount() | number }}</h3>
+          @if (atmsTrend()) {
+            <div class="stat-card__trend" [class.stat-card__trend--up]="atmsTrend()!.up" [class.stat-card__trend--down]="!atmsTrend()!.up">
+              @if (atmsTrend()!.up) {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+              } @else {
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              }
+              <span>{{ atmsTrend()!.up ? '+' : '' }}{{ atmsTrend()!.percentageChange }}% vs last month</span>
+            </div>
+          }
+        </div>
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+          </svg>
+        </div>
+      </div>
     }
   </section>
 
-  <!-- Body -->
-  <div class="dash-body">
-    <!-- Main -->
-    <div class="dash-main">
-      <!-- Charts for Staff -->
-      @if (!isCustomer()) {
-        <!-- Transaction Trends (Line Chart) -->
+  <!-- Charts Section -->
+  <section class="charts-section">
+    <!-- Revenue vs Expenses Chart -->
+    <div class="chart-card chart-card--large">
+      <div class="chart-card__header">
+        <h3 class="chart-card__title">Revenue vs Expenses (YTD)</h3>
+      </div>
+      <div class="chart-card__body">
         @if (transactionTrendLabels().length > 0) {
-          <div class="chart-card">
-            <app-chart
-              title="Transaction Trends (Last 7 Days)"
-              chartType="line"
-              [labels]="transactionTrendLabels()"
-              [datasets]="[{ label: 'Transactions', data: transactionTrendData(), color: 'rgba(201, 168, 76, 0.8)' }]"
-            />
+          <app-chart
+            chartType="line"
+            [labels]="transactionTrendLabels()"
+            [datasets]="[
+              { label: 'Revenue', data: transactionTrendData(), color: 'rgba(34, 197, 94, 0.8)' },
+              { label: 'Expenses', data: transactionTrendData().map(v => v * 0.6), color: 'rgba(6, 182, 212, 0.8)' }
+            ]"
+          />
+        } @else {
+          <div class="chart-placeholder">
+            <p>No transaction data available</p>
           </div>
         }
+      </div>
+    </div>
 
-        <!-- Charts Row -->
-        <div class="charts-row">
-          <!-- Transaction Types (Bar Chart) -->
-          @if (transactionTypeLabels().length > 0) {
-            <div class="chart-card chart-card--half">
-              <app-chart
-                title="Transactions by Type"
-                chartType="bar"
-                [labels]="transactionTypeLabels()"
-                [datasets]="[{ label: 'Count', data: transactionTypeData(), color: 'rgba(59, 130, 246, 0.8)' }]"
-              />
-            </div>
-          }
-
-          <!-- Account Types (Doughnut) -->
-          @if (accountTypeLabels().length > 0) {
-            <div class="chart-card chart-card--half">
-              <app-chart
-                title="Account Types"
-                chartType="doughnut"
-                [labels]="accountTypeLabels()"
-                [datasets]="[{ label: 'Accounts', data: accountTypeData() }]"
-              />
-            </div>
-          }
-        </div>
-
-        <!-- Charts Row 2 -->
-        <div class="charts-row">
-          <!-- Loan Status (Pie) -->
-          @if (loanStatusLabels().length > 0 && (isAdmin() || isBranchManager())) {
-            <div class="chart-card chart-card--half">
-              <app-chart
-                title="Loan Status"
-                chartType="pie"
-                [labels]="loanStatusLabels()"
-                [datasets]="[{ label: 'Loans', data: loanStatusData() }]"
-              />
-            </div>
-          }
-
-          <!-- Branch Wise (Bar) -->
-          @if (canSeeBranchWise() && branchLabels().length > 0) {
-            <div class="chart-card chart-card--half">
-              <app-chart
-                title="Branch-wise Accounts"
-                chartType="bar"
-                [labels]="branchLabels()"
-                [datasets]="[{ label: 'Accounts', data: branchAccountData(), color: 'rgba(34, 197, 94, 0.8)' }]"
-              />
-            </div>
-          }
-        </div>
-      }
-
-      <!-- Customer Accounts -->
-      @if (isCustomer() && customerAccounts().length > 0) {
-        <div class="card">
-          <div class="card__head">
-            <h2 class="card__title">My Accounts</h2>
-            <button class="btn btn--link" (click)="navigate('/customer/accounts')">View All →</button>
+    <!-- Transaction Volume Chart -->
+    <div class="chart-card chart-card--small">
+      <div class="chart-card__header">
+        <h3 class="chart-card__title">Transaction Volume</h3>
+      </div>
+      <div class="chart-card__body">
+        @if (transactionTypeLabels().length > 0) {
+          <app-chart
+            chartType="bar"
+            [labels]="transactionTypeLabels()"
+            [datasets]="[{ label: 'Volume', data: transactionTypeData(), color: 'rgba(34, 197, 94, 0.8)' }]"
+          />
+        } @else {
+          <div class="chart-placeholder">
+            <p>No transaction data available</p>
           </div>
-          <div class="accounts">
-            @for (acc of customerAccounts(); track acc.id) {
-              <div class="account">
-                <div class="account__left">
-                  <span class="account__number">{{ acc.accountNumber }}</span>
-                  <span class="account__type">{{ acc.accountType }}</span>
-                </div>
-                <div class="account__right">
-                  <span class="account__label">Available</span>
-                  <span class="account__balance">{{ formatCurrency(acc.availableBalance) }}</span>
-                </div>
-                <span class="badge" [class]="'badge--' + acc.accountStatus.toLowerCase()">{{ acc.accountStatus }}</span>
-              </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom Section -->
+  <section class="bottom-section">
+    <!-- Recent Transactions -->
+    <div class="transactions-card">
+      <div class="card__head">
+        <h4 class="card__title">Recent Transactions</h4>
+        <button class="btn btn--link" (click)="navigate('/transactions')">View All</button>
+      </div>
+      <div class="transactions-table">
+        <table>
+          <thead>
+            <tr>
+              <th>TXN ID</th>
+              <th>ACCOUNT</th>
+              <th>TYPE</th>
+              <th>AMOUNT</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (txn of recentTransactions(); track txn.id) {
+              <tr>
+                <td class="txn-id">{{ txn.transactionId }}</td>
+                <td class="txn-account">****{{ txn.senderAccountNumber?.slice(-4) || 'N/A' }}</td>
+                <td class="txn-type">{{ txn.response?.transactionType || 'N/A' }}</td>
+                <td class="txn-amount">{{ formatCurrency(txn.response?.amount || 0) }}</td>
+                <td>
+                  <span class="status-badge" [class]="'status-badge--' + (txn.response?.status || 'pending').toLowerCase()">
+                    {{ txn.response?.status || 'PENDING' }}
+                  </span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="no-data">No recent transactions</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="bottom-sidebar">
+      <!-- Loan Portfolio Health -->
+      <div class="portfolio-card">
+        <div class="card__head">
+          <h3 class="card__title">Loan Portfolio Health</h3>
+        </div>
+        <div class="portfolio-chart">
+          @if (loanStatusLabels().length > 0) {
+            <app-chart
+              chartType="doughnut"
+              [labels]="loanStatusLabels()"
+              [datasets]="[{ label: 'Loans', data: loanStatusData() }]"
+            />
+          } @else {
+            <div class="chart-placeholder">
+              <p>No loan data available</p>
+            </div>
+          }
+        </div>
+        <div class="portfolio-legend">
+          <div class="legend-item">
+            <span class="legend-dot legend-dot--green"></span>
+            <span>Performing</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot legend-dot--orange"></span>
+            <span>Watchlist</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot legend-dot--red"></span>
+            <span>Default</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Fraud Alerts -->
+      <div class="alerts-card">
+        <div class="card__head">
+          <h3 class="card__title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
+            Active Fraud Alerts
+          </h3>
+        </div>
+        <div class="alerts-list">
+          <div class="alert-empty">
+            <p>No active alerts</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ATM Status Network -->
+  <section class="atm-section">
+    <div class="card__head">
+      <h3 class="card__title">ATM Status Network</h3>
+      <button class="btn btn--link" (click)="navigate('/atm')">Manage Network</button>
+    </div>
+    <div class="atm-grid">
+      @for (atm of atmList(); track atm.atmId) {
+        <div class="atm-card">
+          <div class="atm-card__header">
+            <span class="atm-id">ATM-{{ atm.atmId }}</span>
+            <span class="atm-status" [class.atm-status--online]="atm.status === 'ACTIVE'" [class.atm-status--offline]="atm.status !== 'ACTIVE'">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M1.485 10.162C1.065 8.915.645 7.665.645 6.5 2.5 4.235 5.135 2.5 8.5 2.5c1.79 0 3.435.505 4.855 1.375-.56.28-1.085.635-1.56 1.06C10.535 4.455 9.565 4 8.5 4 6.295 4 4.5 5.295 4.5 7c0 .565.165 1.135.5 1.625.335.49.79.915 1.34 1.265-.56.35-1.035.79-1.4 1.31l-3.455-.038z"/>
+                <path d="M12 21l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.18L12 21z"/>
+              </svg>
+            </span>
+          </div>
+          <p class="atm-location">{{ atm.branchName }}</p>
+          <div class="atm-cash">
+            <span class="atm-cash__label">Balance</span>
+            <span class="atm-cash__value">{{ formatCurrency(atm.availableBalance) }}</span>
+          </div>
+          <div class="atm-progress">
+            @if (atm.limit > 0) {
+              @if ((atm.availableBalance / atm.limit) > 0.5) {
+                <div class="atm-progress__bar atm-progress__bar--high" [style.width.%]="(atm.availableBalance / atm.limit) * 100"></div>
+              } @else if ((atm.availableBalance / atm.limit) > 0.2) {
+                <div class="atm-progress__bar atm-progress__bar--medium" [style.width.%]="(atm.availableBalance / atm.limit) * 100"></div>
+              } @else {
+                <div class="atm-progress__bar atm-progress__bar--low" [style.width.%]="(atm.availableBalance / atm.limit) * 100"></div>
+              }
+            } @else {
+              <div class="atm-progress__bar atm-progress__bar--low" style="width: 0%"></div>
             }
           </div>
+        </div>
+      } @empty {
+        <div class="atm-empty">
+          <p>No ATMs available</p>
         </div>
       }
     </div>
+  </section>
 
-    <!-- Sidebar -->
-    <aside class="dash-side">
-      <div class="card">
-        <div class="card__head">
-          <h2 class="card__title">Quick Actions</h2>
-        </div>
-        <div class="actions">
-          @for (action of quickActions(); track action.label) {
-            <button class="action" (click)="navigate(action.route)" [style.--action-color]="action.color">
-              <span class="action__icon">{{ action.icon }}</span>
-              <span class="action__label">{{ action.label }}</span>
-            </button>
-          }
-        </div>
+  <!-- Quick Actions (Staff Only) -->
+  @if (!isCustomer()) {
+    <section class="quick-actions-section">
+      <div class="card__head">
+        <h3 class="card__title">Quick Actions</h3>
       </div>
+      <div class="quick-actions-grid">
+        @for (action of quickActions(); track action.label) {
+          <button class="quick-action" (click)="navigate(action.route)" [style.--action-color]="action.color">
+            <span class="quick-action__icon">{{ action.icon }}</span>
+            <span class="quick-action__label">{{ action.label }}</span>
+          </button>
+        }
+      </div>
+    </section>
+  }
 
-      <div class="card">
+  <!-- Customer Sections -->
+  @if (isCustomer()) {
+    <!-- Customer Accounts -->
+    @if (customerAccounts().length > 0) {
+      <section class="customer-accounts">
         <div class="card__head">
-          <h2 class="card__title">System Overview</h2>
+          <h3 class="card__title">My Accounts</h3>
+          <button class="btn btn--link" (click)="navigate('/customer/accounts')">View All →</button>
         </div>
-        <div class="sysinfo">
-          <div class="sysinfo__row">
-            <span class="sysinfo__label">Last Refresh</span>
-            <span class="sysinfo__value">{{ lastRefresh() | date:'medium' }}</span>
-          </div>
-          <div class="sysinfo__row">
-            <span class="sysinfo__label">Your Role</span>
-            <span class="sysinfo__badge">{{ currentUser()?.role }}</span>
-          </div>
-          <div class="sysinfo__row">
-            <span class="sysinfo__label">User</span>
-            <span class="sysinfo__value">{{ currentUser()?.email }}</span>
-          </div>
-          @if (isCustomer()) {
-            <div class="sysinfo__row">
-              <span class="sysinfo__label">Phone</span>
-              <span class="sysinfo__value">{{ currentUser()?.phone || 'N/A' }}</span>
+        <div class="accounts-grid">
+          @for (acc of customerAccounts(); track acc.id) {
+            <div class="account-card">
+              <div class="account-card__header">
+                <span class="account-card__number">{{ acc.accountNumber }}</span>
+                <span class="account-card__type">{{ acc.accountType }}</span>
+              </div>
+              <div class="account-card__balance">
+                <span class="account-card__label">Available Balance</span>
+                <span class="account-card__amount">{{ formatCurrency(acc.availableBalance) }}</span>
+              </div>
+              <span class="status-badge" [class]="'status-badge--' + acc.accountStatus.toLowerCase()">{{ acc.accountStatus }}</span>
             </div>
           }
         </div>
-      </div>
+      </section>
+    }
 
-      @if (isCustomer() && customerLoans().length > 0) {
-        <div class="card">
-          <div class="card__head">
-            <h2 class="card__title">My Loans</h2>
-            <button class="btn btn--link" (click)="navigate('/customer/loans')">View →</button>
-          </div>
-          <div class="loans">
-            @for (loan of customerLoans().slice(0, 3); track loan.loanId) {
-              <div class="loan">
-                <div class="loan__left">
-                  <span class="loan__id">Loan #{{ loan.loanId }}</span>
-                  <span class="loan__amount">{{ formatCurrency(loan.principalAmount) }}</span>
-                </div>
-                <span class="badge" [class]="'badge--' + loan.status.toLowerCase()">{{ loan.status }}</span>
-              </div>
-            }
-          </div>
+    <!-- Customer Loans -->
+    @if (customerLoans().length > 0) {
+      <section class="customer-loans">
+        <div class="card__head">
+          <h3 class="card__title">My Loans</h3>
+          <button class="btn btn--link" (click)="navigate('/customer/loans')">View →</button>
         </div>
-      }
-    </aside>
-  </div>
+        <div class="loans-list">
+          @for (loan of customerLoans().slice(0, 3); track loan.loanId) {
+            <div class="loan-item">
+              <div class="loan-item__left">
+                <span class="loan-item__id">Loan #{{ loan.loanId }}</span>
+                <span class="loan-item__amount">{{ formatCurrency(loan.principalAmount) }}</span>
+              </div>
+              <span class="status-badge" [class]="'status-badge--' + loan.status.toLowerCase()">{{ loan.status }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+  }
+
+  <!-- System Info Footer -->
+  <footer class="dash-footer">
+    <div class="footer-item">
+      <span class="footer-label">Last Refresh</span>
+      <span class="footer-value">{{ lastRefresh() | date:'medium' }}</span>
+    </div>
+    <div class="footer-item">
+      <span class="footer-label">Your Role</span>
+      <span class="footer-badge">{{ currentUser()?.role }}</span>
+    </div>
+    <div class="footer-item">
+      <span class="footer-label">User</span>
+      <span class="footer-value">{{ currentUser()?.email }}</span>
+    </div>
+  </footer>
 </div>

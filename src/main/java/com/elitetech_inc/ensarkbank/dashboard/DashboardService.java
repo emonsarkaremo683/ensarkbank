@@ -6,6 +6,7 @@ import com.elitetech_inc.ensarkbank.account_management.loan.repository.LoanRepos
 import com.elitetech_inc.ensarkbank.accounting_system.transaction.repository.TransactionRepository;
 import com.elitetech_inc.ensarkbank.branch_management.branch.repository.BranchRepository;
 import com.elitetech_inc.ensarkbank.common.enums.*;
+import com.elitetech_inc.ensarkbank.customer_management.customer.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,13 +29,19 @@ public class DashboardService {
     private final LoanRepository loanRepository;
     private final CardRepository cardRepository;
     private final BranchRepository branchRepository;
+    private final CustomerRepository customerRepository;
 
     public DashboardResponse getDashboardData(List<Long> branchIds) {
         DashboardResponse response = new DashboardResponse();
 
+        LocalDate today = LocalDate.now();
+        LocalDateTime thisMonthStart = today.withDayOfMonth(1).atStartOfDay();
+        LocalDateTime lastMonthStart = today.minusMonths(1).withDayOfMonth(1).atStartOfDay();
+        LocalDateTime lastMonthEnd = today.withDayOfMonth(1).atStartOfDay().minusNanos(1);
+
         if (branchIds == null) {
             response.setTotalAccounts(accountRepository.count());
-            response.setTotalCustomers(accountRepository.countDistinctCustomersAll());
+            response.setTotalCustomers(customerRepository.findAll().size());
             response.setTotalTransactions(transactionRepository.countAll());
             response.setTotalLoans(loanRepository.countAll());
             response.setTotalBalance(accountRepository.sumBalanceAll());
@@ -45,6 +52,29 @@ public class DashboardService {
             response.setTransactionTypeDistribution(buildTransactionTypeDistribution(null));
             response.setTransactionStatusDistribution(buildTransactionStatusDistribution(null));
             response.setBranchWiseSummary(buildBranchWiseSummary());
+
+            long customersNow = customerRepository.findAll().size();
+            long customersPrev = accountRepository.countDistinctCustomersByCreatedAtBetween(lastMonthStart, lastMonthEnd);
+            response.setCustomersTrend(buildTrend(customersNow, customersPrev));
+
+            long accountsNow = accountRepository.count();
+            long accountsPrev = accountRepository.countByCreatedAtBetween(lastMonthStart, lastMonthEnd);
+            response.setAccountsTrend(buildTrend(accountsNow, accountsPrev));
+
+            BigDecimal balanceNow = accountRepository.sumBalanceAll();
+            response.setBalanceTrend(buildBalanceTrend(balanceNow, lastMonthStart, lastMonthEnd));
+
+            long txnNow = transactionRepository.countAll();
+            long txnPrev = transactionRepository.countByCreatedAtBetween(lastMonthStart, lastMonthEnd);
+            response.setTransactionsTrend(buildTrend(txnNow, txnPrev));
+
+            long loansNow = loanRepository.countAll();
+            long loansPrev = loanRepository.countByCreatedAtBetween(lastMonthStart, lastMonthEnd);
+            response.setLoansTrend(buildTrend(loansNow, loansPrev));
+
+            long atmsNow = cardRepository.countByStatus(CardStatus.ACTIVE);
+            long atmsPrev = atmsNow;
+            response.setAtmsTrend(buildTrend(atmsNow, atmsPrev));
         } else {
             response.setTotalAccounts(accountRepository.countByBranchIdIn(branchIds));
             response.setTotalCustomers(accountRepository.countDistinctCustomersByBranchIds(branchIds));
@@ -57,9 +87,46 @@ public class DashboardService {
             response.setLoanStatusDistribution(buildLoanStatusDistribution(branchIds));
             response.setTransactionTypeDistribution(buildTransactionTypeDistribution(branchIds));
             response.setTransactionStatusDistribution(buildTransactionStatusDistribution(branchIds));
+
+            long customersNow = accountRepository.countDistinctCustomersByBranchIds(branchIds);
+            long customersPrev = accountRepository.countDistinctCustomersByBranchIdsAndCreatedAtBetween(branchIds, lastMonthStart, lastMonthEnd);
+            response.setCustomersTrend(buildTrend(customersNow, customersPrev));
+
+            long accountsNow = accountRepository.countByBranchIdIn(branchIds);
+            long accountsPrev = accountRepository.countByBranchIdInAndCreatedAtBetween(branchIds, lastMonthStart, lastMonthEnd);
+            response.setAccountsTrend(buildTrend(accountsNow, accountsPrev));
+
+            BigDecimal balanceNow = accountRepository.sumBalanceByBranchIds(branchIds);
+            response.setBalanceTrend(buildBalanceTrend(balanceNow, lastMonthStart, lastMonthEnd));
+
+            long txnNow = transactionRepository.countByBranchIds(branchIds);
+            long txnPrev = transactionRepository.countByBranchIdsAndCreatedAtBetween(branchIds, lastMonthStart, lastMonthEnd);
+            response.setTransactionsTrend(buildTrend(txnNow, txnPrev));
+
+            long loansNow = loanRepository.countByBranchIds(branchIds);
+            long loansPrev = loanRepository.countByBranchIdsAndCreatedAtBetween(branchIds, lastMonthStart, lastMonthEnd);
+            response.setLoansTrend(buildTrend(loansNow, loansPrev));
+
+            long atmsNow = cardRepository.countByStatusAndBranchIds(CardStatus.ACTIVE, branchIds);
+            long atmsPrev = atmsNow;
+            response.setAtmsTrend(buildTrend(atmsNow, atmsPrev));
         }
 
         return response;
+    }
+
+    private DashboardResponse.TrendData buildTrend(long current, long previous) {
+        double pct = previous == 0 ? (current > 0 ? 100.0 : 0.0) : ((double)(current - previous) / previous) * 100;
+        return new DashboardResponse.TrendData(Math.round(pct * 10.0) / 10.0, current, previous, pct >= 0);
+    }
+
+    private DashboardResponse.TrendData buildBalanceTrend(BigDecimal currentBalance, LocalDateTime lastMonthStart, LocalDateTime lastMonthEnd) {
+        BigDecimal prevBalance = accountRepository.sumBalanceAll();
+        if (prevBalance == null) prevBalance = BigDecimal.ZERO;
+        double pct = prevBalance.compareTo(BigDecimal.ZERO) == 0
+            ? (currentBalance.compareTo(BigDecimal.ZERO) > 0 ? 100.0 : 0.0)
+            : currentBalance.subtract(prevBalance).doubleValue() / prevBalance.doubleValue() * 100;
+        return new DashboardResponse.TrendData(Math.round(pct * 10.0) / 10.0, currentBalance.longValue(), prevBalance.longValue(), pct >= 0);
     }
 
     private List<DashboardResponse.TimeSeriesPoint> buildTransactionTrends(List<Long> branchIds) {

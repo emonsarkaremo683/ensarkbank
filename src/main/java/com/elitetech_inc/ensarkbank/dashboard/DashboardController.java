@@ -20,7 +20,7 @@ public class DashboardController {
     private final DashboardService dashboardService;
     private final BranchAccessService branchAccessService;
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'AUDITOR', 'ACCOUNTANT', 'LOAN_OFFICER', 'CASHIER', 'CUSTOMER_SERVICE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'BRANCH_MANAGER', 'AUDITOR', 'ACCOUNTANT', 'LOAN_OFFICER', 'CASHIER', 'CUSTOMER_SERVICE', 'ATM_MANAGER')")
     @GetMapping("/stats")
     public ResponseEntity<DashboardResponse> getStats(Authentication auth) {
         List<Long> branchIds = branchAccessService.getAccessibleBranchIds(auth);

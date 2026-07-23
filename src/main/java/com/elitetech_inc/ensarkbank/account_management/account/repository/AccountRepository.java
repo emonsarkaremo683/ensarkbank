@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,4 +60,16 @@ public interface AccountRepository extends JpaRepository<Account,Long> {
 
     @Query("SELECT a.accountType, COUNT(a) FROM Account a GROUP BY a.accountType")
     List<Object[]> countByAccountTypeGroupedAll();
+
+    @Query("SELECT COUNT(a) FROM Account a WHERE a.createdAt BETWEEN :start AND :end")
+    long countByCreatedAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(a) FROM Account a WHERE a.branch.id IN :branchIds AND a.createdAt BETWEEN :start AND :end")
+    long countByBranchIdInAndCreatedAtBetween(@Param("branchIds") List<Long> branchIds, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(DISTINCT ah.customer.id) FROM Account a LEFT JOIN a.holders ah WHERE a.createdAt BETWEEN :start AND :end")
+    long countDistinctCustomersByCreatedAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(DISTINCT ah.customer.id) FROM Account a LEFT JOIN a.holders ah WHERE a.branch.id IN :branchIds AND a.createdAt BETWEEN :start AND :end")
+    long countDistinctCustomersByBranchIdsAndCreatedAtBetween(@Param("branchIds") List<Long> branchIds, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
